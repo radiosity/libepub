@@ -1,4 +1,4 @@
-#Copyright (c) 2013, Richard Martin
+#Copyright (c) 2014, Richard Martin
 #All rights reserved.
 #
 #Redistribution and use in source and binary forms, with or without
