@@ -26,6 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <iostream>
+#include <stdlib.h>
 
 #include "Epub.hpp"
 
@@ -34,8 +35,11 @@ using std::endl;
 
 int main(int argc, char * argv[]) {
 	
+	std::locale::global(std::locale(""));
+	
 	if(argc ==1) {
 		cout << "Needs a filename as an arg" << endl; 
+		exit(EXIT_FAILURE);
 	}		
 	
 	Epub book(argv[1]);
