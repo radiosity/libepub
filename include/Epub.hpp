@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <utility>
 
 #include "EpubFile.hpp"
+#include "Container.hpp"
 
 using std::string;
 using std::move;
@@ -41,20 +42,29 @@ class Epub {
 	private:
 		string filename; 
 		EpubFile file; 
+		Container container; 
 	
 	public:
-		Epub(string _filename) : filename(_filename), file(_filename) {}
+		Epub(string _filename) : filename(_filename), file(_filename), container(file.get_directory_path()) {}
 		
-		Epub(Epub const & cpy) : filename(cpy.filename), file(cpy.file) {}
-		Epub(Epub && mv)  : filename (move(mv.filename)), file(move(mv.file)){}
+		Epub(Epub const & cpy) : 
+			filename(cpy.filename), 
+			file(cpy.file), 
+			container(cpy.container) {}
+		Epub(Epub && mv)  : 
+			filename (move(mv.filename)), 
+			file(move(mv.file)), 
+			container(move(mv.container)){}
 		Epub& operator =(const Epub& cpy) { 
 			filename = cpy.filename;
 			file = cpy.file;
+			container = cpy.container;
 			return *this; 
 		}
 		Epub& operator =(Epub && mv) { 
 			filename = move(mv.filename); 
 			file = move(mv.file);
+			container = move(mv.container);
 			return *this; 
 		}
 		

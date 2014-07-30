@@ -25,12 +25,148 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef EPUB_HEADER
-#define EPUB_HEADER
+#ifndef CONTAINER_HEADER
+#define CONTAINER_HEADER
+
+#include <vector>
+#include <boost/filesystem.hpp>
+#include <libxml++/libxml++.h>
+#include <stdlib.h>
+#include <utility>
+#include <exception>
+
+using std::vector;
+using std::move;
+
+using namespace boost::filesystem;
+using namespace xmlpp;
+using namespace Glib;
+
+class RootFile {
+	
+public:
+	ustring media_type;
+	ustring full_path;
+
+	RootFile(ustring _m, ustring _f)  : media_type(_m), full_path(_f) {}
+		
+		RootFile(RootFile const & cpy) :
+			media_type(cpy.media_type),
+			full_path(cpy.full_path) {}
+		RootFile(RootFile && mv) :
+			media_type(move(mv.media_type)),
+			full_path(move(mv.full_path)) {}
+		RootFile& operator =(const RootFile& cpy) { 
+			media_type = cpy.media_type;
+			full_path = cpy.full_path;
+			return *this; 
+		}
+		RootFile& operator =(RootFile && mv) { 
+			media_type = move(mv.media_type);
+			full_path = move(mv.full_path);
+			return *this; 
+		}
+		
+	~RootFile() {}
+	
+};
 
 
+class Container {
 
+	public:
+	
+		vector<RootFile> rootfiles;
+	
+		Container(path to_dir) {
+			
+			path to_container = to_dir; 
+			to_container /= "META-INF";
+			to_container /= "container.xml";
+			
+			if(!exists(to_container)) {
+				throw std::runtime_error("container.xml does not exist within META-INF dir");
+			}
+			
+			DomParser parser; 
+			parser.parse_file(to_container.string());
+			
+			Node* root = parser.get_document()->get_root_node();
+			
+			ustring rootname = root->get_name();
+			
+			if(rootname.compare("container") != 0) {
+				throw std::runtime_error("container.xml does not contain a <container> node as root");
+			}
+			
+			Node::NodeList rfslist = root->get_children();
+			
+			 for(Node::NodeList::iterator rfsiter = rfslist.begin(); rfsiter != rfslist.end(); ++rfsiter)
+			{
+				Node * rfstmp = *rfsiter; 
+				
+				//Genuinely horrible. 
+				const Element* rfsnode = dynamic_cast<const Element*>(rfstmp);
+				
+				if(!rfsnode) continue;
+				
+				if(rfsnode->get_name().compare("rootfiles") == 0) {
+					
+					Node::NodeList rflist = rfsnode->get_children();
+					
+					 for(Node::NodeList::iterator rfiter = rflist.begin(); rfiter != rflist.end(); ++rfiter)
+					{
+						
+						Node * rftmp = *rfiter; 
+				
+						//Genuinely horrible. 
+						const Element* rfnode = dynamic_cast<const Element*>(rftmp);
+						
+						if(!rfnode) continue;
+						
+						if(rfnode->get_name().compare("rootfile") == 0)  {
+							
+							ustring mt;
+							ustring fp; 
+							
+							const Element::AttributeList& attributes = rfnode->get_attributes();
+							for(Element::AttributeList::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
+							{
+								const Attribute* attribute = *iter;
+								const ustring namespace_prefix = attribute->get_namespace_prefix();
 
+								//cout << "  Attribute ";
+								//if(!namespace_prefix.empty()) cout << namespace_prefix  << ":";
+								//cout << attribute->get_name() << " = " << attribute->get_value() << endl;
+								
+								if(attribute->get_name().compare("media-type") == 0) mt = attribute->get_value();
+								else if(attribute->get_name().compare("full-path") == 0) fp = attribute->get_value();
+							}
+							
+							rootfiles.push_back(RootFile(mt, fp));
+							
+						}
+						
+					}
+					
+				}					
+				
+			}
+					
+		}
+		
+		Container(Container const & cpy) {}
+		Container(Container && mv) {}
+		Container& operator =(const Container& cpy) { 
+			return *this; 
+		}
+		Container& operator =(Container && mv) { 
+			return *this; 
+		}
+		
+		~Container() {}
+	
 
+};
 
 #endif

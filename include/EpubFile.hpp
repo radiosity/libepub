@@ -46,7 +46,6 @@ using std::endl;
 
 using namespace boost::filesystem;
 
-
 class EpubFile {
 	
 	private:
@@ -146,6 +145,10 @@ class EpubFile {
 		}
 		
 		~EpubFile() {}
+			
+		const path get_directory_path() {
+			return directory_path;
+		}
 		
 };
 

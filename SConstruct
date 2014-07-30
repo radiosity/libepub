@@ -26,9 +26,12 @@
 VariantDir('bin', 'src', duplicate=0)
 
 env = Environment()
-env.ParseConfig('pkg-config libxml++-2.6 --cflags --libs')
 
 env['CXXFLAGS'] = "-O2 -g -std=c++11 -Wall -Wfatal-errors -pedantic"
 env['CPPPATH'] = "include"
  
-env.Program('bin/main.cpp', LIBS=['boost_system', 'boost_filesystem'])
+env.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
+ 
+env.Append(LIBS=['boost_system', 'boost_filesystem'])
+ 
+env.Program('bin/main.cpp')
