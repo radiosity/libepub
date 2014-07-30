@@ -99,9 +99,9 @@ class Container {
 				throw std::runtime_error("container.xml does not contain a <container> node as root");
 			}
 			
-			Node::NodeList rfslist = root->get_children();
+			auto rfslist = root->get_children();
 			
-			 for(Node::NodeList::iterator rfsiter = rfslist.begin(); rfsiter != rfslist.end(); ++rfsiter)
+			for(auto rfsiter = rfslist.begin(); rfsiter != rfslist.end(); ++rfsiter)
 			{
 				Node * rfstmp = *rfsiter; 
 				
@@ -112,9 +112,9 @@ class Container {
 				
 				if(rfsnode->get_name().compare("rootfiles") == 0) {
 					
-					Node::NodeList rflist = rfsnode->get_children();
+					auto rflist = rfsnode->get_children();
 					
-					 for(Node::NodeList::iterator rfiter = rflist.begin(); rfiter != rflist.end(); ++rfiter)
+					for(auto rfiter = rflist.begin(); rfiter != rflist.end(); ++rfiter)
 					{
 						
 						Node * rftmp = *rfiter; 
@@ -129,8 +129,8 @@ class Container {
 							ustring mt;
 							ustring fp; 
 							
-							const Element::AttributeList& attributes = rfnode->get_attributes();
-							for(Element::AttributeList::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
+							const auto attributes = rfnode->get_attributes();
+							for(auto iter = attributes.begin(); iter != attributes.end(); ++iter)
 							{
 								const Attribute* attribute = *iter;
 								const ustring namespace_prefix = attribute->get_namespace_prefix();
@@ -155,12 +155,14 @@ class Container {
 					
 		}
 		
-		Container(Container const & cpy) {}
-		Container(Container && mv) {}
+		Container(Container const & cpy) : rootfiles(cpy.rootfiles){}
+		Container(Container && mv) : rootfiles(move(mv.rootfiles)) {}
 		Container& operator =(const Container& cpy) { 
+			rootfiles = cpy.rootfiles;
 			return *this; 
 		}
 		Container& operator =(Container && mv) { 
+			rootfiles = move(mv.rootfiles);
 			return *this; 
 		}
 		
