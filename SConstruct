@@ -34,4 +34,6 @@ env.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
  
 env.Append(LIBS=['boost_system', 'boost_filesystem'])
  
-env.Program('bin/main.cpp')
+sources = Glob('src/*.cpp') 
+ 
+env.Program('bin/main', sources)
