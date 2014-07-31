@@ -75,7 +75,7 @@ RootFile::~RootFile() {
 
 Container::Container(path to_dir) {
 	
-	path to_container = to_dir; 
+	auto to_container = to_dir; 
 	to_container /= "META-INF";
 	to_container /= "container.xml";
 	
