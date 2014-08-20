@@ -25,39 +25,59 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef EPUB_HEADER
-#define EPUB_HEADER
+#include "Epub.hpp"
 
-#include <string>
 #include <utility>
-#include <vector>
 
-#include "EpubFile.hpp"
-#include "Container.hpp"
-#include "OPF.hpp"
-
-using std::string;
 using std::move;
-using std::vector; 
 
-class Epub {
-	
-	private:
-		string filename; 
-		EpubFile file; 
-		Container container; 
-		vector<OPF> opf_files;
-	
-	public:
-		Epub(string _filename);
-		
-		Epub(Epub const & cpy);
-		Epub(Epub && mv);
-		Epub& operator =(const Epub& cpy);
-		Epub& operator =(Epub && mv);
-		
-		~Epub() ;
-		
-};
+Epub::Epub(string _filename) : 
+	filename(_filename), 
+	file(_filename), 
+	container(file.get_directory_path()) 
+{
 
-#endif
+	for(auto rf : container.rootfiles) {
+		
+		OPF tmp(file.get_directory_path(), rf.full_path);
+		
+		opf_files.push_back(tmp);
+		
+	}
+	
+}
+
+Epub::Epub(Epub const & cpy) : 
+	filename(cpy.filename), 
+	file(cpy.file), 
+	container(cpy.container) 
+{
+	
+}
+
+Epub::Epub(Epub && mv)  : 
+	filename (move(mv.filename)), 
+	file(move(mv.file)), 
+	container(move(mv.container))
+{
+	
+}
+
+Epub& Epub::operator =(const Epub& cpy) { 
+	filename = cpy.filename;
+	file = cpy.file;
+	container = cpy.container;
+	return *this; 
+}
+
+Epub& Epub::operator =(Epub && mv) { 
+	filename = move(mv.filename); 
+	file = move(mv.file);
+	container = move(mv.container);
+	return *this; 
+}
+
+Epub::~Epub() {
+		file.cleanup();
+}
+

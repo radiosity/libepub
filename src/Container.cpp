@@ -33,9 +33,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <utility>
 #include <exception>
+#include <iostream>
 
 using std::vector;
 using std::move;
+
+using std::cout; 
+using std::ifstream;
+using std::endl; 
 
 using namespace boost::filesystem;
 using namespace Glib;
@@ -137,6 +142,8 @@ Container::Container(path to_dir) {
 						if(attribute->get_name().compare("media-type") == 0) mt = attribute->get_value();
 						else if(attribute->get_name().compare("full-path") == 0) fp = attribute->get_value();
 					}
+					
+					cout << "Root file " << mt << " " << fp << endl; 
 					
 					rootfiles.push_back(RootFile(mt, fp));
 					
