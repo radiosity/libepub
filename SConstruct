@@ -23,17 +23,66 @@
 #(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 #SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-VariantDir('bin', 'src', duplicate=0)
+VariantDir('build/debug', 'src')
+VariantDir('build/release', 'src')
 
-env = Environment()
+#
 
-env['CXXFLAGS'] = "-O0 -g -std=c++11 -Wall -Wfatal-errors -pedantic"
-env['CPPPATH'] = "include"
+envLibRelease = Environment()
+
+envLibRelease['CXXFLAGS'] = "-O2 -std=c++11 -Wall -Wfatal-errors -pedantic"
+envLibRelease['CPPPATH'] = "include"
+	
+envLibRelease.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
+envLibRelease.Append(LIBS=['boost_system', 'boost_filesystem'])
  
-env.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
+sources = Glob('build/release/*.cpp') 
  
-env.Append(LIBS=['boost_system', 'boost_filesystem'])
+rst = envLibRelease.SharedLibrary('bin/epub++', sources)
+rsh = envLibRelease.StaticLibrary('bin/epub++', sources)
+
+#
+
+envLibDebug = Environment()
+
+envLibDebug['CXXFLAGS'] = "-O0 -g -std=c++11 -Wall -Wfatal-errors -pedantic"
+envLibDebug['CPPPATH'] = "include"
+	
+envLibDebug.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
+envLibDebug.Append(LIBS=['boost_system', 'boost_filesystem'])
  
-sources = Glob('src/*.cpp') 
+sources = Glob('build/debug/*.cpp') 
  
-env.Program('bin/main', sources)
+envLibDebug.SharedLibrary('bin/epub++-debug', sources)
+envLibDebug.StaticLibrary('bin/epub++-debug', sources)
+
+#
+
+envRelease = Environment()
+
+envRelease['CXXFLAGS'] = "-O2 -std=c++11 -Wall -Wfatal-errors -pedantic"
+envRelease['CPPPATH'] = "include"
+	
+envRelease.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
+envRelease.Append(LIBS=['boost_system', 'boost_filesystem'])
+ 
+sources = Glob('build/release/cli/*.cpp') 
+sources += ['bin/libepub++.a']
+ 
+envRelease.Program('bin/release', sources)
+
+#
+
+envDebug = Environment()
+
+envDebug['CXXFLAGS'] = "-O0 -g -std=c++11 -Wall -Wfatal-errors -pedantic"
+envDebug['CPPPATH'] = "include"
+	
+envDebug.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
+envDebug.Append(LIBS=['boost_system', 'boost_filesystem'])
+ 
+sources = Glob('build/debug/cli/*.cpp') 
+sources += ['bin/libepub++-debug.a']
+ 
+envDebug.Program('bin/debug', sources)
+
