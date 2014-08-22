@@ -27,7 +27,7 @@ VariantDir('bin', 'src', duplicate=0)
 
 env = Environment()
 
-env['CXXFLAGS'] = "-O2 -g -std=c++11 -Wall -Wfatal-errors -pedantic"
+env['CXXFLAGS'] = "-O0 -g -std=c++11 -Wall -Wfatal-errors -pedantic"
 env['CPPPATH'] = "include"
  
 env.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')

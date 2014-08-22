@@ -7,7 +7,7 @@ modification, are permitted provided that the following conditions are met:
     * Redistributions of source code must retain the above copyright
       notice, this list of conditions and the following disclaimer.
     * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
+      notice, this list of conditions and the following disclaimer in thedif;
       documentation and/or other materials provided with the distribution.
     * Neither the name of Richard Martin nor the
       names of its contributors may be used to endorse or promote products
@@ -25,41 +25,62 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef EPUB_HEADER
-#define EPUB_HEADER
+#ifndef Content_HEADER
+#define Content_HEADER
 
 #include <string>
-#include <utility>
 #include <vector>
+#include <boost/filesystem.hpp>
+#include <boost/flyweight.hpp>
+#include <glibmm.h>
 
-#include "EpubFile.hpp"
-#include "Container.hpp"
-#include "OPF.hpp"
-#include "Content.hpp"
-
-using std::string;
-using std::move;
 using std::vector; 
 
-class Epub {
-	
-	private:
-		string filename; 
-		EpubFile file; 
-		Container container; 
-		vector<OPF> opf_files;
-		vector<Content> contents; 
+using namespace boost::filesystem;
+using namespace Glib;
+
+enum ContentType {
+	P,
+	H1, 
+	H2
+};
+
+class ContentItem {
 	
 	public:
-		Epub(string _filename);
+		ContentType type;
+		path file;
+		ustring id;
+		ustring content;
+	
+		ContentItem(ContentType type, path file, ustring id, ustring content);
 		
-		Epub(Epub const & cpy);
-		Epub(Epub && mv);
-		Epub& operator =(const Epub& cpy);
-		Epub& operator =(Epub && mv);
-		
-		~Epub() ;
-		
+		ContentItem(ContentItem const & cpy);
+		ContentItem(ContentItem && mv) ;
+		ContentItem& operator =(const ContentItem& cpy);
+		ContentItem& operator =(ContentItem && mv) ;
+			
+		~ContentItem();
+	
 };
+
+class Content {
+	
+	public :
+		vector<path> files; 
+		vector<ContentItem> items; 
+	
+		Content(vector<path> files);
+		
+		Content(Content const & cpy);
+		Content(Content && mv) ;
+		Content& operator =(const Content& cpy);
+		Content& operator =(Content && mv) ;
+			
+		~Content();
+	
+	
+};
+
 
 #endif

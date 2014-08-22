@@ -28,8 +28,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Epub.hpp"
 
 #include <utility>
+#include <iostream>
 
+using std::string;
 using std::move;
+using std::cout; 
+using std::endl;
 
 Epub::Epub(string _filename) : 
 	filename(_filename), 
@@ -43,6 +47,31 @@ Epub::Epub(string _filename) :
 		
 		opf_files.push_back(tmp);
 		
+		vector<path> contentfiles; 
+		
+		for(auto si : tmp.spine) {
+			ustring idref = si.idref;
+
+			ManifestItem item = tmp.find_manifestitem_by_id(idref);
+			
+			path tmp(rf.full_path);
+			path parent = tmp.parent_path();
+			
+			path contentfile = file.get_directory_path();
+			contentfile /= parent;
+			contentfile /= path(item.href); 
+			
+			// cout << contentfile << endl; 
+			
+			contentfiles.push_back(contentfile);
+			
+		}
+		
+		Content content(contentfiles);
+			
+		contents.push_back(content);
+		
+		
 	}
 	
 }
@@ -50,7 +79,9 @@ Epub::Epub(string _filename) :
 Epub::Epub(Epub const & cpy) : 
 	filename(cpy.filename), 
 	file(cpy.file), 
-	container(cpy.container) 
+	container(cpy.container),
+	opf_files(cpy.opf_files),
+	contents(cpy.contents)
 {
 	
 }
@@ -58,7 +89,9 @@ Epub::Epub(Epub const & cpy) :
 Epub::Epub(Epub && mv)  : 
 	filename (move(mv.filename)), 
 	file(move(mv.file)), 
-	container(move(mv.container))
+	container(move(mv.container)),
+	opf_files(move(mv.opf_files)),
+	contents(move(mv.contents))
 {
 	
 }
@@ -67,6 +100,8 @@ Epub& Epub::operator =(const Epub& cpy) {
 	filename = cpy.filename;
 	file = cpy.file;
 	container = cpy.container;
+	opf_files = cpy.opf_files;
+	contents = cpy.contents;
 	return *this; 
 }
 
@@ -74,6 +109,8 @@ Epub& Epub::operator =(Epub && mv) {
 	filename = move(mv.filename); 
 	file = move(mv.file);
 	container = move(mv.container);
+	opf_files = move(mv.opf_files);
+	contents = move(mv.contents);
 	return *this; 
 }
 

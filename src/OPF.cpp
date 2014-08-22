@@ -229,7 +229,8 @@ OPF::OPF(path to_dir, ustring file) {
 				}
 				
 				auto textnd = metadatanode->get_child_text();
-				ustring content = textnd->get_content();
+				ustring content = ""; 
+				if(textnd) content = textnd->get_content();
 				
 				cout << "Node is " << name << " - " << content << endl; 
 				
@@ -300,6 +301,22 @@ OPF::OPF(path to_dir, ustring file) {
 		if(mdnode->get_name().compare("spine") == 0)  {
 			
 			auto mlist = mdnode->get_children();
+			
+			{
+				const auto attributes = mdnode->get_attributes();
+				for(auto iter = attributes.begin(); iter != attributes.end(); ++iter)
+				{
+					const Attribute* attribute = *iter;
+					const ustring namespace_prefix = attribute->get_namespace_prefix();
+					
+					ustring attrname = attribute->get_name();
+					ustring attrvalue = attribute->get_value();
+					
+					if(attrname.compare("toc")==0) spine_toc = attrvalue;
+					
+					cout << "toc is " << attrvalue << endl; 
+				}	
+			}
 				
 			for(auto miter = mlist.begin(); miter != mlist.end(); ++miter)
 			{
@@ -377,5 +394,19 @@ OPF& OPF::operator =(OPF && mv)  {
 }
 	
 OPF::~OPF() {
+	
+}
+
+ManifestItem OPF::find_manifestitem_by_id(ustring id) {
+	
+	auto sz = manifest.count(id);
+	
+	if(sz == 0) throw std::runtime_error("Cannot find the id. This means that the Epub is malformed.");
+	
+	auto it = manifest.find(id);
+	
+	auto pr = *it; 
+	
+	return pr.second;
 	
 }

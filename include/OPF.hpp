@@ -59,6 +59,7 @@ enum MetadataType {
 	RELATION,
 	COVERAGE, 
 	RIGHTS, 
+	META,
 	//
 	UNKNOWN
 };
@@ -79,6 +80,7 @@ MetadataType inline MetadataType_from_ustring(const ustring str) {
 	if(str.compare("relation") == 0) return RELATION;
 	if(str.compare("coverage") == 0) return COVERAGE;
 	if(str.compare("rights") == 0) return RIGHTS;
+	if(str.compare("meta") == 0) return META;
 	
 	else return UNKNOWN;
 }
@@ -144,6 +146,7 @@ class OPF {
 		multimap<MetadataType, MetadataItem> metadata;
 		map<ustring, ManifestItem> manifest; 
 		vector<SpineItem> spine; 
+		ustring spine_toc; 
 
 		OPF(path to_dir, ustring file);
 		
@@ -153,6 +156,8 @@ class OPF {
 		OPF& operator =(OPF && mv) ;
 			
 		~OPF();
+	
+		ManifestItem find_manifestitem_by_id(ustring id);
 	
 };
 
