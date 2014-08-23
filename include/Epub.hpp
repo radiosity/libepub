@@ -43,14 +43,14 @@ using std::vector;
 
 class Epub {
 	
-	private:
+	public:
+	
 		string filename; 
 		EpubFile file; 
 		Container container; 
 		vector<OPF> opf_files;
-		vector<Content> contents; 
+		vector<Content> contents;
 	
-	public:
 		Epub(string _filename);
 		
 		Epub(Epub const & cpy);

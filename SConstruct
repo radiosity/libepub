@@ -85,4 +85,3 @@ sources = Glob('build/debug/cli/*.cpp')
 sources += ['bin/libepub++-debug.a']
  
 envDebug.Program('bin/debug', sources)
-
