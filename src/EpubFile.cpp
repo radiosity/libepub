@@ -29,7 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string>
 #include <utility>
-#include <iostream>
 #include <fstream>
 #include <exception>
 #include <boost/filesystem.hpp>
@@ -38,10 +37,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using std::string;
 using std::move;
-
-using std::cout; 
 using std::ifstream;
+
+#ifdef DEBUG
+#include <iostream>
+using std::cout; 
 using std::endl; 
+#endif
 
 using namespace boost::filesystem;
 
@@ -56,12 +58,16 @@ EpubFile::EpubFile(string _filename) : filename(_filename) {
 	
 	path to_tmp = temp_directory_path(); 
 	
+	#ifdef DEBUG
 	cout << "Temporary path is " << to_tmp << endl; 
+	#endif
 	
 	to_tmp /= "epub";
 	directory_path = to_tmp;
 	
+	#ifdef DEBUG
 	cout << "Temporary directory is " << to_tmp << endl; 
+	#endif
 	
 	create_directory(to_tmp);
 	
@@ -132,7 +138,10 @@ EpubFile& EpubFile::operator =(EpubFile && mv) {
 }
 	
 void EpubFile::cleanup() {
+	#ifdef DEBUG
 	cout << "Cleaning up EpubFile" << endl; 
+	#endif
+	
 	remove_all(directory_path);
 }
 

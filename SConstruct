@@ -50,6 +50,7 @@ envLibDebug['CPPPATH'] = "include"
 	
 envLibDebug.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
 envLibDebug.Append(LIBS=['boost_system', 'boost_filesystem'])
+envLibDebug.Append(CPPDEFINES=['DEBUG'])
  
 sources = Glob('build/debug/*.cpp') 
  
@@ -80,6 +81,7 @@ envDebug['CPPPATH'] = "include"
 	
 envDebug.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
 envDebug.Append(LIBS=['boost_system', 'boost_filesystem'])
+envDebug.Append(CPPDEFINES=['DEBUG'])
  
 sources = Glob('build/debug/cli/*.cpp') 
 sources += ['bin/libepub++-debug.a']

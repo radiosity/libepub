@@ -30,15 +30,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <utility>
 #include <boost/filesystem.hpp>
 #include <libxml++/libxml++.h>
-#include <iostream>
 #include <exception>
 
 using std::move; 
 using std::pair;
 
+#ifdef DEBUG
+#include <iostream>
 using std::cout; 
-using std::ifstream;
 using std::endl; 
+#endif
 
 using namespace boost::filesystem;
 using namespace xmlpp;
@@ -177,7 +178,9 @@ OPF::OPF(path to_dir, ustring file) {
 	to_file = to_dir; 
 	to_file /= file.raw();
 	
+	#ifdef DEBUG
 	cout << to_file << endl;;
+	#endif
 	
 	if(!exists(to_file)) {
 		throw std::runtime_error("Content file specified in rootfiles does not exist!");
@@ -224,15 +227,19 @@ OPF::OPF(path to_dir, ustring file) {
 				
 				MetadataType mdtype = MetadataType_from_ustring(name);
 				
+				#ifdef DEBUG
 				if(mdtype == UNKNOWN) {
 					cout <<  "Hmm, unknown Metadata type. Which is: " << name << endl; 
 				}
+				#endif
 				
 				auto textnd = metadatanode->get_child_text();
 				ustring content = ""; 
 				if(textnd) content = textnd->get_content();
 				
+				#ifdef DEBUG
 				cout << "Node is " << name << " - " << content << endl; 
+				#endif
 				
 				MetadataItem md(mdtype, content);
 			
@@ -293,8 +300,10 @@ OPF::OPF(path to_dir, ustring file) {
 				
 				manifest.insert(pair<ustring, ManifestItem>(id, tmp)); 
 				
+				#ifdef DEBUG
 				cout << "Manifest href: " << href << " id " << id << " media type " << media_type << endl; 
-			
+				#endif
+				
 			}
 		}
 		
@@ -314,7 +323,9 @@ OPF::OPF(path to_dir, ustring file) {
 					
 					if(attrname.compare("toc")==0) spine_toc = attrvalue;
 					
+					#ifdef DEBUG
 					cout << "toc is " << attrvalue << endl; 
+					#endif
 				}	
 			}
 				
@@ -356,8 +367,10 @@ OPF::OPF(path to_dir, ustring file) {
 				
 				spine.push_back(tmp);
 				
+				#ifdef DEBUG
 				cout << "Spine idref: " << idref << " linear " << linear  << endl; 
-			
+				#endif
+				
 			}
 		}
 		

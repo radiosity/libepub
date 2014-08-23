@@ -28,12 +28,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Epub.hpp"
 
 #include <utility>
-#include <iostream>
+#include <string>
 
 using std::string;
 using std::move;
+
+#ifdef DEBUG
+#include <iostream>
 using std::cout; 
 using std::endl;
+#endif
 
 Epub::Epub(string _filename) : 
 	filename(_filename), 
@@ -60,8 +64,6 @@ Epub::Epub(string _filename) :
 			path contentfile = file.get_directory_path();
 			contentfile /= parent;
 			contentfile /= path(item.href); 
-			
-			// cout << contentfile << endl; 
 			
 			contentfiles.push_back(contentfile);
 			

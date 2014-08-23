@@ -30,15 +30,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <utility>
 #include <boost/filesystem.hpp>
 #include <libxml++/libxml++.h>
-#include <iostream>
 #include <exception>
 
 using std::move; 
 using std::pair;
 
+#ifdef DEBUG
+#include <iostream>
 using std::cout; 
-using std::ifstream;
 using std::endl; 
+#endif
 
 using namespace boost::filesystem;
 using namespace xmlpp;
@@ -222,8 +223,10 @@ static void __recursive_find(vector<ContentItem> & items, path file, Node * node
 					
 			if(content.compare("") == 0) continue; 
 					
+			#ifdef DEBUG
 			cout << tmpnode->get_name() << " " << content << endl; 
-						
+			#endif			
+			
 			ContentItem ci(ct, file, "", content);
 			
 			items.push_back(ci);
@@ -244,7 +247,9 @@ Content::Content(vector<path> _files) :
 			throw std::runtime_error("Content file specified in OPF file does not exist!");
 		}
 		
+		#ifdef DEBUG
 		cout << "Loading content file " << file << endl; 
+		#endif
 		
 		DomParser parser; 
 		parser.parse_file(file.string());
