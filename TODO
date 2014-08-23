@@ -1,3 +1,3 @@
 Unpacking is not currently performed in a portable way.
 
-There's no way we're going to be able to make this a header only library. We're going to have to move things around some, and soon.
+Add a proper logging implementation
