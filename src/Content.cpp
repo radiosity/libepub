@@ -176,6 +176,12 @@ static ustring __recursive_strip(Node * node) {
 				//underline
 				value += __create_text("u", __recursive_strip(childNode));
 			}
+			else if(childname.compare("a") == 0) {
+				//specific bheaviour for stripping hyperlinks within the text. 
+				//I suspect that I'll have to come back to this, but at the moment I'm 
+				//not completely sure how to handle it. 
+				value += __recursive_strip(childNode);
+			}
 			
 		}
 		
