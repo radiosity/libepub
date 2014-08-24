@@ -107,7 +107,7 @@ static inline ustring __create_text(ustring nodename, ustring nodecontents) {
 static ustring __id = ""; 
 
 //This whole method is fairly awful. 
-static ustring __recursive_strip(Node * node) {
+static ustring __recursive_strip(vector<ContentItem> & items, const path file, const Node * const node) {
 	
 	const TextNode * nodeText = dynamic_cast<const TextNode*>(node);
 	
@@ -122,13 +122,13 @@ static ustring __recursive_strip(Node * node) {
 	
 	const Element * nodeElement = dynamic_cast<const Element*>(node);
 	
-	auto nodelist = nodeElement->get_children();
+	const auto nodelist = nodeElement->get_children();
 	
 	ustring value = "";
 	
 	for(auto niter = nodelist.begin(); niter != nodelist.end(); ++niter)
 	{
-		Node * childNode = *niter; 
+		const Node * childNode = *niter; 
 		
 		//Still still Genuinely horrible. 
 		const Element* childElement = dynamic_cast<const Element*>(childNode);
@@ -138,51 +138,62 @@ static ustring __recursive_strip(Node * node) {
 		
 		if(childText) {
 			
-			value += __recursive_strip(childNode);
+			value += __recursive_strip(items, file, childNode);
 			
 		}
 		
 		if(childElement) {
 			
-			ustring childname = childElement->get_name();
+			const ustring childname = childElement->get_name();
 			
 			if(childname.compare("i") == 0) {
 				//italic. 
-				value += __create_text("i", __recursive_strip(childNode));
+				value += __create_text("i", __recursive_strip(items, file, childNode));
 			}
 			else if(childname.compare("b") == 0) {
 				//bold;
-				value += __create_text("b", __recursive_strip(childNode));
+				value += __create_text("b", __recursive_strip(items, file, childNode));
 			}
 			else if(childname.compare("big") == 0) {
-				value += __create_text("big", __recursive_strip(childNode));
+				value += __create_text("big", __recursive_strip(items, file, childNode));
 			}
 			else if(childname.compare("s") == 0) {
 				//strikethrough
-				value += __create_text("s", __recursive_strip(childNode));
+				value += __create_text("s", __recursive_strip(items, file, childNode));
 			}
 			else if(childname.compare("sub") == 0) {
-				value += __create_text("sub", __recursive_strip(childNode));
+				value += __create_text("sub", __recursive_strip(items, file, childNode));
 			}
 			else if(childname.compare("sup") == 0) {
-				value += __create_text("sup", __recursive_strip(childNode));
+				value += __create_text("sup", __recursive_strip(items, file, childNode));
 			}
 			else if(childname.compare("small") == 0) {
-				value += __create_text("small", __recursive_strip(childNode));
+				value += __create_text("small", __recursive_strip(items, file, childNode));
 			}
 			else if(childname.compare("tt") == 0) {
 				//monospace
-				value += __create_text("tt", __recursive_strip(childNode));
+				value += __create_text("tt", __recursive_strip(items, file, childNode));
 			}
 			else if(childname.compare("u") == 0) {
 				//underline
-				value += __create_text("u", __recursive_strip(childNode));
+				value += __create_text("u", __recursive_strip(items, file, childNode));
 			}
 			else if(childname.compare("a") == 0) {
 				//specific bheaviour for stripping hyperlinks within the text. 
 				//I suspect that I'll have to come back to this, but at the moment I'm 
 				//not completely sure how to handle it. 
-				value += __recursive_strip(childNode);
+				value += __recursive_strip(items, file, childNode);
+			}
+			else if(childname.compare("hr") == 0)  {
+				//What to do if this is a nested <hr> tag within (frequently)
+				//a <p> tag. 
+				
+				ContentType ct = HR;
+				ContentItem ci(ct, file, __id, "");
+				items.push_back(ci);
+				
+				value = "";
+				
 			}
 			
 		}
@@ -193,20 +204,20 @@ static ustring __recursive_strip(Node * node) {
 	
 }
 
-static void __recursive_find(vector<ContentItem> & items, path file, Node * node) {
+static void __recursive_find(vector<ContentItem> & items, const path file, const Node * const node) {
 	
-	auto nlist = node->get_children();
+	const auto nlist = node->get_children();
 	
 	for(auto niter = nlist.begin(); niter != nlist.end(); ++niter)
 	{
-		Node * ntmp = *niter; 
+		const Node * ntmp = *niter; 
 		
 		//Still still Genuinely horrible. 
 		const Element* tmpnode = dynamic_cast<const Element*>(ntmp);
 		
 		if(!tmpnode) continue;
 			
-		ustring tmpnodename = tmpnode->get_name();
+		const ustring tmpnodename = tmpnode->get_name();
 		
 		if(tmpnodename.compare("p") != 0 &&
 			tmpnodename.compare("h1") != 0 &&
@@ -227,7 +238,7 @@ static void __recursive_find(vector<ContentItem> & items, path file, Node * node
 			else if (tmpnode->get_name().compare("h2") == 0) {
 				ct = H2;
 			}
-			else if (tmpnode->get_name().compare("h2") == 0) {
+			else if (tmpnode->get_name().compare("hr") == 0) {
 				ct = HR;
 			}
 			
@@ -239,9 +250,9 @@ static void __recursive_find(vector<ContentItem> & items, path file, Node * node
 				if(attribute->get_name().compare("id") == 0) __id = attribute->get_value();
 			}
 			
-			ustring content = __recursive_strip(ntmp);
+			ustring content = __recursive_strip(items, file, ntmp);
 					
-			if(content.compare("") == 0) continue; 
+			if(content.compare("") == 0 && ct != HR) continue; 
 					
 			#ifdef DEBUG
 			cout << tmpnode->get_name()  << " " << __id <<endl; 
