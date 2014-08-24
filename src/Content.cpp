@@ -104,6 +104,8 @@ static inline ustring __create_text(ustring nodename, ustring nodecontents) {
 	return tmp;
 }
 
+static ustring __id = ""; 
+
 //This whole method is fairly awful. 
 static ustring __recursive_strip(Node * node) {
 	
@@ -225,15 +227,24 @@ static void __recursive_find(vector<ContentItem> & items, path file, Node * node
 				ct = H2;
 			}
 			
+			const auto attributes = tmpnode->get_attributes();
+			for(auto iter = attributes.begin(); iter != attributes.end(); ++iter)
+			{
+				const Attribute* attribute = *iter;
+				
+				if(attribute->get_name().compare("id") == 0) __id = attribute->get_value();
+			}
+			
 			ustring content = __recursive_strip(ntmp);
 					
 			if(content.compare("") == 0) continue; 
 					
 			#ifdef DEBUG
-			cout << tmpnode->get_name() << " " << content << endl; 
+			cout << tmpnode->get_name()  << " " << __id <<endl; 
+			cout << " \t " << content << endl; 
 			#endif			
 			
-			ContentItem ci(ct, file, "", content);
+			ContentItem ci(ct, file, __id, content);
 			
 			items.push_back(ci);
 		
