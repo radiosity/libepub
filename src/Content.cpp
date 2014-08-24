@@ -210,7 +210,8 @@ static void __recursive_find(vector<ContentItem> & items, path file, Node * node
 		
 		if(tmpnodename.compare("p") != 0 &&
 			tmpnodename.compare("h1") != 0 &&
-			tmpnodename.compare("h2") != 0) {
+			tmpnodename.compare("h2") != 0 &&
+			tmpnodename.compare("hr") != 0) {
 				__recursive_find(items, file, ntmp);
 		}		
 		else {
@@ -225,6 +226,9 @@ static void __recursive_find(vector<ContentItem> & items, path file, Node * node
 			}
 			else if (tmpnode->get_name().compare("h2") == 0) {
 				ct = H2;
+			}
+			else if (tmpnode->get_name().compare("h2") == 0) {
+				ct = HR;
 			}
 			
 			const auto attributes = tmpnode->get_attributes();

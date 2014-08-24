@@ -42,7 +42,8 @@ using namespace Glib;
 enum ContentType {
 	P,
 	H1, 
-	H2
+	H2, 
+	HR
 };
 
 class ContentItem {
