@@ -92,7 +92,13 @@ EpubFile::EpubFile(string _filename) : filename(_filename) {
 	}
 	else{
 		int status; 
-		waitpid(pid, &status, 0);			
+		#ifdef DEBUG
+		cout << "Waiting for pid " << pid << endl; 
+		#endif
+		waitpid(pid, &status, 0);
+		#ifdef DEBUG
+		cout << "PID joined " << pid << endl; 
+		#endif		
 	}
 
 	path to_mimetype = to_tmp;
