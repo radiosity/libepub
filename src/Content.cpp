@@ -91,189 +91,194 @@ ContentItem::~ContentItem(){
 	
 }
 
-////////////////////////
-static inline ustring __create_text(ustring nodename, ustring nodecontents) {
-	ustring tmp; 
-	tmp += "<";
-	tmp += nodename; 
-	tmp += ">";
-	tmp += nodecontents; 
-	tmp += "</";
-	tmp += nodename;
-	tmp += ">";
-	return tmp;
-}
-
-static ustring __id = ""; 
-
-//This whole method is fairly awful. 
-static ustring __recursive_strip(vector<ContentItem> & items, const path file, const Node * const node) {
-	
-	const TextNode * nodeText = dynamic_cast<const TextNode*>(node);
-	
-	if(nodeText) {
-		
-		if(nodeText->is_white_space()) {
-			return "";
-		}
-		
-		return nodeText->get_content();
+///////////////////////
+namespace 
+{
+	inline ustring __create_text(ustring nodename, ustring nodecontents) {
+		ustring tmp; 
+		tmp += "<";
+		tmp += nodename; 
+		tmp += ">";
+		tmp += nodecontents; 
+		tmp += "</";
+		tmp += nodename;
+		tmp += ">";
+		return tmp;
 	}
-	
-	const Element * nodeElement = dynamic_cast<const Element*>(node);
-	
-	const auto nodelist = nodeElement->get_children();
-	
-	ustring value = "";
-	
-	for(auto niter = nodelist.begin(); niter != nodelist.end(); ++niter)
-	{
-		const Node * childNode = *niter; 
+
+	ustring __id = ""; 
+
+	//This whole method is fairly awful. 
+	ustring __recursive_strip(vector<ContentItem> & items, const path file, const Node * const node) {
 		
-		//Still still Genuinely horrible. 
-		const Element* childElement = dynamic_cast<const Element*>(childNode);
-		const TextNode * childText = dynamic_cast<const TextNode*>(childNode);
+		const TextNode * nodeText = dynamic_cast<const TextNode*>(node);
 		
-		if(!childElement && !childText) continue;
-		
-		if(childText) {
+		if(nodeText) {
 			
-			value += __recursive_strip(items, file, childNode);
+			if(nodeText->is_white_space()) {
+				return "";
+			}
 			
+			return nodeText->get_content();
 		}
 		
-		if(childElement) {
+		const Element * nodeElement = dynamic_cast<const Element*>(node);
+		
+		const auto nodelist = nodeElement->get_children();
+		
+		ustring value = "";
+		
+		for(auto niter = nodelist.begin(); niter != nodelist.end(); ++niter)
+		{
+			const Node * childNode = *niter; 
 			
-			const ustring childname = childElement->get_name();
+			//Still still Genuinely horrible. 
+			const Element* childElement = dynamic_cast<const Element*>(childNode);
+			const TextNode * childText = dynamic_cast<const TextNode*>(childNode);
 			
-			if(childname.compare("i") == 0) {
-				//italic. 
-				value += __create_text("i", __recursive_strip(items, file, childNode));
-			}
-			else if(childname.compare("b") == 0) {
-				//bold;
-				value += __create_text("b", __recursive_strip(items, file, childNode));
-			}
-			else if(childname.compare("big") == 0) {
-				value += __create_text("big", __recursive_strip(items, file, childNode));
-			}
-			else if(childname.compare("s") == 0) {
-				//strikethrough
-				value += __create_text("s", __recursive_strip(items, file, childNode));
-			}
-			else if(childname.compare("sub") == 0) {
-				value += __create_text("sub", __recursive_strip(items, file, childNode));
-			}
-			else if(childname.compare("sup") == 0) {
-				value += __create_text("sup", __recursive_strip(items, file, childNode));
-			}
-			else if(childname.compare("small") == 0) {
-				value += __create_text("small", __recursive_strip(items, file, childNode));
-			}
-			else if(childname.compare("tt") == 0) {
-				//monospace
-				value += __create_text("tt", __recursive_strip(items, file, childNode));
-			}
-			else if(childname.compare("u") == 0) {
-				//underline
-				value += __create_text("u", __recursive_strip(items, file, childNode));
-			}
-			else if(childname.compare("a") == 0) {
-				//specific bheaviour for stripping hyperlinks within the text. 
-				//I suspect that I'll have to come back to this, but at the moment I'm 
-				//not completely sure how to handle it. 
+			if(!childElement && !childText) continue;
+			
+			if(childText) {
+				
 				value += __recursive_strip(items, file, childNode);
+				
 			}
-			else if(childname.compare("hr") == 0)  {
-				//What to do if this is a nested <hr> tag within (frequently)
-				//a <p> tag. 
+			
+			if(childElement) {
 				
-				ContentType ct = HR;
-				ContentItem ci(ct, file, __id, "");
-				items.push_back(ci);
+				const ustring childname = childElement->get_name();
 				
-				value = "";
+				if(childname.compare("i") == 0) {
+					//italic. 
+					value += __create_text("i", __recursive_strip(items, file, childNode));
+				}
+				else if(childname.compare("b") == 0) {
+					//bold;
+					value += __create_text("b", __recursive_strip(items, file, childNode));
+				}
+				else if(childname.compare("big") == 0) {
+					value += __create_text("big", __recursive_strip(items, file, childNode));
+				}
+				else if(childname.compare("s") == 0) {
+					//strikethrough
+					value += __create_text("s", __recursive_strip(items, file, childNode));
+				}
+				else if(childname.compare("sub") == 0) {
+					value += __create_text("sub", __recursive_strip(items, file, childNode));
+				}
+				else if(childname.compare("sup") == 0) {
+					value += __create_text("sup", __recursive_strip(items, file, childNode));
+				}
+				else if(childname.compare("small") == 0) {
+					value += __create_text("small", __recursive_strip(items, file, childNode));
+				}
+				else if(childname.compare("tt") == 0) {
+					//monospace
+					value += __create_text("tt", __recursive_strip(items, file, childNode));
+				}
+				else if(childname.compare("u") == 0) {
+					//underline
+					value += __create_text("u", __recursive_strip(items, file, childNode));
+				}
+				else if(childname.compare("a") == 0) {
+					//specific bheaviour for stripping hyperlinks within the text. 
+					//I suspect that I'll have to come back to this, but at the moment I'm 
+					//not completely sure how to handle it. 
+					value += __recursive_strip(items, file, childNode);
+				}
+				else if(childname.compare("hr") == 0)  {
+					//What to do if this is a nested <hr> tag within (frequently)
+					//a <p> tag. 
+					
+					ContentType ct = HR;
+					ContentItem ci(ct, file, __id, "");
+					items.push_back(ci);
+					
+					value = "";
+					
+				}
 				
 			}
 			
 		}
 		
+		return value; 
+		
 	}
-	
-	return value; 
-	
-}
 
-static void __recursive_find(vector<ContentItem> & items, const path file, const Node * const node) {
-	
-	const auto nlist = node->get_children();
-	
-	for(auto niter = nlist.begin(); niter != nlist.end(); ++niter)
-	{
-		const Node * ntmp = *niter; 
+	void __recursive_find(vector<ContentItem> & items, const path file, const Node * const node) {
 		
-		//Still still Genuinely horrible. 
-		const Element* tmpnode = dynamic_cast<const Element*>(ntmp);
+		const auto nlist = node->get_children();
 		
-		if(!tmpnode) continue;
+		for(auto niter = nlist.begin(); niter != nlist.end(); ++niter)
+		{
+			const Node * ntmp = *niter; 
 			
-		const ustring tmpnodename = tmpnode->get_name();
-		
-		if(tmpnodename.compare("p") != 0 &&
-			tmpnodename.compare("h1") != 0 &&
-			tmpnodename.compare("h2") != 0 &&
-			tmpnodename.compare("hr") != 0) {
-				__recursive_find(items, file, ntmp);
-		}		
-		else {
+			//Still still Genuinely horrible. 
+			const Element* tmpnode = dynamic_cast<const Element*>(ntmp);
 			
-			ContentType ct = P;
-			
-			if(tmpnode->get_name().compare("p") == 0) {
-				ct = P;
-			}
-			else if (tmpnode->get_name().compare("h1") == 0) {
-				ct = H1;
-			}
-			else if (tmpnode->get_name().compare("h2") == 0) {
-				ct = H2;
-			}
-			else if (tmpnode->get_name().compare("hr") == 0) {
-				ct = HR;
-			}
-			
-			const auto attributes = tmpnode->get_attributes();
-			for(auto iter = attributes.begin(); iter != attributes.end(); ++iter)
-			{
-				const Attribute* attribute = *iter;
+			if(!tmpnode) continue;
 				
-				if(attribute->get_name().compare("id") == 0) __id = attribute->get_value();
+			const ustring tmpnodename = tmpnode->get_name();
+			
+			if(tmpnodename.compare("p") != 0 &&
+				tmpnodename.compare("h1") != 0 &&
+				tmpnodename.compare("h2") != 0 &&
+				tmpnodename.compare("hr") != 0) {
+					__recursive_find(items, file, ntmp);
+			}		
+			else {
+				
+				ContentType ct = P;
+				
+				if(tmpnode->get_name().compare("p") == 0) {
+					ct = P;
+				}
+				else if (tmpnode->get_name().compare("h1") == 0) {
+					ct = H1;
+				}
+				else if (tmpnode->get_name().compare("h2") == 0) {
+					ct = H2;
+				}
+				else if (tmpnode->get_name().compare("hr") == 0) {
+					ct = HR;
+				}
+				
+				const auto attributes = tmpnode->get_attributes();
+				for(auto iter = attributes.begin(); iter != attributes.end(); ++iter)
+				{
+					const Attribute* attribute = *iter;
+					
+					if(attribute->get_name().compare("id") == 0) __id = attribute->get_value();
+				}
+				
+				ustring content = __recursive_strip(items, file, ntmp);
+						
+				if(content.compare("") == 0 && ct != HR) continue; 
+						
+				#ifdef DEBUG
+				cout << tmpnode->get_name()  << " " << __id <<endl; 
+				cout << " \t " << content << endl; 
+				#endif			
+				
+				ContentItem ci(ct, file, __id, content);
+				
+				items.push_back(ci);
+			
 			}
 			
-			ustring content = __recursive_strip(items, file, ntmp);
-					
-			if(content.compare("") == 0 && ct != HR) continue; 
-					
-			#ifdef DEBUG
-			cout << tmpnode->get_name()  << " " << __id <<endl; 
-			cout << " \t " << content << endl; 
-			#endif			
-			
-			ContentItem ci(ct, file, __id, content);
-			
-			items.push_back(ci);
-		
 		}
 		
 	}
-	
-}
+} // end anonymous namespace
 
 Content::Content(vector<path> _files) :
 	files(_files)
 {
 	
-	for(auto file : files) {
+	for(const auto file : files) {
+		
+		__id = "";
 		
 		if(!exists(file)) {
 			throw std::runtime_error("Content file specified in OPF file does not exist!");
@@ -286,19 +291,19 @@ Content::Content(vector<path> _files) :
 		DomParser parser; 
 		parser.parse_file(file.string());
 		
-		Node* root = parser.get_document()->get_root_node();
+		const Node* root = parser.get_document()->get_root_node();
 		
-		ustring rootname = root->get_name();
+		const ustring rootname = root->get_name();
 		
 		if(rootname.compare("html") != 0) {
 			throw std::runtime_error("Linked content file isn't HTML. So we can't read it. Mostly through laziness.");
 		}
 	
-		auto nlist = root->get_children();
+		const auto nlist = root->get_children();
 	
 		for(auto niter = nlist.begin(); niter != nlist.end(); ++niter)
 		{
-			Node * ntmp = *niter; 
+			const Node * ntmp = *niter; 
 			
 			//Still still Genuinely horrible. 
 			const Element* tmpnode = dynamic_cast<const Element*>(ntmp);
