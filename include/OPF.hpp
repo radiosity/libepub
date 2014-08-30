@@ -44,24 +44,24 @@ using namespace boost::filesystem;
 using namespace Glib;
 
 enum MetadataType {
-	TITLE,
-	CREATOR,
-	SUBJECT,
-	DESCRIPTION, 
-	PUBLISHER,
-	CONTRIBUTOR,
-	DATE,
-	TYPE,
-	FORMAT,
-	IDENTIFIER,
-	SOURCE,
-	LANGUAGE,
-	RELATION,
-	COVERAGE, 
-	RIGHTS, 
-	META,
+	TITLE = 0,
+	CREATOR = 1,
+	SUBJECT = 2,
+	DESCRIPTION = 3, 
+	PUBLISHER = 4,
+	CONTRIBUTOR = 5,
+	DATE = 6,
+	TYPE = 7,
+	FORMAT = 8,
+	IDENTIFIER = 9,
+	SOURCE = 10,
+	LANGUAGE = 11,
+	RELATION = 12,
+	COVERAGE = 13, 
+	RIGHTS = 14, 
+	META = 15,
 	//
-	UNKNOWN
+	UNKNOWN = 16
 };
 
 MetadataType inline MetadataType_from_ustring(const ustring str) {
