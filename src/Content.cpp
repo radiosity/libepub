@@ -186,6 +186,10 @@ namespace
 					//not completely sure how to handle it. 
 					value += __recursive_strip(items, file, childNode);
 				}
+				else if(childname.compare("span") == 0) {
+					//specific bheaviour for stripping span tags
+					value += __recursive_strip(items, file, childNode);
+				}
 				else if(childname.compare("hr") == 0)  {
 					//What to do if this is a nested <hr> tag within (frequently)
 					//a <p> tag. 
