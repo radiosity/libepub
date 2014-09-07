@@ -67,24 +67,8 @@ Epub::Epub(string _filename) :
 	
 	//It does exist. 
 	
-	path file(_filename);
-	unsigned int size = file_size(file);
-	time_t lmtime = last_write_time(file);
-	string timestring = lexical_cast<std::string>(lmtime);
-	
-	#ifdef DEBUG
-	cout << "File Exists" << endl; 
-	cout << "\t Name: " << _filename << endl; 
-	cout << "\t Size: " << size << endl; 
-	cout << "\t Last Modified: " << timestring << endl; 
-	#endif
-	
-	//Calculate the hash. 
-	
-	hash = 0; 
-	hash_combine<string>(hash, _filename);
-	hash_combine<unsigned int>(hash, size);
-	hash_combine<string>(hash, timestring);
+	//Compute the hash
+	hash = compute_epub_hash(_filename);
 	
 	stringstream stream;
 	//Have to set the locale on the stringstream 
@@ -207,6 +191,31 @@ Epub::Epub(string _filename) :
 		contents.push_back(content);
 		
 	}
+	
+}
+
+size_t inline Epub::compute_epub_hash(string _filename) {
+	
+	path file(_filename);
+	unsigned int size = file_size(file);
+	time_t lmtime = last_write_time(file);
+	string timestring = lexical_cast<std::string>(lmtime);
+	
+	#ifdef DEBUG
+	cout << "File Exists" << endl; 
+	cout << "\t Name: " << _filename << endl; 
+	cout << "\t Size: " << size << endl; 
+	cout << "\t Last Modified: " << timestring << endl; 
+	#endif
+	
+	//Calculate the hash. 
+	
+	size_t filehash = 0; 
+	hash_combine<string>(filehash, _filename);
+	hash_combine<unsigned int>(filehash, size);
+	hash_combine<string>(filehash, timestring);
+	
+	return filehash; 
 	
 }
 

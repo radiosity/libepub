@@ -62,6 +62,8 @@ class Epub {
 		Epub& operator =(Epub && mv);
 		
 		~Epub() ;
+	
+		static inline size_t compute_epub_hash(string _filename); 
 		
 };
 
