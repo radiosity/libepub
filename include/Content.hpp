@@ -53,8 +53,9 @@ class ContentItem {
 		path file;
 		ustring id;
 		ustring content;
+		ustring stripped_content;
 	
-		ContentItem(ContentType type, path file, ustring id, ustring content);
+		ContentItem(ContentType type, path file, ustring id, ustring content, ustring stripped_content);
 		
 		ContentItem(ContentItem const & cpy);
 		ContentItem(ContentItem && mv) ;
