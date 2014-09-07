@@ -61,7 +61,7 @@ class Container {
 	
 		vector<RootFile> rootfiles;
 	
-		Container(path to_dir);
+		Container();
 		
 		Container(Container const & cpy);
 		Container(Container && mv);
@@ -69,6 +69,8 @@ class Container {
 		Container& operator =(Container && mv);
 		
 		~Container();
+	
+		void load(path to_dir);
 	
 };
 

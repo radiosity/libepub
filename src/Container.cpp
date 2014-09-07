@@ -79,7 +79,7 @@ RootFile::~RootFile() {
 	
 }
 
-Container::Container(path to_dir) {
+void Container::load(path to_dir) {
 	
 	auto to_container = to_dir; 
 	to_container /= "META-INF";
@@ -158,6 +158,10 @@ Container::Container(path to_dir) {
 		
 	}
 			
+}
+
+Container::Container() {
+	
 }
 
 Container::Container(Container const & cpy) : rootfiles(cpy.rootfiles) {

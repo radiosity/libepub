@@ -31,22 +31,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <utility>
 #include <vector>
+#include <cstdlib>
 
-#include "EpubFile.hpp"
 #include "Container.hpp"
 #include "OPF.hpp"
 #include "Content.hpp"
 
-using std::string;
-using std::move;
 using std::vector; 
+using std::size_t; 
 
 class Epub {
 	
 	public:
 	
 		string filename; 
-		EpubFile file; 
+		size_t hash; 
+		string hash_string; 
+	
+		path directory_path; 
+	
 		Container container; 
 		vector<OPF> opf_files;
 		vector<Content> contents;

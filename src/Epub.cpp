@@ -29,9 +29,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <utility>
 #include <string>
+#include <sstream>
+#include <fstream>
+#include <iostream>
+#include <locale>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/functional/hash.hpp>
 
 using std::string;
 using std::move;
+using std::size_t;
+using std::stringstream;
+using std::locale; 
+using std::hex; 
+using std::ifstream;
+using namespace boost::filesystem;
+using boost::lexical_cast; 
+using boost::hash_combine; 
 
 #ifdef DEBUG
 #include <iostream>
@@ -40,14 +57,130 @@ using std::endl;
 #endif
 
 Epub::Epub(string _filename) : 
-	filename(_filename), 
-	file(_filename), 
-	container(file.get_directory_path()) 
+	filename(_filename)
 {
+	
+	//check if the file exists first. 
+	if(!exists(_filename)) {
+		throw std::runtime_error("No such filename");
+	}
+	
+	//It does exist. 
+	
+	path file(_filename);
+	unsigned int size = file_size(file);
+	time_t lmtime = last_write_time(file);
+	string timestring = lexical_cast<std::string>(lmtime);
+	
+	#ifdef DEBUG
+	cout << "File Exists" << endl; 
+	cout << "\t Name: " << _filename << endl; 
+	cout << "\t Size: " << size << endl; 
+	cout << "\t Last Modified: " << timestring << endl; 
+	#endif
+	
+	//Calculate the hash. 
+	
+	hash = 0; 
+	hash_combine<string>(hash, _filename);
+	hash_combine<unsigned int>(hash, size);
+	hash_combine<string>(hash, timestring);
+	
+	stringstream stream;
+	//Have to set the locale on the stringstream 
+	//to "C" otherwise it does insane things like
+	//formatting hex with decimal comma groups. 
+	//Yeah. About that. 
+	locale cloc("C");
+	stream.imbue(cloc);
+	stream << std::hex << (unsigned long) hash;
+	hash_string = stream.str();
+	
+	#ifdef DEBUG
+	cout << "\t Hash: " << hash_string << endl; 
+	#endif
+		
+	//Now to do work. 
+	
+	path to_tmp = temp_directory_path(); 
+	
+	#ifdef DEBUG
+	cout << "Temporary path is " << to_tmp << endl; 
+	#endif
+	
+	to_tmp /= "epub";
+	create_directory(to_tmp);
+	to_tmp /= hash_string; 
+	directory_path = to_tmp;
+	
+	#ifdef DEBUG
+	cout << "Temporary directory is " << to_tmp << endl; 
+	#endif
+	
+	create_directory(directory_path);
+	
+	//OK, so we have some stuff to play with. Now. Time to inflate. 
+	//This is a hack and I bloody hate it. But it'll suffice for now. 
+	
+	const char * program_path = "/usr/bin/unzip";
+	const char * program_name = "unzip";
+	
+	auto pid = fork(); 
+	
+	if (pid == -1) {
+		throw std::runtime_error("Some problem with fork()");
+	}
+	else if (pid == 0) {
+		const char* argv0 = program_name; 
+		const char* argv1 = filename.c_str();
+		const char* argv2 = "-d";
+		const char* argv3 = directory_path.string().c_str();
+		execl(program_path, argv0, argv1, argv2, argv3, NULL);
+		throw std::runtime_error("Some problem with execl");
+	}
+	else{
+		int status; 
+		#ifdef DEBUG
+		cout << "Waiting for pid " << pid << endl; 
+		#endif
+		waitpid(pid, &status, 0);
+		#ifdef DEBUG
+		cout << "PID joined " << pid << endl; 
+		#endif		
+	}
 
+	path to_mimetype = to_tmp;
+	to_mimetype /= "mimetype";
+	
+	ifstream mimetypefile (to_mimetype.string());
+	if(mimetypefile.is_open()) {
+		string line; 
+		getline(mimetypefile, line);
+		const string target = "application/epub+zip";
+		int res = line.compare(target);
+		if(res != 0) {
+			throw std::runtime_error("mimetype file present, but invalid");
+		}
+	}
+	else {
+		throw std::runtime_error("No mimetype file, is this an epub?");
+	}
+	
+	path to_container = to_tmp; 
+	to_container /= "META-INF";
+	to_container /= "container.xml";
+	
+	if(!exists(to_container)) {
+		throw std::runtime_error("container.xml does not exist within META-INF dir");
+	}
+	
+	//OK, file is validated and unpacked in a temporary directory
+	
+	container.load(directory_path);
+	
 	for(auto rf : container.rootfiles) {
 		
-		OPF tmp(file.get_directory_path(), rf.full_path);
+		OPF tmp(directory_path, rf.full_path);
 		
 		opf_files.push_back(tmp);
 		
@@ -61,7 +194,7 @@ Epub::Epub(string _filename) :
 			path tmp(rf.full_path);
 			path parent = tmp.parent_path();
 			
-			path contentfile = file.get_directory_path();
+			path contentfile = directory_path;
 			contentfile /= parent;
 			contentfile /= path(item.href); 
 			
@@ -73,14 +206,15 @@ Epub::Epub(string _filename) :
 			
 		contents.push_back(content);
 		
-		
 	}
 	
 }
 
 Epub::Epub(Epub const & cpy) : 
 	filename(cpy.filename), 
-	file(cpy.file), 
+	hash(cpy.hash),
+	hash_string(cpy.hash_string),
+	directory_path(cpy.directory_path),
 	container(cpy.container),
 	opf_files(cpy.opf_files),
 	contents(cpy.contents)
@@ -90,7 +224,9 @@ Epub::Epub(Epub const & cpy) :
 
 Epub::Epub(Epub && mv)  : 
 	filename (move(mv.filename)), 
-	file(move(mv.file)), 
+	hash(move(mv.hash)),
+	hash_string(move(mv.hash_string)),
+	directory_path(move(mv.directory_path)),
 	container(move(mv.container)),
 	opf_files(move(mv.opf_files)),
 	contents(move(mv.contents))
@@ -100,7 +236,9 @@ Epub::Epub(Epub && mv)  :
 
 Epub& Epub::operator =(const Epub& cpy) { 
 	filename = cpy.filename;
-	file = cpy.file;
+	hash = cpy.hash; 
+	hash_string = cpy.hash_string; 
+	directory_path = cpy.directory_path; 
 	container = cpy.container;
 	opf_files = cpy.opf_files;
 	contents = cpy.contents;
@@ -109,7 +247,9 @@ Epub& Epub::operator =(const Epub& cpy) {
 
 Epub& Epub::operator =(Epub && mv) { 
 	filename = move(mv.filename); 
-	file = move(mv.file);
+	hash = move(mv.hash);  
+	hash_string = move(mv.hash_string);
+	directory_path = move(mv.directory_path);
 	container = move(mv.container);
 	opf_files = move(mv.opf_files);
 	contents = move(mv.contents);
@@ -117,6 +257,10 @@ Epub& Epub::operator =(Epub && mv) {
 }
 
 Epub::~Epub() {
-		file.cleanup();
+	#ifdef DEBUG
+	cout << "Cleaning up EpubFile" << endl; 
+	#endif
+	
+	remove_all(directory_path);
 }
 
