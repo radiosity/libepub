@@ -70,6 +70,7 @@ margin-bottom : take percentage.
     
 SHOULD ALSO DO 
 page-break-before
+margin - sets all
     
 */
 

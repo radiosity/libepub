@@ -114,6 +114,10 @@ CSS::CSS(vector<path> _files) :
 	
 	for (path file : files) { 
 		
+		#ifdef DEBUG
+		cout << "CSS File is "  << file << endl; 
+		#endif
+		
 		bool class_is_open = false; 
 		CSSClass cssclass("");
 		
