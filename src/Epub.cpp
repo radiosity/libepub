@@ -284,7 +284,7 @@ Epub& Epub::operator =(Epub && mv) {
 
 Epub::~Epub() {
 	#ifdef DEBUG
-	cout << "Cleaning up EpubFile" << endl; 
+	cout << "Cleaning up EpubFile in dir" << directory_path << endl; 
 	#endif
 	
 	remove_all(directory_path);
