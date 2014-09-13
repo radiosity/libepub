@@ -168,6 +168,23 @@ Epub::Epub(string _filename) :
 		
 		opf_files.push_back(tmp);
 		
+		vector<path> cssfiles; 
+		
+		for(ManifestItem mi : tmp.find_manifestitems_by_type("text/css")) {
+			
+			path tmp(rf.full_path);
+			path parent = tmp.parent_path();
+			
+			path cssfile = directory_path;
+			cssfile /= parent;
+			cssfile /= path(mi.href); 
+			
+			cssfiles.push_back(cssfile); 
+		
+		}
+		
+		CSS classes(cssfiles);
+		
 		vector<path> contentfiles; 
 		
 		for(auto si : tmp.spine) {

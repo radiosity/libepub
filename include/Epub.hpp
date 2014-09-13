@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Container.hpp"
 #include "OPF.hpp"
 #include "Content.hpp"
+#include "CSS.hpp"
 
 using std::vector; 
 using std::size_t; 

@@ -423,3 +423,17 @@ ManifestItem OPF::find_manifestitem_by_id(ustring id) {
 	return pr.second;
 	
 }
+
+vector<ManifestItem> OPF::find_manifestitems_by_type(ustring type) {
+	
+	vector<ManifestItem> results; 
+	
+	//Going to have to do a full scan
+	
+	for(pair<ustring, ManifestItem> mi : manifest) {
+		if(mi.second.media_type.compare("text/css") == 0) results.push_back(mi.second);
+	}
+	
+	return results; 
+	
+}

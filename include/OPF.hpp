@@ -158,6 +158,7 @@ class OPF {
 		~OPF();
 	
 		ManifestItem find_manifestitem_by_id(ustring id);
+		vector<ManifestItem> find_manifestitems_by_type(ustring type);
 	
 };
 

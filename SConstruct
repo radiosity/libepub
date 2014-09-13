@@ -34,7 +34,7 @@ envLibRelease['CXXFLAGS'] = "-O2 -std=c++11 -Wall -Wfatal-errors -pedantic"
 envLibRelease['CPPPATH'] = "include"
 	
 envLibRelease.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
-envLibRelease.Append(LIBS=['boost_system', 'boost_filesystem'])
+envLibRelease.Append(LIBS=['boost_system', 'boost_filesystem', 'cryptopp'])
  
 sources = Glob('build/release/*.cpp') 
  
@@ -49,7 +49,7 @@ envLibDebug['CXXFLAGS'] = "-O0 -g -std=c++11 -Wall -Wfatal-errors -pedantic"
 envLibDebug['CPPPATH'] = "include"
 	
 envLibDebug.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
-envLibDebug.Append(LIBS=['boost_system', 'boost_filesystem'])
+envLibDebug.Append(LIBS=['boost_system', 'boost_filesystem', 'cryptopp'])
 envLibDebug.Append(CPPDEFINES=['DEBUG'])
  
 sources = Glob('build/debug/*.cpp') 
@@ -65,7 +65,7 @@ envRelease['CXXFLAGS'] = "-O2 -std=c++11 -Wall -Wfatal-errors -pedantic"
 envRelease['CPPPATH'] = "include"
 	
 envRelease.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
-envRelease.Append(LIBS=['boost_system', 'boost_filesystem'])
+envRelease.Append(LIBS=['boost_system', 'boost_filesystem', 'cryptopp'])
  
 sources = Glob('build/release/cli/*.cpp') 
 sources += ['bin/libepub++.a']
@@ -80,7 +80,7 @@ envDebug['CXXFLAGS'] = "-O0 -g -std=c++11 -Wall -Wfatal-errors -pedantic"
 envDebug['CPPPATH'] = "include"
 	
 envDebug.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
-envDebug.Append(LIBS=['boost_system', 'boost_filesystem'])
+envDebug.Append(LIBS=['boost_system', 'boost_filesystem', 'cryptopp'])
 envDebug.Append(CPPDEFINES=['DEBUG'])
  
 sources = Glob('build/debug/cli/*.cpp') 
