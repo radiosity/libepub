@@ -39,6 +39,7 @@ using std::ifstream;
 using std::pair; 
 using std::regex; 
 using std::regex_search;
+using std::regex_match;
 using std::sregex_iterator; 
 using std::smatch; 
 
@@ -113,6 +114,12 @@ CSS::CSS(vector<path> _files) :
 	classes()	
 {
 	
+	//prepare the regular expressions:
+	regex regex_classname ("([A-Za-z0-9\\.-]+)", regex::optimize); 
+	regex regex_atrule_single("^@.*;$", regex::optimize);
+	regex regex_atrule_multiple("^@.*\\{", regex::optimize);
+	regex regex_attr("([A-Za-z0-9-]+)\\s*:{1}\\s*(.*);", regex::optimize);
+	
 	for (path file : files) { 
 		
 		#ifdef DEBUG
@@ -120,6 +127,7 @@ CSS::CSS(vector<path> _files) :
 		#endif
 		
 		bool class_is_open = false; 
+		bool is_at_rule = false; 
 		CSSClass cssclass("");
 		
 		ifstream cssfile (file.string());
@@ -127,16 +135,12 @@ CSS::CSS(vector<path> _files) :
 			
 			string line; 
 			
-			//prepare the regular expressions:
-			regex regex_classname ("([A-Za-z0-9\\.-]+)"); 
-			regex regex_attr("([A-Za-z0-9-]+)\\s*:{1}\\s*(.*);");
-			
 			//You can declare that multiple things are affected by one declaration. 
 			//For example: 
 			//div, p, pre, h1, h2, h3, h4, h5, h6 {
 			//	margin-left: 0;	
 			//}
-			//This means we need to keep a list of names. 
+			//This means we need to keep a list of names for the style 
 			
 			vector<ustring> classnames; 
 			
@@ -154,20 +158,36 @@ CSS::CSS(vector<path> _files) :
 				if(line.find("}") != string::npos) {
 					
 					#ifdef DEBUG
-					cout << "\tCSS Closing CSS class named: "  << cssclass.name << endl; 
+					if (!is_at_rule) cout << "\tCSS Closing CSS class named: "  << cssclass.name << endl; 
 					#endif
 					
-					class_is_open = false;
+					/*
 					classes.insert(pair<ustring, CSSClass>(cssclass.name, cssclass));
 					cssclass = CSSClass("");
+					*/
+					
+					class_is_open = false;
+					is_at_rule = false; 
 					
 					continue; 
 					
 				}
 				
+				//skip at rule lines;
+				if(is_at_rule) continue; 
+				
 				if(!class_is_open) {
 					
 					//Deal with a new class. 
+					
+					//First, check if it's an at rule; 
+					if(regex_match(line, regex_atrule_single)) {
+						//It's a single-line @ rule, ignore it. 
+						continue; 
+					}
+					else if (regex_match(line, regex_atrule_multiple)) {
+						is_at_rule = true; 
+					}
 					
 					class_is_open = true; 
 					
