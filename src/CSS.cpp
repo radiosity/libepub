@@ -38,7 +38,8 @@ using std::move;
 using std::ifstream;
 using std::pair; 
 using std::regex; 
-using std::regex_search; 
+using std::regex_search;
+using std::sregex_iterator; 
 using std::smatch; 
 
 #ifdef DEBUG
@@ -127,8 +128,17 @@ CSS::CSS(vector<path> _files) :
 			string line; 
 			
 			//prepare the regular expressions:
-			regex regex_classname ("([A-Za-z0-9]+)"); 
+			regex regex_classname ("([A-Za-z0-9\\.-]+)"); 
 			regex regex_attr("([A-Za-z0-9-]+)\\s*:{1}\\s*(.*);");
+			
+			//You can declare that multiple things are affected by one declaration. 
+			//For example: 
+			//div, p, pre, h1, h2, h3, h4, h5, h6 {
+			//	margin-left: 0;	
+			//}
+			//This means we need to keep a list of names. 
+			
+			vector<ustring> classnames; 
 			
 			while(!cssfile.eof()) {	
 
@@ -152,25 +162,34 @@ CSS::CSS(vector<path> _files) :
 					cssclass = CSSClass("");
 					
 					continue; 
+					
 				}
 				
 				if(!class_is_open) {
+					
 					//Deal with a new class. 
 					
 					class_is_open = true; 
 					
 					smatch regex_matches; 
-					regex_search(line, regex_matches, regex_classname); 
 					
-					if(regex_matches.size() != 0) {
-						//We found the classname. 
-						cssclass.name = regex_matches[0];
+					auto line_begin = sregex_iterator(line.begin(), line.end(), regex_classname);
+					auto line_end = sregex_iterator();
+ 
+					classnames.reserve(distance(line_begin, line_end));
+ 
+					for (sregex_iterator i = line_begin; i != line_end; ++i) {
+						smatch match = *i;                                                 
+						string classname = match.str(); 
+						
+						classnames.push_back(ustring(classname));
 						
 						#ifdef DEBUG
-						cout << "\tCSS Class name: "  << cssclass.name << endl; 
+						cout << "\tCSS Class name: "  << classname << endl; 
 						#endif
 						
-					}
+					}   
+					
 				}
 				
 				else {
