@@ -99,6 +99,7 @@ class CSSClass {
 	
 	public:
 		ustring name; 
+		map<ustring, ustring> raw_pairs;
 		DisplayType displaytype; 
 		FontSize fontsize; 
 		FontWeight fontweight; 

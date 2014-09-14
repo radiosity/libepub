@@ -51,6 +51,7 @@ using std::endl;
 
 CSSClass::CSSClass(ustring _name) :
 	name(_name), 
+	raw_pairs(),
 	displaytype(DISPLAYTYPE_INLINE), 
 	fontsize(FONTSIZE_NORMAL),
 	fontweight(FONTWEIGHT_NORMAL),
@@ -63,6 +64,7 @@ CSSClass::CSSClass(ustring _name) :
 
 CSSClass::CSSClass(CSSClass const & cpy) :
 	name(cpy.name), 
+	raw_pairs(cpy.raw_pairs),
 	displaytype(cpy.displaytype), 
 	fontsize(cpy.fontsize), 
 	fontweight(cpy.fontweight),
@@ -75,6 +77,7 @@ CSSClass::CSSClass(CSSClass const & cpy) :
 
 CSSClass::CSSClass(CSSClass && mv) :
 	name(move(mv.name)), 
+	raw_pairs(move(mv.raw_pairs)),
 	displaytype(move(mv.displaytype)),
 	fontsize(move(mv.fontsize)),
 	fontweight(move(mv.fontweight)),
@@ -87,6 +90,7 @@ CSSClass::CSSClass(CSSClass && mv) :
 
 CSSClass& CSSClass::operator =(const CSSClass& cpy) {
 	name = cpy.name;
+	raw_pairs = cpy.raw_pairs; 
 	displaytype = cpy.displaytype; 
 	fontsize = cpy.fontsize; 
 	fontweight = cpy.fontweight; 
@@ -98,6 +102,7 @@ CSSClass& CSSClass::operator =(const CSSClass& cpy) {
 
 CSSClass& CSSClass::operator =(CSSClass && mv)  {
 	name = move(mv.name); 
+	raw_pairs = move(mv.raw_pairs);
 	displaytype = move(mv.displaytype);
 	fontsize = move(mv.fontsize); 
 	fontweight = move(mv.fontweight); 
@@ -158,8 +163,16 @@ CSS::CSS(vector<path> _files) :
 				if(line.find("}") != string::npos) {
 					
 					#ifdef DEBUG
-					if (!is_at_rule) cout << "\tCSS Closing CSS class named: "  << cssclass.name << endl; 
+					if (!is_at_rule) cout << "\tCSS Closing CSS class "  << endl; 
 					#endif
+					
+					for (auto classname : classnames) {
+						
+						//Check if the classname exists - if it does we need to update it. 
+						
+						
+						
+					}
 					
 					/*
 					classes.insert(pair<ustring, CSSClass>(cssclass.name, cssclass));
@@ -188,27 +201,30 @@ CSS::CSS(vector<path> _files) :
 					else if (regex_match(line, regex_atrule_multiple)) {
 						is_at_rule = true; 
 					}
-					
-					class_is_open = true; 
-					
-					smatch regex_matches; 
-					
-					auto line_begin = sregex_iterator(line.begin(), line.end(), regex_classname);
-					auto line_end = sregex_iterator();
- 
-					classnames.reserve(distance(line_begin, line_end));
- 
-					for (sregex_iterator i = line_begin; i != line_end; ++i) {
-						smatch match = *i;                                                 
-						string classname = match.str(); 
+					else {
 						
-						classnames.push_back(ustring(classname));
+						class_is_open = true; 
 						
-						#ifdef DEBUG
-						cout << "\tCSS Class name: "  << classname << endl; 
-						#endif
+						smatch regex_matches; 
 						
-					}   
+						auto line_begin = sregex_iterator(line.begin(), line.end(), regex_classname);
+						auto line_end = sregex_iterator();
+	 
+						classnames.reserve(distance(line_begin, line_end));
+	 
+						for (sregex_iterator i = line_begin; i != line_end; ++i) {
+							smatch match = *i;                                                 
+							string classname = match.str(); 
+							
+							classnames.push_back(ustring(classname));
+							
+							#ifdef DEBUG
+							cout << "\tCSS Class name: "  << classname << endl; 
+							#endif
+							
+						} 	
+						
+					}					
 					
 				}
 				
