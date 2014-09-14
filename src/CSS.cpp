@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <limits>
 
 using std::string; 
 using std::move;
@@ -42,6 +43,7 @@ using std::regex_search;
 using std::regex_match;
 using std::sregex_iterator; 
 using std::smatch; 
+using std::numeric_limits; 
 
 #ifdef DEBUG
 #include <iostream>
@@ -49,15 +51,15 @@ using std::cout;
 using std::endl;
 #endif
 
-CSSClass::CSSClass(ustring _name) :
-	name(_name), 
+CSSClass::CSSClass() :
+	name(""), 
 	raw_pairs(),
 	displaytype(DISPLAYTYPE_INLINE), 
 	fontsize(FONTSIZE_NORMAL),
 	fontweight(FONTWEIGHT_NORMAL),
 	fontstyle(FONTSTYLE_NORMAL), 
-	margintop(0.0),
-	marginbottom(0.0)
+	margintop(numeric_limits<double>::min()),
+	marginbottom(numeric_limits<double>::min())
 {
 	
 }
@@ -114,6 +116,36 @@ CSSClass& CSSClass::operator =(CSSClass && mv)  {
 
 CSSClass::~CSSClass() { }
 
+void CSSClass::add ( const CSSClass& rhs ) {
+	
+	//Do the basics:
+	if(rhs.displaytype != DISPLAYTYPE_INLINE) displaytype = rhs.displaytype; 
+	if(rhs.fontsize != FONTSIZE_NORMAL) fontsize = rhs.fontsize; 
+	if(rhs.fontweight != FONTWEIGHT_NORMAL) fontweight = rhs.fontweight; 
+	if(rhs.fontstyle != FONTSTYLE_NORMAL) fontstyle = rhs.fontstyle; 
+	if(rhs.margintop != numeric_limits<double>::min()) margintop = rhs.margintop; 
+	if(rhs.marginbottom != numeric_limits<double>::min()) marginbottom = rhs.marginbottom; 
+	
+	//Now lets do the map of raw
+	//tags
+	
+	for(pair<ustring, ustring> p : rhs.raw_pairs) {
+		
+		//check if it exists in this object. 
+		
+		if(raw_pairs.count(p.first) > 0) {
+			//It exists, so we update it. 
+			raw_pairs[p.first] = p.second; 
+		}
+		else {
+			//It doesn't exist, insert it. 
+			raw_pairs.insert(p);
+		}
+		
+	}
+	
+}
+
 CSS::CSS(vector<path> _files) : 
 	files(_files), 
 	classes()	
@@ -133,10 +165,11 @@ CSS::CSS(vector<path> _files) :
 		
 		bool class_is_open = false; 
 		bool is_at_rule = false; 
-		CSSClass cssclass("");
 		
 		ifstream cssfile (file.string());
 		if(cssfile.is_open()) {
+			
+			CSSClass cssclass;
 			
 			string line; 
 			
@@ -236,9 +269,14 @@ CSS::CSS(vector<path> _files) :
 					if(regex_matches.size() != 0) {
 						//We found an attr. 
 						
+						string attrname = regex_matches[1];
+						string attrvalue = regex_matches[2];
+						
+						cssclass.raw_pairs.insert(pair<ustring, ustring>(attrname, attrvalue));
+						
 						#ifdef DEBUG
-						cout << "\tCSS Attribute name: "  << regex_matches[1] << endl; 
-						cout << "\tCSS Attribute value "  << regex_matches[2] << endl; 
+						cout << "\tCSS Attribute name: "  << attrname << endl; 
+						cout << "\tCSS Attribute value "  << attrvalue << endl; 
 						#endif
 						
 					}

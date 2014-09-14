@@ -107,7 +107,7 @@ class CSSClass {
 		double margintop; 
 		double marginbottom; 
 	
-	CSSClass(ustring _name);
+	CSSClass();
 	
 	CSSClass(CSSClass const & cpy);
 	CSSClass(CSSClass && mv) ;
@@ -115,6 +115,8 @@ class CSSClass {
 	CSSClass& operator =(CSSClass && mv) ;
 	
 	~CSSClass();
+	
+	void add(const CSSClass & rhs);
 	
 };
 
