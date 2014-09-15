@@ -66,7 +66,9 @@ CSSClass::CSSClass(ustring _name) :
 	fontweight(FONTWEIGHT_NORMAL),
 	fontstyle(FONTSTYLE_NORMAL), 
 	margintop(numeric_limits<double>::min()),
-	marginbottom(numeric_limits<double>::min())
+	marginbottom(numeric_limits<double>::min()), 
+	pagebreakbefore(false),
+	pagebreakafter(false)
 {
 	
 }
@@ -79,7 +81,9 @@ CSSClass::CSSClass(CSSClass const & cpy) :
 	fontweight(cpy.fontweight),
 	fontstyle(cpy.fontstyle), 
 	margintop(cpy.margintop),
-	marginbottom(cpy.marginbottom)
+	marginbottom(cpy.marginbottom),
+	pagebreakbefore(cpy.pagebreakbefore),
+	pagebreakafter(cpy.pagebreakafter)
 {
 	
 }
@@ -92,7 +96,9 @@ CSSClass::CSSClass(CSSClass && mv) :
 	fontweight(move(mv.fontweight)),
 	fontstyle(move(mv.fontstyle)),
 	margintop(move(mv.margintop)),
-	marginbottom(move(mv.marginbottom))
+	marginbottom(move(mv.marginbottom)),
+	pagebreakbefore(move(mv.pagebreakbefore)),
+	pagebreakafter(move(mv.pagebreakafter))
 {
 	
 }
@@ -106,6 +112,8 @@ CSSClass& CSSClass::operator =(const CSSClass& cpy) {
 	fontstyle = cpy.fontstyle;
 	margintop = cpy.margintop;
 	marginbottom = cpy.marginbottom;
+	pagebreakbefore = cpy.pagebreakbefore; 
+	pagebreakafter = cpy.pagebreakafter; 
 	return *this;
 }
 
@@ -116,8 +124,10 @@ CSSClass& CSSClass::operator =(CSSClass && mv)  {
 	fontsize = move(mv.fontsize); 
 	fontweight = move(mv.fontweight); 
 	fontstyle = move(mv.fontstyle);
-	margintop = move(margintop);
-	marginbottom = move(marginbottom);
+	margintop = move(mv.margintop);
+	marginbottom = move(mv.marginbottom);
+	pagebreakbefore = move(mv.pagebreakbefore);
+	pagebreakafter = move(mv.pagebreakafter);
 	return *this;
 }
 
@@ -338,6 +348,14 @@ CSS::CSS(vector<path> _files) :
 								string match = regex_match_margin[1];
 								cssclass.marginbottom = stod(match, NULL); 
 							}
+						}
+						else if (attrname == "page-break-before") {
+							if(attrvalue == "always") cssclass.pagebreakbefore = true; 
+						
+						}
+						else if (attrname == "page-break-after") {
+							if(attrvalue == "always") cssclass.pagebreakafter = true; 
+						
 						}
 						
 					}
