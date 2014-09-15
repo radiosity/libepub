@@ -44,6 +44,7 @@ using std::regex_match;
 using std::sregex_iterator; 
 using std::smatch; 
 using std::numeric_limits; 
+using std::stod; 
 
 #ifdef DEBUG
 #include <iostream>
@@ -155,7 +156,9 @@ CSS::CSS(vector<path> _files) :
 	regex regex_classname ("([A-Za-z0-9\\.-]+)", regex::optimize); 
 	regex regex_atrule_single("^@.*;$", regex::optimize);
 	regex regex_atrule_multiple("^@.*\\{", regex::optimize);
-	regex regex_attr("([A-Za-z0-9-]+)\\s*:{1}\\s*(.*);", regex::optimize);
+	regex regex_attr("([A-Za-z0-9-]+)\\s*:{1}\\s*(.*)", regex::optimize);
+	regex regex_percent("([\\d\\.]+)%", regex::optimize);
+	regex regex_em("([\\d\\.]+)em", regex::optimize);
 	
 	for (path file : files) { 
 		
@@ -203,14 +206,21 @@ CSS::CSS(vector<path> _files) :
 						
 						//Check if the classname exists - if it does we need to update it. 
 						
+						if(classes.count(classname) != 0) {
+							//It exists! update it. 
+							
+							classes[classname].add(cssclass);
+						}
+						else {
+							cssclass.name = classname; 
 						
-						
+							classes.insert(pair<ustring, CSSClass>(classname, cssclass)); 
+						}
 					}
 					
-					/*
-					classes.insert(pair<ustring, CSSClass>(cssclass.name, cssclass));
-					cssclass = CSSClass("");
-					*/
+					cssclass = CSSClass();
+					
+					classnames.clear();
 					
 					class_is_open = false;
 					is_at_rule = false; 
@@ -278,6 +288,44 @@ CSS::CSS(vector<path> _files) :
 						cout << "\tCSS Attribute name: "  << attrname << endl; 
 						cout << "\tCSS Attribute value "  << attrvalue << endl; 
 						#endif
+						
+						if(attrname == "display") {
+							if(attrvalue == "block") cssclass.displaytype = DISPLAYTYPE_BLOCK; 
+						}
+						else if (attrname == "font-size") {
+							smatch regex_match_size; 
+							regex_search(attrvalue, regex_match_size, regex_em); 
+							if(regex_match_size.size() != 0) {
+								//it's of the form x.xem
+								double size = stod(regex_match_size[1], NULL); 
+								if(size < 1.0) cssclass.fontsize = FONTSIZE_SMALLER; 
+								else if(size == 1.0) cssclass.fontsize = FONTSIZE_NORMAL; 
+								else cssclass.fontsize = FONTSIZE_LARGER; 
+							}
+						}
+						else if (attrname == "font-weight") {
+							if(attrvalue == "bold") cssclass.fontweight = FONTWEIGHT_BOLD; 
+						}
+						else if (attrname == "font-style") {
+							if(attrvalue == "italic") cssclass.fontstyle = FONTSTYLE_ITALIC; 
+						
+						}
+						else if (attrname == "margin-top") {
+							smatch regex_match_margin; 
+							regex_search(attrvalue, regex_match_margin, regex_percent); 
+							if(regex_match_margin.size() != 0) {
+								string match = regex_match_margin[1];
+								cssclass.margintop = stod(match, NULL); 
+							}
+						}
+						else if (attrname == "margin-bottom") {
+							smatch regex_match_margin; 
+							regex_search(attrvalue, regex_match_margin, regex_percent); 
+							if(regex_match_margin.size() != 0) {
+								string match = regex_match_margin[1];
+								cssclass.marginbottom = stod(match, NULL); 
+							}
+						}
 						
 					}
 					
