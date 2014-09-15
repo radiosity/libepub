@@ -119,7 +119,7 @@ namespace
 	ustring __id = ""; 
 
 	//This whole method is fairly awful. 
-	pair<ustring, ustring> __recursive_strip(vector<ContentItem> & items, const path file, const Node * const node) {
+	pair<ustring, ustring> __recursive_strip(vector<ContentItem> & items, const CSS& classes, const path file, const Node * const node) {
 		
 		const TextNode * nodeText = dynamic_cast<const TextNode*>(node);
 		
@@ -153,7 +153,7 @@ namespace
 			
 			if(childText) {
 				
-				pair<ustring, ustring> res = __recursive_strip(items, file, childNode);
+				pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 				value += res.first; 
 				value_stripped += res.second; 
 				
@@ -165,51 +165,51 @@ namespace
 				
 				if(childname.compare("i") == 0) {
 					//italic. 
-					pair<ustring, ustring> res = __recursive_strip(items, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("i", res.first); 
 					value_stripped += res.second; 
 				}
 				else if(childname.compare("b") == 0) {
 					//bold;
-					pair<ustring, ustring> res = __recursive_strip(items, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("b", res.first); 
 					value_stripped += res.second; 
 				}
 				else if(childname.compare("big") == 0) {
-					pair<ustring, ustring> res = __recursive_strip(items, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("big", res.first); 
 					value_stripped += res.second; 
 				}
 				else if(childname.compare("s") == 0) {
 					//strikethrough
-					pair<ustring, ustring> res = __recursive_strip(items, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("s", res.first); 
 					value_stripped += res.second; 
 				}
 				else if(childname.compare("sub") == 0) {
-					pair<ustring, ustring> res = __recursive_strip(items, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("sub", res.first); 
 					value_stripped += res.second; 
 				}
 				else if(childname.compare("sup") == 0) {
-					pair<ustring, ustring> res = __recursive_strip(items, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("sup", res.first); 
 					value_stripped += res.second; 
 				}
 				else if(childname.compare("small") == 0) {
-					pair<ustring, ustring> res = __recursive_strip(items, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("i", res.first); 
 					value_stripped += res.second; 
 				}
 				else if(childname.compare("tt") == 0) {
 					//monospace
-					pair<ustring, ustring> res = __recursive_strip(items, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("tt", res.first); 
 					value_stripped += res.second; 
 				}
 				else if(childname.compare("u") == 0) {
 					//underline
-					pair<ustring, ustring> res = __recursive_strip(items, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("u", res.first); 
 					value_stripped += res.second; 
 				}
@@ -217,14 +217,38 @@ namespace
 					//specific bheaviour for stripping hyperlinks within the text. 
 					//I suspect that I'll have to come back to this, but at the moment I'm 
 					//not completely sure how to handle it. 
-					pair<ustring, ustring> res = __recursive_strip(items, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += res.first; 
 					value_stripped += res.second; 
 				}
 				else if(childname.compare("span") == 0) {
 					//specific bheaviour for stripping span tags
-					pair<ustring, ustring> res = __recursive_strip(items, file, childNode);
-					value += res.first; 
+					
+					//Try to find a class attribute. 
+					CSSClass tmp; 
+					const auto attributes = childElement->get_attributes();
+					for(auto iter = attributes.begin(); iter != attributes.end(); ++iter)
+					{
+						const Attribute* attribute = *iter;
+						if(attribute->get_name().compare("class") == 0) {
+							//We've found a class here. 
+							ustring cname = attribute->get_value();
+							//Need to do this better in the future:
+							tmp = classes.get_class(ustring(".") + cname);
+						}
+						
+					}
+					
+					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+					if(tmp.fontweight == FONTWEIGHT_BOLD) {
+						value += __create_text("b", res.first); 
+					}
+					else if (tmp.fontstyle == FONTSTYLE_ITALIC) {
+						value += __create_text("i", res.first); 
+					}
+					else {
+						value += res.first; 
+					}
 					value_stripped += res.second; 
 				}
 				else if(childname.compare("hr") == 0)  {
@@ -232,7 +256,11 @@ namespace
 					//a <p> tag. 
 					
 					ContentType ct = HR;
-					ContentItem ci(ct, file, __id, "", "");
+					
+					//See if we can find a CSS class for this. 
+					CSSClass cssclass = classes.get_class("hr");
+					
+					ContentItem ci(ct, cssclass, file, __id, "", "");
 					items.push_back(ci);
 					
 					value = "";
@@ -248,7 +276,7 @@ namespace
 		
 	}
 
-	void __recursive_find(vector<ContentItem> & items, const path file, const Node * const node) {
+	void __recursive_find(vector<ContentItem> & items, const CSS& classes, const path file, const Node * const node) {
 		
 		const auto nlist = node->get_children();
 		
@@ -267,23 +295,30 @@ namespace
 				tmpnodename.compare("h1") != 0 &&
 				tmpnodename.compare("h2") != 0 &&
 				tmpnodename.compare("hr") != 0) {
-					__recursive_find(items, file, ntmp);
+					__recursive_find(items, classes, file, ntmp);
 			}		
 			else {
 				
 				ContentType ct = P;
 				
+				//Try to get a class for the content type. 
+				CSSClass cssclass; 
+				
 				if(tmpnode->get_name().compare("p") == 0) {
 					ct = P;
+					cssclass = classes.get_class("p");
 				}
 				else if (tmpnode->get_name().compare("h1") == 0) {
 					ct = H1;
+					cssclass = classes.get_class("h1");
 				}
 				else if (tmpnode->get_name().compare("h2") == 0) {
 					ct = H2;
+					cssclass = classes.get_class("h2");
 				}
 				else if (tmpnode->get_name().compare("hr") == 0) {
 					ct = HR;
+					cssclass = classes.get_class("hr");
 				}
 				
 				const auto attributes = tmpnode->get_attributes();
@@ -292,9 +327,16 @@ namespace
 					const Attribute* attribute = *iter;
 					
 					if(attribute->get_name().compare("id") == 0) __id = attribute->get_value();
+					if(attribute->get_name().compare("class") == 0) {
+						//We've found an additional class here. 
+						ustring cname = attribute->get_value();
+						CSSClass tmp = classes.get_class(cname);
+						cssclass.add(tmp);
+					}
+					
 				}
 				
-				pair<ustring, ustring> content = __recursive_strip(items, file, ntmp);
+				pair<ustring, ustring> content = __recursive_strip(items, classes, file, ntmp);
 						
 				if(content.first.compare("") == 0 && ct != HR) continue; 
 						
@@ -304,7 +346,7 @@ namespace
 				cout << " \t " << content.second << endl; 
 				#endif			
 				
-				ContentItem ci(ct, file, __id, content.first, content.second);
+				ContentItem ci(ct, cssclass, file, __id, content.first, content.second);
 				
 				items.push_back(ci);
 			
@@ -356,7 +398,7 @@ Content::Content(CSS& _classes, vector<path> _files) :
 		
 			if(tmpnode->get_name().compare("body") == 0)  {
 				
-				__recursive_find(items, file, ntmp);
+				__recursive_find(items, classes, file, ntmp);
 				
 			}
 			

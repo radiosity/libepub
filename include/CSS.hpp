@@ -135,7 +135,7 @@ class CSS {
 		CSS& operator =(const CSS& cpy);
 		CSS& operator =(CSS && mv);
 	
-		CSSClass get_class(ustring name); 
+		CSSClass get_class(ustring name) const; 
 			
 		~CSS();
 	

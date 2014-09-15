@@ -383,14 +383,14 @@ CSS& CSS::operator =(CSS && mv)  {
 
 CSS::~CSS() { }
 
-CSSClass CSS::get_class(ustring name) {
+CSSClass CSS::get_class(ustring name) const {
 	
 	if(classes.count(name) == 0) {
 		//It doesn't exist in the database. Return a CSSClass with all defaults. 
 		return CSSClass(); 
 	}
 	else {
-		return classes[name];
+		return classes.at(name);
 	}
 	
 }
