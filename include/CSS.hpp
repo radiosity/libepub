@@ -108,6 +108,7 @@ class CSSClass {
 		double marginbottom; 
 	
 	CSSClass();
+	CSSClass(ustring name); 
 	
 	CSSClass(CSSClass const & cpy);
 	CSSClass(CSSClass && mv) ;
@@ -132,7 +133,9 @@ class CSS {
 		CSS(CSS const & cpy);
 		CSS(CSS && mv) ;
 		CSS& operator =(const CSS& cpy);
-		CSS& operator =(CSS && mv) ;
+		CSS& operator =(CSS && mv);
+	
+		CSSClass get_class(ustring name); 
 			
 		~CSS();
 	

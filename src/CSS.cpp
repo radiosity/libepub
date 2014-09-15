@@ -53,7 +53,13 @@ using std::endl;
 #endif
 
 CSSClass::CSSClass() :
-	name(""), 
+	CSSClass("")
+{
+	
+}
+
+CSSClass::CSSClass(ustring _name) : 
+	name(_name), 
 	raw_pairs(),
 	displaytype(DISPLAYTYPE_INLINE), 
 	fontsize(FONTSIZE_NORMAL),
@@ -376,3 +382,15 @@ CSS& CSS::operator =(CSS && mv)  {
 }
 
 CSS::~CSS() { }
+
+CSSClass CSS::get_class(ustring name) {
+	
+	if(classes.count(name) == 0) {
+		//It doesn't exist in the database. Return a CSSClass with all defaults. 
+		return CSSClass(); 
+	}
+	else {
+		return classes[name];
+	}
+	
+}

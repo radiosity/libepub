@@ -44,8 +44,9 @@ using std::endl;
 using namespace boost::filesystem;
 using namespace xmlpp;
 
-ContentItem::ContentItem(ContentType _type, path _file, ustring _id, ustring _content, ustring _stripped_content) :
+ContentItem::ContentItem(ContentType _type, CSSClass _cssclass, path _file, ustring _id, ustring _content, ustring _stripped_content) :
 	type(_type), 
+	cssclass(_cssclass),
 	file(_file),
 	id(_id),
 	content(_content), 
@@ -56,6 +57,7 @@ ContentItem::ContentItem(ContentType _type, path _file, ustring _id, ustring _co
 		
 ContentItem::ContentItem(ContentItem const & cpy)  :
 	type(cpy.type),
+	cssclass(cpy.cssclass),
 	file(cpy.file),
 	id(cpy.id),
 	content(cpy.content), 
@@ -66,6 +68,7 @@ ContentItem::ContentItem(ContentItem const & cpy)  :
 
 ContentItem::ContentItem(ContentItem && mv)  :
 	type(move(mv.type)),
+	cssclass(move(mv.cssclass)),
 	file(move(mv.file)),
 	id(move(mv.id)),
 	content(move(mv.content)),
@@ -76,6 +79,7 @@ ContentItem::ContentItem(ContentItem && mv)  :
 
 ContentItem& ContentItem::operator =(const ContentItem& cpy) {
 	type = cpy.type;
+	cssclass = cpy.cssclass;
 	file = cpy.file; 
 	id = cpy.id; 
 	content = cpy.content;
@@ -85,6 +89,7 @@ ContentItem& ContentItem::operator =(const ContentItem& cpy) {
 
 ContentItem& ContentItem::operator =(ContentItem && mv)  {
 	type = move(mv.type);
+	cssclass = move(mv.cssclass);
 	file = move(mv.file);
 	id = move(mv.id);
 	content = move(mv.content);
