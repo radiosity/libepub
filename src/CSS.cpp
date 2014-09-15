@@ -147,6 +147,13 @@ void CSSClass::add ( const CSSClass& rhs ) {
 	
 }
 
+CSS::CSS() :
+	files(), 
+	classes()
+{
+	
+}
+
 CSS::CSS(vector<path> _files) : 
 	files(_files), 
 	classes()	

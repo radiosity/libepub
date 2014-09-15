@@ -183,7 +183,7 @@ Epub::Epub(string _filename) :
 		
 		}
 		
-		CSS classes(cssfiles);
+		css = CSS(cssfiles);
 		
 		vector<path> contentfiles; 
 		
@@ -203,7 +203,7 @@ Epub::Epub(string _filename) :
 			
 		}
 		
-		Content content(contentfiles);
+		Content content(css, contentfiles);
 			
 		contents.push_back(content);
 		

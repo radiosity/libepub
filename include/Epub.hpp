@@ -53,6 +53,7 @@ class Epub {
 	
 		Container container; 
 		vector<OPF> opf_files;
+		CSS css; 
 		vector<Content> contents;
 	
 		Epub(string _filename);

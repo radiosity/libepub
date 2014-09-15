@@ -310,7 +310,8 @@ namespace
 	}
 } // end anonymous namespace
 
-Content::Content(vector<path> _files) :
+Content::Content(CSS& _classes, vector<path> _files) :
+	classes(_classes),
 	files(_files)
 {
 	
@@ -360,6 +361,7 @@ Content::Content(vector<path> _files) :
 }
 
 Content::Content(Content const & cpy) :
+	classes(cpy.classes),
 	files(cpy.files), 
 	items(cpy.items)
 {
@@ -367,6 +369,7 @@ Content::Content(Content const & cpy) :
 }
 
 Content::Content(Content && mv) :
+	classes(mv.classes),
 	files(move(mv.files)),
 	items(move(mv.items))
 {
@@ -374,6 +377,7 @@ Content::Content(Content && mv) :
 }
 
 Content& Content::operator =(const Content& cpy) { 
+	classes = cpy.classes;
 	files = cpy.files;
 	items = cpy.items;
 	return *this; 
@@ -381,6 +385,7 @@ Content& Content::operator =(const Content& cpy) {
 }
 
 Content& Content::operator =(Content && mv) {
+	classes = mv.classes;
 	files = move(mv.files); 
 	items = move(mv.items);
 	return *this;

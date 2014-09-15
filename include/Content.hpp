@@ -34,6 +34,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/flyweight.hpp>
 #include <glibmm.h>
 
+#include "CSS.hpp"
+
 using std::vector; 
 
 using namespace boost::filesystem;
@@ -69,10 +71,11 @@ class ContentItem {
 class Content {
 	
 	public :
+		CSS& classes; 
 		vector<path> files; 
 		vector<ContentItem> items; 
 	
-		Content(vector<path> files);
+		Content(CSS& _classes, vector<path> files);
 		
 		Content(Content const & cpy);
 		Content(Content && mv) ;

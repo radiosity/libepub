@@ -126,6 +126,7 @@ class CSS {
 		vector <path> files; 
 		map <ustring, CSSClass> classes;
 	
+		CSS();
 		CSS(vector<path> files);
 		
 		CSS(CSS const & cpy);
