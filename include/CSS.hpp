@@ -69,7 +69,6 @@ margin-top : take percentage
 margin-bottom : take percentage. 
     
 SHOULD ALSO DO 
-text-align: left|right|center|justify|initial|inherit;
 text-indent (in percentage)
     
 */
@@ -115,6 +114,7 @@ class CSSClass {
 		bool pagebreakbefore; 
 		bool pagebreakafter; 
 		TextAlign textalign; 
+		double textindent;
 	
 	CSSClass();
 	CSSClass(ustring name); 

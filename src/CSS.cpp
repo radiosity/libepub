@@ -69,7 +69,8 @@ CSSClass::CSSClass(ustring _name) :
 	marginbottom(numeric_limits<double>::min()), 
 	pagebreakbefore(false),
 	pagebreakafter(false), 
-	textalign(TEXTALIGN_LEFT)
+	textalign(TEXTALIGN_LEFT),
+	textindent(numeric_limits<double>::min())
 {
 	
 }
@@ -85,7 +86,8 @@ CSSClass::CSSClass(CSSClass const & cpy) :
 	marginbottom(cpy.marginbottom),
 	pagebreakbefore(cpy.pagebreakbefore),
 	pagebreakafter(cpy.pagebreakafter),
-	textalign(cpy.textalign)
+	textalign(cpy.textalign), 
+	textindent(cpy.textindent)
 {
 	
 }
@@ -101,7 +103,8 @@ CSSClass::CSSClass(CSSClass && mv) :
 	marginbottom(move(mv.marginbottom)),
 	pagebreakbefore(move(mv.pagebreakbefore)),
 	pagebreakafter(move(mv.pagebreakafter)),
-	textalign(move(mv.textalign))
+	textalign(move(mv.textalign)),
+	textindent(move(mv.textindent))
 {
 	
 }
@@ -118,6 +121,7 @@ CSSClass& CSSClass::operator =(const CSSClass& cpy) {
 	pagebreakbefore = cpy.pagebreakbefore; 
 	pagebreakafter = cpy.pagebreakafter; 
 	textalign = cpy.textalign;
+	textindent = cpy.textindent; 
 	return *this;
 }
 
@@ -133,6 +137,7 @@ CSSClass& CSSClass::operator =(CSSClass && mv)  {
 	pagebreakbefore = move(mv.pagebreakbefore);
 	pagebreakafter = move(mv.pagebreakafter);
 	textalign = move(mv.textalign);
+	textindent = move(mv.textindent);
 	return *this;
 }
 
@@ -377,6 +382,14 @@ CSS::CSS(vector<path> _files) :
 							if(attrvalue == "right") cssclass.textalign = TEXTALIGN_RIGHT; 
 							else if(attrvalue == "center") cssclass.textalign = TEXTALIGN_CENTER; 
 							else cssclass.textalign = TEXTALIGN_LEFT; 
+						}
+						else if (attrname == "text-indent") {
+							smatch regex_match_margin; 
+							regex_search(attrvalue, regex_match_margin, regex_percent); 
+							if(regex_match_margin.size() != 0) {
+								string match = regex_match_margin[1];
+								cssclass.textindent = stod(match, NULL); 
+							}
 						}
 						
 					}
