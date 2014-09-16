@@ -69,7 +69,7 @@ margin-top : take percentage
 margin-bottom : take percentage. 
     
 SHOULD ALSO DO 
-text-align auto|always|avoid|left|right|initial|inherit;
+text-align: left|right|center|justify|initial|inherit;
 text-indent (in percentage)
     
 */
@@ -95,6 +95,12 @@ enum FontStyle {
 	FONTSTYLE_ITALIC
 };
 
+enum TextAlign {
+	TEXTALIGN_LEFT,  //DEFAULT
+	TEXTALIGN_RIGHT,
+	TEXTALIGN_CENTER
+};
+
 class CSSClass {
 	
 	public:
@@ -108,6 +114,7 @@ class CSSClass {
 		double marginbottom; 
 		bool pagebreakbefore; 
 		bool pagebreakafter; 
+		TextAlign textalign; 
 	
 	CSSClass();
 	CSSClass(ustring name); 

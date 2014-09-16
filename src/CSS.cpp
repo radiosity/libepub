@@ -68,7 +68,8 @@ CSSClass::CSSClass(ustring _name) :
 	margintop(numeric_limits<double>::min()),
 	marginbottom(numeric_limits<double>::min()), 
 	pagebreakbefore(false),
-	pagebreakafter(false)
+	pagebreakafter(false), 
+	textalign(TEXTALIGN_LEFT)
 {
 	
 }
@@ -83,7 +84,8 @@ CSSClass::CSSClass(CSSClass const & cpy) :
 	margintop(cpy.margintop),
 	marginbottom(cpy.marginbottom),
 	pagebreakbefore(cpy.pagebreakbefore),
-	pagebreakafter(cpy.pagebreakafter)
+	pagebreakafter(cpy.pagebreakafter),
+	textalign(cpy.textalign)
 {
 	
 }
@@ -98,7 +100,8 @@ CSSClass::CSSClass(CSSClass && mv) :
 	margintop(move(mv.margintop)),
 	marginbottom(move(mv.marginbottom)),
 	pagebreakbefore(move(mv.pagebreakbefore)),
-	pagebreakafter(move(mv.pagebreakafter))
+	pagebreakafter(move(mv.pagebreakafter)),
+	textalign(move(mv.textalign))
 {
 	
 }
@@ -114,6 +117,7 @@ CSSClass& CSSClass::operator =(const CSSClass& cpy) {
 	marginbottom = cpy.marginbottom;
 	pagebreakbefore = cpy.pagebreakbefore; 
 	pagebreakafter = cpy.pagebreakafter; 
+	textalign = cpy.textalign;
 	return *this;
 }
 
@@ -128,6 +132,7 @@ CSSClass& CSSClass::operator =(CSSClass && mv)  {
 	marginbottom = move(mv.marginbottom);
 	pagebreakbefore = move(mv.pagebreakbefore);
 	pagebreakafter = move(mv.pagebreakafter);
+	textalign = move(mv.textalign);
 	return *this;
 }
 
@@ -367,6 +372,11 @@ CSS::CSS(vector<path> _files) :
 						else if (attrname == "page-break-after") {
 							if(attrvalue == "always") cssclass.pagebreakafter = true; 
 						
+						}
+						else if (attrname == "text-align") {
+							if(attrvalue == "right") cssclass.textalign = TEXTALIGN_RIGHT; 
+							else if(attrvalue == "center") cssclass.textalign = TEXTALIGN_CENTER; 
+							else cssclass.textalign = TEXTALIGN_LEFT; 
 						}
 						
 					}
