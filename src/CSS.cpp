@@ -349,6 +349,17 @@ CSS::CSS(vector<path> _files) :
 								cssclass.marginbottom = stod(match, NULL); 
 							}
 						}
+						else if (attrname == "margin") {
+							//to set them all. 
+							smatch regex_match_margin; 
+							regex_search(attrvalue, regex_match_margin, regex_percent); 
+							if(regex_match_margin.size() != 0) {
+								string match = regex_match_margin[1];
+								double margin = stod(match, NULL); 
+								cssclass.marginbottom = margin; 
+								cssclass.margintop = margin; 
+							}
+						}
 						else if (attrname == "page-break-before") {
 							if(attrvalue == "always") cssclass.pagebreakbefore = true; 
 						
