@@ -215,6 +215,8 @@ void Container::save_to(sqlite3 * const db) {
 		
 	}
 	
+	sqlite3_finalize(container_insert); 
+	
 }
 
 
