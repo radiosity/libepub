@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <boost/filesystem.hpp>
 #include <glibmm.h>
+#include <sqlite3.h> 
 
 using std::vector;
 
@@ -71,6 +72,7 @@ class Container {
 		~Container();
 	
 		void load(path to_dir);
+		void save_to(sqlite3 * const db); 
 	
 };
 
