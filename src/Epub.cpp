@@ -302,7 +302,7 @@ void Epub::save_to(sqlite3 * const db) {
 	const string table_sql = "CREATE TABLE IF NOT EXISTS epub_files("  \
 						"epub_file_id INTEGER PRIMARY KEY," \
 						"filename TEXT NOT NULL," \
-						"hash INT NOT NULL," \
+						"hash INTEGER NOT NULL," \
 						"hash_string TEXT NOT NULL) ;";
 	
 	sqlite3_exec(db, table_sql.c_str(), NULL, NULL, &errmsg);

@@ -456,24 +456,24 @@ void OPF::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	char* errmsg;
 	
 	const string metadata_table_sql = "CREATE TABLE IF NOT EXISTS metadata("  \
-						"metadata_id INT PRIMARY KEY," \
-						"epub_file_id INT NOT NULL," \
-						"opf_id INT NOT NULL," \
-						"metadata_type INT NOT NULL," \
+						"metadata_id INTEGER PRIMARY KEY," \
+						"epub_file_id INTEGER NOT NULL," \
+						"opf_id INTEGER NOT NULL," \
+						"metadata_type INTEGER NOT NULL," \
 						"contents TEXT NOT NULL) ;";
 	
 	sqlite3_exec(db, metadata_table_sql.c_str(), NULL, NULL, &errmsg);
 	
 	const string metadata_tags_table_sql = "CREATE TABLE IF NOT EXISTS metadata_tags("  \
-						"metadata_id INT NOT NULL," \
+						"metadata_id INTEGER NOT NULL," \
 						"tagname TEXT NOT NULL," \
 						"tagvalue TEXT NOT NULL) ;";
 	
 	sqlite3_exec(db, metadata_tags_table_sql.c_str(), NULL, NULL, &errmsg);
 	
 	const string manifest_table_sql = "CREATE TABLE IF NOT EXISTS manifest("  \
-						"epub_file_id INT NOT NULL," \
-						"opf_id INT NOT NULL," \
+						"epub_file_id INTEGER NOT NULL," \
+						"opf_id INTEGER NOT NULL," \
 						"href TEXT NOT NULL," \
 						"id TEXT NOT NULL," \
 						"media_type TEXT NOT NULL) ;";
@@ -481,10 +481,10 @@ void OPF::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	sqlite3_exec(db, manifest_table_sql.c_str(), NULL, NULL, &errmsg);
 	
 	const string spine_table_sql = "CREATE TABLE IF NOT EXISTS spine("  \
-						"epub_file_id INT NOT NULL," \
-						"opf_id INT NOT NULL," \
+						"epub_file_id INTEGER NOT NULL," \
+						"opf_id INTEGER NOT NULL," \
 						"idref TEXT NOT NULL," \
-						"linear INT NOT NULL) ;";
+						"linear INTEGER NOT NULL) ;";
 	
 	sqlite3_exec(db, spine_table_sql.c_str(), NULL, NULL, &errmsg);
 	

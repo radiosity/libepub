@@ -192,7 +192,7 @@ void Container::save_to(sqlite3 * const db, const unsigned int epub_file_id) {
 	char* errmsg;
 	
 	const string table_sql = "CREATE TABLE container("  \
-						"epub_file_id INT NOT NULL," \
+						"epub_file_id INTEGER NOT NULL," \
 						"media_type TEXT NOT NULL," \
 						"full_path TEXT NOT NULL) ;";
 	
