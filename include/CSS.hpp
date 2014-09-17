@@ -69,7 +69,6 @@ margin-top : take percentage
 margin-bottom : take percentage. 
     
 SHOULD ALSO DO 
-text-indent (in percentage)
     
 */
 
