@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <utility>
 #include <exception>
+#include <string>
 
 using std::vector;
 using std::move;
@@ -46,6 +47,7 @@ using std::endl;
 using namespace boost::filesystem;
 using namespace Glib;
 using namespace xmlpp;
+using std::string; 
 
 RootFile::RootFile(ustring _m, ustring _f)  : media_type(_m), full_path(_f) {
 	
@@ -184,7 +186,36 @@ Container& Container::operator =(Container && mv) {
 
 Container::~Container() {}
 
+void Container::save_to(sqlite3 * const db) {
+	
+	int rc; 
+	char* errmsg;
+	
+	const string table_sql = "CREATE TABLE container("  \
+						"media_type TEXT NOT NULL," \
+						"full_path TEXT NOT NULL) ;";
+	
+	sqlite3_exec(db, table_sql.c_str(), NULL, NULL, &errmsg);
+	
+	//Table created. 
+	
+	const string container_insert_sql = "INSERT INTO container (media_type, full_path) VALUES (?, ?);";
+	sqlite3_stmt * container_insert; 
+	
+	rc = sqlite3_prepare_v2(db, container_insert_sql.c_str(), -1, &container_insert, 0);
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) throw -1;
+	
+	for(auto rootfile : rootfiles) {
+		
+		sqlite3_bind_text(container_insert, 1, rootfile.media_type.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(container_insert, 2, rootfile.full_path.c_str(), -1, SQLITE_STATIC);
 
+		int result = sqlite3_step(container_insert);
+		if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
+		
+	}
+	
+}
 
 
 

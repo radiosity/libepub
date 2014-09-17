@@ -297,6 +297,7 @@ void Epub::save_to(sqlite3 * const db) {
 	//Do all the following inserts in an SQLite Transaction, because this speeds up the inserts like crazy. 
 	sqlite3_exec(db, "BEGIN TRANSACTION", NULL, NULL, &errmsg);
 	
+	container.save_to(db);
 	
 	sqlite3_exec(db, "END TRANSACTION", NULL, NULL, &errmsg);
 	
