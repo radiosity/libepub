@@ -292,16 +292,11 @@ Epub::~Epub() {
 
 void Epub::save_to(sqlite3 * const db) {
 
+	int rc; 
 	char* errmsg;
 	
 	//Do all the following inserts in an SQLite Transaction, because this speeds up the inserts like crazy. 
 	sqlite3_exec(db, "BEGIN TRANSACTION", NULL, NULL, &errmsg);
-	
-	string filename; 
-		size_t hash; 
-		string hash_string; 
-	
-		path directory_path; 
 	
 	//First, write a little high-level information to the database.
 	const string table_sql = "CREATE TABLE IF NOT EXISTS files("  \
@@ -321,7 +316,7 @@ void Epub::save_to(sqlite3 * const db) {
 	if(rc != SQLITE_OK && rc != SQLITE_DONE) throw -1;
 	
 	sqlite3_bind_text(files_insert, 1, filename.c_str(), -1, SQLITE_STATIC);
-	sqlite3_bind_int(files_insert, 2, hash;
+	sqlite3_bind_int(files_insert, 2, hash);
 	sqlite3_bind_text(files_insert, 3, hash_string.c_str(), -1, SQLITE_STATIC);
 
 	int result = sqlite3_step(files_insert);
