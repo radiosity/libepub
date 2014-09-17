@@ -300,7 +300,7 @@ void Epub::save_to(sqlite3 * const db) {
 	
 	//First, write a little high-level information to the database.
 	const string table_sql = "CREATE TABLE IF NOT EXISTS epub_files("  \
-						"epub_file_id INT PRIMARY KEY," \
+						"epub_file_id INTEGER PRIMARY KEY," \
 						"filename TEXT NOT NULL," \
 						"hash INT NOT NULL," \
 						"hash_string TEXT NOT NULL) ;";
