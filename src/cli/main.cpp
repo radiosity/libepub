@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 #include <stdlib.h>
-
+#include <sqlite3.h> 
 
 #include "Epub.hpp"
 
@@ -45,4 +45,16 @@ int main(int argc, char * argv[]) {
 	
 	Epub book(argv[1]);
 	
+	sqlite3 * db; 
+	int rc;
+
+	rc = sqlite3_open("database", &db);
+
+	if( rc ){
+		//Failed to open
+	}
+	
+	book.save_to(db);
+	
+	sqlite3_close(db);
 }

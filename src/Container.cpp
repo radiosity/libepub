@@ -215,6 +215,8 @@ void Container::save_to(sqlite3 * const db, const unsigned int books_id) {
 		int result = sqlite3_step(container_insert);
 		if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
 		
+		sqlite3_reset(container_insert);
+		
 	}
 	
 	sqlite3_finalize(container_insert); 

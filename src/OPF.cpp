@@ -507,17 +507,21 @@ void OPF::save_to(sqlite3 * const db, const unsigned int books_id, const unsigne
 		int result = sqlite3_step(metadata_insert);
 		if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
 		
+		sqlite3_reset(metadata_insert);
+		
 		//get the new id:
 		auto key = sqlite3_last_insert_rowid(db);
 		
 		for(auto tags : mi.second.other_tags) {
 			
 			sqlite3_bind_int(metadata_tags_insert, 1, key);
-			sqlite3_bind_text(metadata_tags_insert, 3, tags.second.c_str(), -1, SQLITE_STATIC);
+			sqlite3_bind_text(metadata_tags_insert, 2, tags.first.c_str(), -1, SQLITE_STATIC);
 			sqlite3_bind_text(metadata_tags_insert, 3, tags.second.c_str(), -1, SQLITE_STATIC);
 			
 			int result = sqlite3_step(metadata_tags_insert);
 			if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
+			
+			sqlite3_reset(metadata_tags_insert);
 			
 		}
 		
@@ -534,6 +538,8 @@ void OPF::save_to(sqlite3 * const db, const unsigned int books_id, const unsigne
 		int result = sqlite3_step(manifest_insert);
 		if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
 		
+		sqlite3_reset(manifest_insert);
+		
 	}
 	
 	for (auto & si : spine) {
@@ -545,6 +551,8 @@ void OPF::save_to(sqlite3 * const db, const unsigned int books_id, const unsigne
 		
 		int result = sqlite3_step(spine_insert);
 		if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
+			
+		sqlite3_reset(spine_insert);
 		
 	}
 	
