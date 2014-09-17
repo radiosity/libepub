@@ -382,27 +382,39 @@ OPF::OPF(path to_dir, ustring file) {
 
 OPF::OPF(OPF const & cpy) :
 	to_file(cpy.to_file),
-	metadata(cpy.metadata)
+	metadata(cpy.metadata), 
+	manifest(cpy.manifest), 
+	spine(cpy.spine), 
+	spine_toc(cpy.spine_toc)
 {
 	
 }
 
 OPF::OPF(OPF && mv) : 
 	to_file(move(mv.to_file)),
-	metadata(move(mv.metadata))
+	metadata(move(mv.metadata)), 
+	manifest(move(mv.manifest)), 
+	spine(move(mv.spine)),
+	spine_toc(move(mv.spine_toc))
 {
 	
 }
 
 OPF& OPF::operator =(const OPF& cpy) {
 	to_file = cpy.to_file; 
-	metadata = cpy.metadata; 
+	metadata = cpy.metadata;
+	manifest = cpy.manifest; 
+	spine = cpy.spine; 
+	spine_toc = cpy.spine_toc;
 	return *this;
 }
 
 OPF& OPF::operator =(OPF && mv)  {
 	to_file = move(mv.to_file);
 	metadata = move(mv.metadata);
+	manifest = move(mv.manifest);
+	spine = move(mv.spine);
+	spine_toc = move(mv.spine_toc);
 	return *this; 
 }
 	
