@@ -331,7 +331,7 @@ void Epub::save_to(sqlite3 * const db) {
 	
 	unsigned int index = 0;
 	for(auto opf : opf_files) {
-		opf.save_to(db, index++); 
+		opf.save_to(db, key, index++); 
 	}
 	
 	sqlite3_exec(db, "END TRANSACTION", NULL, NULL, &errmsg);

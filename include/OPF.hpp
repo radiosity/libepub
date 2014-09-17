@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/filesystem.hpp>
 #include <utility>
 #include <glibmm.h>
+#include <sqlite3.h> 
 
 using std::multimap; 
 using std::string; 
@@ -159,6 +160,8 @@ class OPF {
 	
 		ManifestItem find_manifestitem_by_id(ustring id);
 		vector<ManifestItem> find_manifestitems_by_type(ustring type);
+	
+		void save_to(sqlite3 * const db, const unsigned int books_id, const unsigned int opf_index); 
 	
 };
 

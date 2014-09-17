@@ -437,3 +437,125 @@ vector<ManifestItem> OPF::find_manifestitems_by_type(ustring type) {
 	return results; 
 	
 }
+
+void OPF::save_to(sqlite3 * const db, const unsigned int books_id, const unsigned int opf_index) {
+	
+	int rc; 
+	char* errmsg;
+	
+	const string metadata_table_sql = "CREATE TABLE IF NOT EXISTS metadata("  \
+						"metadata_id INT PRIMARY KEY," \
+						"books_id INT NOT NULL," \
+						"opf_id INT NOT NULL," \
+						"metadata_type INT NOT NULL," \
+						"contents TEXT NOT NULL) ;";
+	
+	sqlite3_exec(db, metadata_table_sql.c_str(), NULL, NULL, &errmsg);
+	
+	const string metadata_tags_table_sql = "CREATE TABLE IF NOT EXISTS metadata_tags("  \
+						"metadata_id INT NOT NULL," \
+						"tagname TEXT NOT NULL," \
+						"tagvalue TEXT NOT NULL) ;";
+	
+	sqlite3_exec(db, metadata_tags_table_sql.c_str(), NULL, NULL, &errmsg);
+	
+	const string manifest_table_sql = "CREATE TABLE IF NOT EXISTS manifest("  \
+						"books_id INT NOT NULL," \
+						"opf_id INT NOT NULL," \
+						"href TEXT NOT NULL," \
+						"id TEXT NOT NULL," \
+						"media_type TEXT NOT NULL) ;";
+	
+	sqlite3_exec(db, manifest_table_sql.c_str(), NULL, NULL, &errmsg);
+	
+	const string spine_table_sql = "CREATE TABLE IF NOT EXISTS spine("  \
+						"books_id INT NOT NULL," \
+						"opf_id INT NOT NULL," \
+						"idref TEXT NOT NULL," \
+						"linear INT NOT NULL) ;";
+	
+	sqlite3_exec(db, spine_table_sql.c_str(), NULL, NULL, &errmsg);
+	
+	//Tables created. 
+	
+	sqlite3_stmt * metadata_insert;	
+	sqlite3_stmt * metadata_tags_insert;	
+	sqlite3_stmt * manifest_insert;	
+	sqlite3_stmt * spine_insert;	
+	
+	const string metadata_insert_sql = "INSERT INTO metadata (books_id, opf_id, metadata_type, contents) VALUES (?, ?, ?, ?);";
+	const string metadata_tags_insert_sql = "INSERT INTO metadata_tags (metadata_id, tagname, tagvalue) VALUES (?, ?, ?);";
+	const string manifest_insert_sql = "INSERT INTO manifest (books_id, opf_id, href, id, media_type) VALUES (?, ?, ?, ?, ?);";
+	const string spine_insert_sql = "INSERT INTO spine (books_id, opf_id, idref, linear) VALUES (?, ?, ?, ?);";
+	
+	rc = sqlite3_prepare_v2(db, metadata_insert_sql.c_str(), -1, &metadata_insert, 0);
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) throw -1;
+	rc = sqlite3_prepare_v2(db, metadata_tags_insert_sql.c_str(), -1, &metadata_tags_insert, 0);
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) throw -1;
+	rc = sqlite3_prepare_v2(db, manifest_insert_sql.c_str(), -1, &manifest_insert, 0);
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) throw -1;
+	rc = sqlite3_prepare_v2(db, spine_insert_sql.c_str(), -1, &spine_insert, 0);
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) throw -1;
+	
+	for(auto & mi : metadata) {
+		
+		sqlite3_bind_int(metadata_insert, 1, books_id);
+		sqlite3_bind_int(metadata_insert, 2, opf_index);
+		sqlite3_bind_int(metadata_insert, 3, mi.second.type);
+		sqlite3_bind_text(metadata_insert, 4, mi.second.contents.c_str(), -1, SQLITE_STATIC);
+
+		int result = sqlite3_step(metadata_insert);
+		if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
+		
+		//get the new id:
+		auto key = sqlite3_last_insert_rowid(db);
+		
+		for(auto tags : mi.second.other_tags) {
+			
+			sqlite3_bind_int(metadata_tags_insert, 1, key);
+			sqlite3_bind_text(metadata_tags_insert, 3, tags.second.c_str(), -1, SQLITE_STATIC);
+			sqlite3_bind_text(metadata_tags_insert, 3, tags.second.c_str(), -1, SQLITE_STATIC);
+			
+			int result = sqlite3_step(metadata_tags_insert);
+			if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
+			
+		}
+		
+	}
+	
+	for (auto & mi : manifest) {
+		
+		sqlite3_bind_int(manifest_insert, 1, books_id);
+		sqlite3_bind_int(manifest_insert, 2, opf_index);
+		sqlite3_bind_text(manifest_insert, 3, mi.second.href.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(manifest_insert, 4, mi.second.id.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(manifest_insert, 5, mi.second.media_type.c_str(), -1, SQLITE_STATIC);
+		
+		int result = sqlite3_step(manifest_insert);
+		if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
+		
+	}
+	
+	for (auto & si : spine) {
+		
+		sqlite3_bind_int(spine_insert, 1, books_id);
+		sqlite3_bind_int(spine_insert, 2, opf_index);
+		sqlite3_bind_text(spine_insert, 3, si.idref.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_int(spine_insert, 4, (int) si.linear);
+		
+		int result = sqlite3_step(spine_insert);
+		if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
+		
+	}
+	
+	//Create an index for the metadata tags
+	const string metadata_index_sql = "CREATE INDEX index_metadata_tags ON metadata_tags(metadata_id);";
+	sqlite3_exec(db, metadata_index_sql.c_str(), NULL, NULL, &errmsg);
+	
+	sqlite3_finalize(metadata_insert); 
+	sqlite3_finalize(metadata_tags_insert); 
+	sqlite3_finalize(manifest_insert); 
+	sqlite3_finalize(spine_insert); 
+	
+	
+}
