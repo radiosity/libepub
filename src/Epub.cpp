@@ -320,8 +320,6 @@ void Epub::save_to(sqlite3 * const db) {
 	rc = sqlite3_prepare_v2(db, files_insert_sql.c_str(), -1, &files_insert, 0);
 	if(rc != SQLITE_OK && rc != SQLITE_DONE) throw -1;
 	
-	auto mi = metadata.
-	
 	sqlite3_bind_text(files_insert, 1, filename.c_str(), -1, SQLITE_STATIC);
 	sqlite3_bind_int(files_insert, 2, hash;
 	sqlite3_bind_text(files_insert, 3, hash_string.c_str(), -1, SQLITE_STATIC);
