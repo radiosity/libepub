@@ -205,7 +205,7 @@ void Container::save_to(sqlite3 * const db) {
 	rc = sqlite3_prepare_v2(db, container_insert_sql.c_str(), -1, &container_insert, 0);
 	if(rc != SQLITE_OK && rc != SQLITE_DONE) throw -1;
 	
-	for(auto rootfile : rootfiles) {
+	for(auto & rootfile : rootfiles) {
 		
 		sqlite3_bind_text(container_insert, 1, rootfile.media_type.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(container_insert, 2, rootfile.full_path.c_str(), -1, SQLITE_STATIC);
