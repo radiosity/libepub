@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <utility>
 #include <vector>
 #include <cstdlib>
+#include <sqlite3.h> 
 
 #include "Container.hpp"
 #include "OPF.hpp"
@@ -64,6 +65,8 @@ class Epub {
 		Epub& operator =(Epub && mv);
 		
 		~Epub() ;
+	
+		void save_to(sqlite3 * const db); 
 	
 		static inline size_t compute_epub_hash(string _filename); 
 		

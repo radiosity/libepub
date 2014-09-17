@@ -290,3 +290,15 @@ Epub::~Epub() {
 	remove_all(directory_path);
 }
 
+void Epub::save_to(sqlite3 * const db) {
+
+	char* errmsg;
+	
+	//Do all the following inserts in an SQLite Transaction, because this speeds up the inserts like crazy. 
+	sqlite3_exec(db, "BEGIN TRANSACTION", NULL, NULL, &errmsg);
+	
+	
+	sqlite3_exec(db, "END TRANSACTION", NULL, NULL, &errmsg);
+	
+}
+
