@@ -327,7 +327,7 @@ void Epub::save_to(sqlite3 * const db) {
 	
 	sqlite3_finalize(files_insert); 
 	
-	container.save_to(db);
+	container.save_to(db, key);
 	
 	unsigned int index = 0;
 	for(auto opf : opf_files) {
