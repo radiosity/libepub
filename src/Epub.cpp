@@ -297,7 +297,49 @@ void Epub::save_to(sqlite3 * const db) {
 	//Do all the following inserts in an SQLite Transaction, because this speeds up the inserts like crazy. 
 	sqlite3_exec(db, "BEGIN TRANSACTION", NULL, NULL, &errmsg);
 	
+	string filename; 
+		size_t hash; 
+		string hash_string; 
+	
+		path directory_path; 
+	
+	//First, write a little high-level information to the database.
+	const string table_sql = "CREATE TABLE IF NOT EXISTS files("  \
+						"bookid INT PRIMARY KEY," \
+						"filename TEXT NOT NULL," \
+						"hash INT NOT NULL," \
+						"hash_string TEXT NOT NULL) ;";
+	
+	sqlite3_exec(db, table_sql.c_str(), NULL, NULL, &errmsg);
+	
+	//Table created. 
+	
+	const string files_insert_sql = "INSERT INTO files (filename, hash, hash_string) VALUES (?, ?, ?);";
+	sqlite3_stmt * files_insert; 
+	
+	rc = sqlite3_prepare_v2(db, files_insert_sql.c_str(), -1, &files_insert, 0);
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) throw -1;
+	
+	auto mi = metadata.
+	
+	sqlite3_bind_text(files_insert, 1, filename.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_int(files_insert, 2, hash;
+	sqlite3_bind_text(files_insert, 3, hash_string.c_str(), -1, SQLITE_STATIC);
+
+	int result = sqlite3_step(files_insert);
+	if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
+	
+	//get the new id:
+	auto key = sqlite3_last_insert_rowid(db);
+	
+	sqlite3_finalize(files_insert); 
+	
 	container.save_to(db);
+	
+	unsigned int index = 0;
+	for(auto opf : opf_files) {
+		opf.save_to(db, index++); 
+	}
 	
 	sqlite3_exec(db, "END TRANSACTION", NULL, NULL, &errmsg);
 	
