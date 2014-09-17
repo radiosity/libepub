@@ -299,8 +299,8 @@ void Epub::save_to(sqlite3 * const db) {
 	sqlite3_exec(db, "BEGIN TRANSACTION", NULL, NULL, &errmsg);
 	
 	//First, write a little high-level information to the database.
-	const string table_sql = "CREATE TABLE IF NOT EXISTS files("  \
-						"bookid INT PRIMARY KEY," \
+	const string table_sql = "CREATE TABLE IF NOT EXISTS epub_files("  \
+						"epub_file_id INT PRIMARY KEY," \
 						"filename TEXT NOT NULL," \
 						"hash INT NOT NULL," \
 						"hash_string TEXT NOT NULL) ;";
@@ -309,7 +309,7 @@ void Epub::save_to(sqlite3 * const db) {
 	
 	//Table created. 
 	
-	const string files_insert_sql = "INSERT INTO files (filename, hash, hash_string) VALUES (?, ?, ?);";
+	const string files_insert_sql = "INSERT INTO files (epub_file_id, hash, hash_string) VALUES (?, ?, ?);";
 	sqlite3_stmt * files_insert; 
 	
 	rc = sqlite3_prepare_v2(db, files_insert_sql.c_str(), -1, &files_insert, 0);

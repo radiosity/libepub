@@ -161,7 +161,7 @@ class OPF {
 		ManifestItem find_manifestitem_by_id(ustring id);
 		vector<ManifestItem> find_manifestitems_by_type(ustring type);
 	
-		void save_to(sqlite3 * const db, const unsigned int books_id, const unsigned int opf_index); 
+		void save_to(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index); 
 	
 };
 
