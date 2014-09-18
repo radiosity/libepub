@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <glibmm.h>
 #include <map>
 #include <vector>
+#include <sqlite3.h> 
 
 using Glib::ustring; 
 
@@ -146,6 +147,8 @@ class CSS {
 		CSSClass get_class(ustring name) const; 
 			
 		~CSS();
+	
+		void save_to(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index); 
 	
 };
 

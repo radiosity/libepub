@@ -152,6 +152,10 @@ void CSSClass::add ( const CSSClass& rhs ) {
 	if(rhs.fontstyle != FONTSTYLE_NORMAL) fontstyle = rhs.fontstyle; 
 	if(rhs.margintop != numeric_limits<double>::min()) margintop = rhs.margintop; 
 	if(rhs.marginbottom != numeric_limits<double>::min()) marginbottom = rhs.marginbottom; 
+	if(rhs.pagebreakbefore != false) pagebreakbefore = true; 
+	if(rhs.pagebreakafter != false) pagebreakafter = true; 
+	if(rhs.textalign != TEXTALIGN_LEFT) textalign = rhs.textalign; 
+	if(rhs.textindent != numeric_limits<double>::min()) textindent = rhs.textindent; 
 	
 	//Now lets do the map of raw
 	//tags
@@ -189,7 +193,7 @@ CSS::CSS(vector<path> _files) :
 	regex regex_classname ("([A-Za-z0-9\\.-]+)", regex::optimize); 
 	regex regex_atrule_single("^@.*;$", regex::optimize);
 	regex regex_atrule_multiple("^@.*\\{", regex::optimize);
-	regex regex_attr("([A-Za-z0-9-]+)\\s*:{1}\\s*(.*)", regex::optimize);
+	regex regex_attr("([A-Za-z0-9-]+)\\s*:{1}\\s*([^;]*)", regex::optimize);
 	regex regex_percent("([\\d\\.]+)%", regex::optimize);
 	regex regex_em("([\\d\\.]+)em", regex::optimize);
 	
@@ -444,5 +448,113 @@ CSSClass CSS::get_class(ustring name) const {
 	else {
 		return classes.at(name);
 	}
+	
+}
+
+void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index) {
+	
+	int rc; 
+	char* errmsg;
+	
+	const string css_table_sql = "CREATE TABLE IF NOT EXISTS css("  \
+						"css_id 			INTEGER PRIMARY KEY," \
+						"epub_file_id		INTEGER NOT NULL," \
+						"opf_id 			INTEGER NOT NULL," \
+						"name		 	TEX NOT NULL," \
+						"display_type	 	INTEGER NOT NULL," \
+						"font_size		 	INTEGER NOT NULL," \
+						"font_weight	 	INTEGER NOT NULL," \
+						"font_style	 	INTEGER NOT NULL," \
+						"margin_top	 	REAL NOT NULL," \
+						"margin_bottom	REAL NOT NULL," \
+						"pagebreakbefore	INTEGER NOT NULL," \
+						"pagebreakafter	INTEGER NOT NULL," \
+						"text_align		INTEGER NOT NULL," \
+						"text_indent 		REAL NOT NULL) ;";
+	
+	sqlite3_exec(db, css_table_sql.c_str(), NULL, NULL, &errmsg);
+	
+	const string css_tags_table_sql = "CREATE TABLE IF NOT EXISTS css_tags("  \
+						"css_id INTEGER NOT NULL," \
+						"tagname TEXT NOT NULL," \
+						"tagvalue TEXT NOT NULL) ;";
+	
+	sqlite3_exec(db, css_tags_table_sql.c_str(), NULL, NULL, &errmsg);
+	
+	//Tables created. 
+	
+	sqlite3_stmt * css_insert;	
+	sqlite3_stmt * css_tags_insert;	
+	
+	/*
+		ustring name; 
+		map<ustring, ustring> raw_pairs;
+		DisplayType displaytype; 
+		FontSize fontsize; 
+		FontWeight fontweight; 
+		FontStyle fontstyle; 
+		double margintop; 
+		double marginbottom; 
+		bool pagebreakbefore; 
+		bool pagebreakafter; 
+		TextAlign textalign; 
+		double textindent;
+	*/
+	
+	const string css_insert_sql = "INSERT INTO css (epub_file_id, opf_id, name, display_type, font_size, font_weight, font_style, margin_top, margin_bottom, pagebreakbefore, pagebreakafter, text_align, text_indent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+	const string css_tags_insert_sql = "INSERT INTO css_tags (css_id, tagname, tagvalue) VALUES (?, ?, ?);";
+	
+	rc = sqlite3_prepare_v2(db, css_insert_sql.c_str(), -1, &css_insert, 0);
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) throw -1;
+	rc = sqlite3_prepare_v2(db, css_tags_insert_sql.c_str(), -1, &css_tags_insert, 0);
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) throw -1;
+	
+	for(auto & csspair : classes) {
+		
+		CSSClass cssclass = csspair.second;
+		
+		sqlite3_bind_int(css_insert, 1, epub_file_id);
+		sqlite3_bind_int(css_insert, 2, opf_index);
+		sqlite3_bind_text(css_insert, 3, cssclass.name.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_int(css_insert, 4, (int) cssclass.displaytype);
+		sqlite3_bind_int(css_insert, 5, (int) cssclass.fontsize);
+		sqlite3_bind_int(css_insert, 6, (int) cssclass.fontweight);
+		sqlite3_bind_int(css_insert, 7, (int) cssclass.fontstyle);
+		sqlite3_bind_double(css_insert, 8, cssclass.margintop);
+		sqlite3_bind_double(css_insert, 9, cssclass.marginbottom);
+		sqlite3_bind_int(css_insert, 10, (int) cssclass.pagebreakbefore);
+		sqlite3_bind_int(css_insert, 11, (int) cssclass.pagebreakafter);
+		sqlite3_bind_int(css_insert, 12, (int) cssclass.textalign);
+		sqlite3_bind_double(css_insert, 13, cssclass.textindent);
+		
+		int result = sqlite3_step(css_insert);
+		if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
+		
+		sqlite3_reset(css_insert);
+		
+		//get the new id:
+		const auto key = sqlite3_last_insert_rowid(db);
+		
+		for(auto & pair : cssclass.raw_pairs) {
+			
+			sqlite3_bind_int(css_tags_insert, 1, key);
+			sqlite3_bind_text(css_tags_insert, 2, pair.first.c_str(), -1, SQLITE_STATIC);
+			sqlite3_bind_text(css_tags_insert, 3, pair.second.c_str(), -1, SQLITE_STATIC);
+			
+			int result = sqlite3_step(css_tags_insert);
+			if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
+		
+			sqlite3_reset(css_tags_insert);	
+			
+		}
+		
+	}
+	
+	//Create an index for the css tags
+	const string css_index_sql = "CREATE INDEX index_css_tags ON css_tags(css_id);";
+	sqlite3_exec(db, css_index_sql.c_str(), NULL, NULL, &errmsg);
+	
+	sqlite3_finalize(css_insert); 
+	sqlite3_finalize(css_tags_insert); 
 	
 }

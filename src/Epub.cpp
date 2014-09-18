@@ -183,7 +183,8 @@ Epub::Epub(string _filename) :
 		
 		}
 		
-		css = CSS(cssfiles);
+		CSS cssclasses(cssfiles);
+		css.push_back(cssclasses);
 		
 		vector<path> contentfiles; 
 		
@@ -203,7 +204,7 @@ Epub::Epub(string _filename) :
 			
 		}
 		
-		Content content(css, contentfiles);
+		Content content(cssclasses, contentfiles);
 			
 		contents.push_back(content);
 		
@@ -323,15 +324,19 @@ void Epub::save_to(sqlite3 * const db) {
 	if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
 	
 	//get the new id:
-	auto key = sqlite3_last_insert_rowid(db);
+	const auto key = sqlite3_last_insert_rowid(db);
 	
 	sqlite3_finalize(files_insert); 
 	
 	container.save_to(db, key);
 	
 	unsigned int index = 0;
-	for(auto opf : opf_files) {
+	for(auto & opf : opf_files) {
 		opf.save_to(db, key, index++); 
+	}
+	index = 0; 
+	for(auto & cssclasses : css) {
+		cssclasses.save_to(db, key, index++);
 	}
 	
 	sqlite3_exec(db, "END TRANSACTION", NULL, NULL, &errmsg);
