@@ -52,6 +52,43 @@ using std::cout;
 using std::endl;
 #endif
 
+CSSValue::CSSValue() :
+	value(numeric_limits<double>::min()),
+	type(CSS_VALUE_DEFAULT)
+{
+	
+}
+	
+CSSValue::CSSValue(CSSValue const & cpy) :
+	value(cpy.value),
+	type(cpy.type)
+{
+	
+}
+
+CSSValue::CSSValue(CSSValue && mv) :
+	value(move(mv.value)),
+	type(move(mv.type))
+{
+	
+}
+
+CSSValue& CSSValue::operator =(const CSSValue& cpy) {
+	value = cpy.value; 
+	type = cpy.type;
+	return *this; 
+}
+
+CSSValue& CSSValue::operator =(CSSValue && mv) {
+	value = move(mv.value);
+	type = move(mv.type);
+	return *this; 
+}
+
+CSSValue::~CSSValue() {
+}
+
+
 CSSClass::CSSClass() :
 	CSSClass("")
 {
@@ -61,7 +98,7 @@ CSSClass::CSSClass() :
 CSSClass::CSSClass(ustring _name) : 
 	name(_name), 
 	raw_pairs(),
-	displaytype(DISPLAYTYPE_INLINE), 
+	displaytype(DISPLAY_INLINE), 
 	fontsize(FONTSIZE_NORMAL),
 	fontweight(FONTWEIGHT_NORMAL),
 	fontstyle(FONTSTYLE_NORMAL), 
@@ -146,7 +183,7 @@ CSSClass::~CSSClass() { }
 void CSSClass::add ( const CSSClass& rhs ) {
 	
 	//Do the basics:
-	if(rhs.displaytype != DISPLAYTYPE_INLINE) displaytype = rhs.displaytype; 
+	if(rhs.displaytype != DISPLAY_INLINE) displaytype = rhs.displaytype; 
 	if(rhs.fontsize != FONTSIZE_NORMAL) fontsize = rhs.fontsize; 
 	if(rhs.fontweight != FONTWEIGHT_NORMAL) fontweight = rhs.fontweight; 
 	if(rhs.fontstyle != FONTSTYLE_NORMAL) fontstyle = rhs.fontstyle; 
@@ -327,7 +364,7 @@ CSS::CSS(vector<path> _files) :
 						#endif
 						
 						if(attrname == "display") {
-							if(attrvalue == "block") cssclass.displaytype = DISPLAYTYPE_BLOCK; 
+							if(attrvalue == "block") cssclass.displaytype = DISPLAY_BLOCK; 
 						}
 						else if (attrname == "font-size") {
 							smatch regex_match_size; 

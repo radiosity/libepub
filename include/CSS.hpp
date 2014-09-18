@@ -74,8 +74,8 @@ SHOULD ALSO DO
 */
 
 enum DisplayType {
-	DISPLAYTYPE_INLINE, //DEFAULT
-	DISPLAYTYPE_BLOCK
+	DISPLAY_INLINE, //DEFAULT
+	DISPLAY_BLOCK
 };
 
 enum FontSize {
@@ -98,6 +98,32 @@ enum TextAlign {
 	TEXTALIGN_LEFT,  //DEFAULT
 	TEXTALIGN_RIGHT,
 	TEXTALIGN_CENTER
+};
+
+enum CSSValueType {
+	CSS_VALUE_DEFAULT,
+	CSS_VALUE_PX,
+	CSS_VALUE_PT,
+	CSS_VALUE_CM,
+	CSS_VALUE_EM,
+	CSS_VALUE_PERCENT
+};
+
+class CSSValue {
+
+	public:
+		double value; 
+		CSSValueType type; 
+	
+		CSSValue(); 
+	
+		CSSValue(CSSValue const & cpy);
+		CSSValue(CSSValue && mv) ;
+		CSSValue& operator =(const CSSValue& cpy);
+		CSSValue& operator =(CSSValue && mv) ;
+		
+		~CSSValue();
+	
 };
 
 class CSSClass {
