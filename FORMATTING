@@ -1,5 +1,5 @@
 The source code for this project obeys the following astyle rule:
 
-astyle -A10 -t4 -xn -xc -xl -xk -C -S -N -Y -f -p -xe -xw -k2 -y
+astyle -A10 -t4 -xn -xc -xl -xk -C -S -N -Y -f -p -xw -k2 -y
 
 In order to enforce this a format.sh shell script has been provided. Run this before commits to ensure appropriate style. 
