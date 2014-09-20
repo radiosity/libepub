@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/filesystem.hpp>
 #include <boost/flyweight.hpp>
 #include <glibmm.h>
+#include <sqlite3.h>
 
 #include "CSS.hpp"
 

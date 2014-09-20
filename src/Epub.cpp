@@ -326,6 +326,12 @@ void Epub::save_to(sqlite3 * const db)
 		cssclasses.save_to(db, key, index++);
 	}
 
+	index = 0;
+
+	for(auto & content : contents) {
+		content.save_to(db, key, index++);
+	}
+
 	sqlite3_exec(db, "END TRANSACTION", NULL, NULL, &errmsg);
 
 }

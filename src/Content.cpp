@@ -435,4 +435,55 @@ Content::~Content()
 
 void Content::save_to(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index)
 {
+
+	int rc;
+	char * errmsg;
+
+	const string content_table_sql = "CREATE TABLE IF NOT EXISTS content("  \
+	                                 "content_id 				INTEGER PRIMARY KEY," \
+	                                 "epub_file_id			INTEGER NOT NULL," \
+	                                 "opf_id 				INTEGER NOT NULL," \
+	                                 "type			 		INTEGER NOT NULL," \
+	                                 "css_class		 		TEXT NOT NULL," \
+	                                 "filename	 			TEXT NOT NULL," \
+	                                 "id			 		TEXT NOT NULL," \
+	                                 "content	 			TEXT NOT NULL," \
+	                                 "stripped_content		TEXT NOT NULL) ;";
+	sqlite3_exec(db, content_table_sql.c_str(), NULL, NULL, &errmsg);
+
+	//Tables created.
+
+	sqlite3_stmt * content_insert;
+
+	const string content_insert_sql = "INSERT INTO content (epub_file_id, opf_id, type, css_class, filename, id, content, stripped_content) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+
+	rc = sqlite3_prepare_v2(db, content_insert_sql.c_str(), -1, &content_insert, 0);
+
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
+		throw - 1;
+	}
+
+	for(auto & contentitem : items) {
+
+		sqlite3_bind_int(content_insert, 1, epub_file_id);
+		sqlite3_bind_int(content_insert, 2, opf_index);
+		sqlite3_bind_int(content_insert, 3, (int) contentitem.type);
+		sqlite3_bind_text(content_insert, 4, contentitem.cssclass.name.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(content_insert, 5, contentitem.file.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(content_insert, 6,  contentitem.id.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(content_insert, 7, contentitem.content.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(content_insert, 8, contentitem.stripped_content.c_str(), -1, SQLITE_STATIC);
+
+		int result = sqlite3_step(content_insert);
+
+		if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) {
+			throw - 1;
+		}
+
+		sqlite3_reset(content_insert);
+
+	}
+
+	sqlite3_finalize(content_insert);
+
 }
