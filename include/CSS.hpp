@@ -32,12 +32,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <glibmm.h>
 #include <map>
 #include <vector>
-#include <sqlite3.h> 
+#include <sqlite3.h>
 
-using Glib::ustring; 
+using Glib::ustring;
 
-using std::map; 
-using std::vector; 
+using std::map;
+using std::vector;
 
 using namespace boost::filesystem;
 
@@ -48,29 +48,29 @@ CLASS NAME
 
 display: block;
 	This should always cause an indent before and after.
-	
-display: inline; 
-	Should stay with the text. 
+
+display: inline;
+	Should stay with the text.
 
 font-size: 1em;
-	Should be able to say that, if it's more than 1em it gets <big>, 
+	Should be able to say that, if it's more than 1em it gets <big>,
 	less it gets small? Not so sure about this one
-	
+
 font-weight: bold;
 	obvious
 
 font-style: italic
-	obvious; 
-    
+	obvious;
+
 MARGINS :(
 
 margin-left : IGNORE
 margin-right : IGNORE
 margin-top : take percentage
-margin-bottom : take percentage. 
-    
-SHOULD ALSO DO 
-    
+margin-bottom : take percentage.
+
+SHOULD ALSO DO
+
 */
 
 enum DisplayType {
@@ -79,13 +79,13 @@ enum DisplayType {
 };
 
 enum FontSize {
-	FONTSIZE_NORMAL, //Default, but doesn't corespond directly. 
-	FONTSIZE_LARGER, 
+	FONTSIZE_NORMAL, //Default, but doesn't corespond directly.
+	FONTSIZE_LARGER,
 	FONTSIZE_SMALLER
 };
 
 enum FontWeight {
-	FONTWEIGHT_NORMAL, //DEFAULT 
+	FONTWEIGHT_NORMAL, //DEFAULT
 	FONTWEIGHT_BOLD
 };
 
@@ -112,70 +112,70 @@ enum CSSValueType {
 class CSSValue {
 
 	public:
-		double value; 
-		CSSValueType type; 
-	
-		CSSValue(); 
-	
+		double value;
+		CSSValueType type;
+
+		CSSValue();
+
 		CSSValue(CSSValue const & cpy);
 		CSSValue(CSSValue && mv) ;
-		CSSValue& operator =(const CSSValue& cpy);
-		CSSValue& operator =(CSSValue && mv) ;
-		
+		CSSValue & operator =(const CSSValue & cpy);
+		CSSValue & operator =(CSSValue && mv) ;
+
 		~CSSValue();
-	
+
 };
 
 class CSSClass {
-	
+
 	public:
-		ustring name; 
+		ustring name;
 		map<ustring, ustring> raw_pairs;
-		DisplayType displaytype; 
-		FontSize fontsize; 
-		FontWeight fontweight; 
-		FontStyle fontstyle; 
-		CSSValue margintop; 
-		CSSValue marginbottom; 
-		bool pagebreakbefore; 
-		bool pagebreakafter; 
-		TextAlign textalign; 
+		DisplayType displaytype;
+		FontSize fontsize;
+		FontWeight fontweight;
+		FontStyle fontstyle;
+		CSSValue margintop;
+		CSSValue marginbottom;
+		bool pagebreakbefore;
+		bool pagebreakafter;
+		TextAlign textalign;
 		CSSValue textindent;
-	
-	CSSClass();
-	CSSClass(ustring name); 
-	
-	CSSClass(CSSClass const & cpy);
-	CSSClass(CSSClass && mv) ;
-	CSSClass& operator =(const CSSClass& cpy);
-	CSSClass& operator =(CSSClass && mv) ;
-	
-	~CSSClass();
-	
-	void add(const CSSClass & rhs);
-	
+
+		CSSClass();
+		CSSClass(ustring name);
+
+		CSSClass(CSSClass const & cpy);
+		CSSClass(CSSClass && mv) ;
+		CSSClass & operator =(const CSSClass & cpy);
+		CSSClass & operator =(CSSClass && mv) ;
+
+		~CSSClass();
+
+		void add(const CSSClass & rhs);
+
 };
 
 class CSS {
-	
+
 	public:
-		vector <path> files; 
+		vector <path> files;
 		map <ustring, CSSClass> classes;
-	
+
 		CSS();
 		CSS(vector<path> files);
-		
+
 		CSS(CSS const & cpy);
 		CSS(CSS && mv) ;
-		CSS& operator =(const CSS& cpy);
-		CSS& operator =(CSS && mv);
-	
-		CSSClass get_class(ustring name) const; 
-			
+		CSS & operator =(const CSS & cpy);
+		CSS & operator =(CSS && mv);
+
+		CSSClass get_class(ustring name) const;
+
 		~CSS();
-	
-		void save_to(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index); 
-	
+
+		void save_to(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index);
+
 };
 
 #endif

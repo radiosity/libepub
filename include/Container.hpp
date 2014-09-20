@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <boost/filesystem.hpp>
 #include <glibmm.h>
-#include <sqlite3.h> 
+#include <sqlite3.h>
 
 using std::vector;
 
@@ -39,40 +39,40 @@ using namespace boost::filesystem;
 using namespace Glib;
 
 class RootFile {
-	
-public:
-	ustring media_type;
-	ustring full_path;
 
-	RootFile(ustring _m, ustring _f);
-		
-	RootFile(RootFile const & cpy);
-	RootFile(RootFile && mv) ;
-	RootFile& operator =(const RootFile& cpy);
-	RootFile& operator =(RootFile && mv) ;
-		
-	~RootFile();
-	
+	public:
+		ustring media_type;
+		ustring full_path;
+
+		RootFile(ustring _m, ustring _f);
+
+		RootFile(RootFile const & cpy);
+		RootFile(RootFile && mv) ;
+		RootFile & operator =(const RootFile & cpy);
+		RootFile & operator =(RootFile && mv) ;
+
+		~RootFile();
+
 };
 
 class Container {
 
 	public:
-	
+
 		vector<RootFile> rootfiles;
-	
+
 		Container();
-		
+
 		Container(Container const & cpy);
 		Container(Container && mv);
-		Container& operator =(const Container& cpy);
-		Container& operator =(Container && mv);
-		
+		Container & operator =(const Container & cpy);
+		Container & operator =(Container && mv);
+
 		~Container();
-	
+
 		void load(path to_dir);
-		void save_to(sqlite3 * const db, const unsigned int epub_file_id); 
-	
+		void save_to(sqlite3 * const db, const unsigned int epub_file_id);
+
 };
 
 #endif

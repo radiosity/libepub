@@ -32,44 +32,44 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <utility>
 #include <vector>
 #include <cstdlib>
-#include <sqlite3.h> 
+#include <sqlite3.h>
 
 #include "Container.hpp"
 #include "OPF.hpp"
 #include "Content.hpp"
 #include "CSS.hpp"
 
-using std::vector; 
-using std::size_t; 
+using std::vector;
+using std::size_t;
 
 class Epub {
-	
+
 	public:
-	
-		string filename; 
-		size_t hash; 
-		string hash_string; 
-	
-		path directory_path; 
-	
-		Container container; 
+
+		string filename;
+		size_t hash;
+		string hash_string;
+
+		path directory_path;
+
+		Container container;
 		vector<OPF> opf_files;
-		vector<CSS> css; 
+		vector<CSS> css;
 		vector<Content> contents;
-	
+
 		Epub(string _filename);
-		
+
 		Epub(Epub const & cpy);
 		Epub(Epub && mv);
-		Epub& operator =(const Epub& cpy);
-		Epub& operator =(Epub && mv);
-		
+		Epub & operator =(const Epub & cpy);
+		Epub & operator =(Epub && mv);
+
 		~Epub() ;
-	
-		void save_to(sqlite3 * const db); 
-	
-		static inline size_t compute_epub_hash(string _filename); 
-		
+
+		void save_to(sqlite3 * const db);
+
+		static inline size_t compute_epub_hash(string _filename);
+
 };
 
 #endif

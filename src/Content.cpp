@@ -32,38 +32,37 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <libxml++/libxml++.h>
 #include <exception>
 
-using std::move; 
+using std::move;
 using std::pair;
+using std::string;
 
 #ifdef DEBUG
 #include <iostream>
-using std::cout; 
-using std::endl; 
+using std::cout;
+using std::endl;
 #endif
 
 using namespace boost::filesystem;
 using namespace xmlpp;
 
 ContentItem::ContentItem(ContentType _type, CSSClass _cssclass, path _file, ustring _id, ustring _content, ustring _stripped_content) :
-	type(_type), 
+	type(_type),
 	cssclass(_cssclass),
 	file(_file),
 	id(_id),
-	content(_content), 
+	content(_content),
 	stripped_content(_stripped_content)
 {
-	
 }
-		
+
 ContentItem::ContentItem(ContentItem const & cpy)  :
 	type(cpy.type),
 	cssclass(cpy.cssclass),
 	file(cpy.file),
 	id(cpy.id),
-	content(cpy.content), 
+	content(cpy.content),
 	stripped_content(cpy.stripped_content)
 {
-	
 }
 
 ContentItem::ContentItem(ContentItem && mv)  :
@@ -74,20 +73,21 @@ ContentItem::ContentItem(ContentItem && mv)  :
 	content(move(mv.content)),
 	stripped_content(move(mv.stripped_content))
 {
-	
 }
 
-ContentItem& ContentItem::operator =(const ContentItem& cpy) {
+ContentItem & ContentItem::operator =(const ContentItem & cpy)
+{
 	type = cpy.type;
 	cssclass = cpy.cssclass;
-	file = cpy.file; 
-	id = cpy.id; 
+	file = cpy.file;
+	id = cpy.id;
 	content = cpy.content;
 	stripped_content = cpy.stripped_content;
 	return *this;
 }
 
-ContentItem& ContentItem::operator =(ContentItem && mv)  {
+ContentItem & ContentItem::operator =(ContentItem && mv)
+{
 	type = move(mv.type);
 	cssclass = move(mv.cssclass);
 	file = move(mv.file);
@@ -96,214 +96,198 @@ ContentItem& ContentItem::operator =(ContentItem && mv)  {
 	stripped_content = move(mv.stripped_content);
 	return *this;
 }
-	
-ContentItem::~ContentItem(){
-	
+
+ContentItem::~ContentItem()
+{
 }
 
 ///////////////////////
-namespace 
-{
-	inline ustring __create_text(ustring nodename, ustring nodecontents) {
-		ustring tmp; 
+namespace {
+	inline ustring __create_text(ustring nodename, ustring nodecontents)
+	{
+		ustring tmp;
 		tmp += "<";
-		tmp += nodename; 
+		tmp += nodename;
 		tmp += ">";
-		tmp += nodecontents; 
+		tmp += nodecontents;
 		tmp += "</";
 		tmp += nodename;
 		tmp += ">";
 		return tmp;
 	}
 
-	ustring __id = ""; 
+	ustring __id = "";
 
-	//This whole method is fairly awful. 
-	pair<ustring, ustring> __recursive_strip(vector<ContentItem> & items, const CSS& classes, const path file, const Node * const node) {
-		
-		const TextNode * nodeText = dynamic_cast<const TextNode*>(node);
-		
+	//This whole method is fairly awful.
+	pair<ustring, ustring> __recursive_strip(vector<ContentItem> & items, const CSS & classes, const path file, const Node * const node)
+	{
+		const TextNode * nodeText = dynamic_cast<const TextNode *>(node);
+
 		if(nodeText) {
-			
 			if(nodeText->is_white_space()) {
-				return pair<ustring, ustring>("","");
+				return pair<ustring, ustring>("", "");
 			}
-			
+
 			ustring content = nodeText->get_content();
-			
 			return pair<ustring, ustring>(content, content);
 		}
-		
-		const Element * nodeElement = dynamic_cast<const Element*>(node);
-		
+
+		const Element * nodeElement = dynamic_cast<const Element *>(node);
 		const auto nodelist = nodeElement->get_children();
-		
 		ustring value = "";
-		ustring value_stripped = ""; 
-		
-		for(auto niter = nodelist.begin(); niter != nodelist.end(); ++niter)
-		{
-			const Node * childNode = *niter; 
-			
-			//Still still Genuinely horrible. 
-			const Element* childElement = dynamic_cast<const Element*>(childNode);
-			const TextNode * childText = dynamic_cast<const TextNode*>(childNode);
-			
-			if(!childElement && !childText) continue;
-			
-			if(childText) {
-				
-				pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
-				value += res.first; 
-				value_stripped += res.second; 
-				
+		ustring value_stripped = "";
+
+		for(auto niter = nodelist.begin(); niter != nodelist.end(); ++niter) {
+			const Node * childNode = *niter;
+			//Still still Genuinely horrible.
+			const Element * childElement = dynamic_cast<const Element *>(childNode);
+			const TextNode * childText = dynamic_cast<const TextNode *>(childNode);
+
+			if(!childElement && !childText) {
+				continue;
 			}
-			
+
+			if(childText) {
+				pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+				value += res.first;
+				value_stripped += res.second;
+			}
+
 			if(childElement) {
-				
 				const ustring childname = childElement->get_name();
-				
+
 				if(childname.compare("i") == 0) {
-					//italic. 
+					//italic.
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
-					value += __create_text("i", res.first); 
-					value_stripped += res.second; 
+					value += __create_text("i", res.first);
+					value_stripped += res.second;
 				}
 				else if(childname.compare("b") == 0) {
 					//bold;
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
-					value += __create_text("b", res.first); 
-					value_stripped += res.second; 
+					value += __create_text("b", res.first);
+					value_stripped += res.second;
 				}
 				else if(childname.compare("big") == 0) {
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
-					value += __create_text("big", res.first); 
-					value_stripped += res.second; 
+					value += __create_text("big", res.first);
+					value_stripped += res.second;
 				}
 				else if(childname.compare("s") == 0) {
 					//strikethrough
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
-					value += __create_text("s", res.first); 
-					value_stripped += res.second; 
+					value += __create_text("s", res.first);
+					value_stripped += res.second;
 				}
 				else if(childname.compare("sub") == 0) {
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
-					value += __create_text("sub", res.first); 
-					value_stripped += res.second; 
+					value += __create_text("sub", res.first);
+					value_stripped += res.second;
 				}
 				else if(childname.compare("sup") == 0) {
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
-					value += __create_text("sup", res.first); 
-					value_stripped += res.second; 
+					value += __create_text("sup", res.first);
+					value_stripped += res.second;
 				}
 				else if(childname.compare("small") == 0) {
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
-					value += __create_text("i", res.first); 
-					value_stripped += res.second; 
+					value += __create_text("i", res.first);
+					value_stripped += res.second;
 				}
 				else if(childname.compare("tt") == 0) {
 					//monospace
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
-					value += __create_text("tt", res.first); 
-					value_stripped += res.second; 
+					value += __create_text("tt", res.first);
+					value_stripped += res.second;
 				}
 				else if(childname.compare("u") == 0) {
 					//underline
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
-					value += __create_text("u", res.first); 
-					value_stripped += res.second; 
+					value += __create_text("u", res.first);
+					value_stripped += res.second;
 				}
 				else if(childname.compare("a") == 0) {
-					//specific bheaviour for stripping hyperlinks within the text. 
-					//I suspect that I'll have to come back to this, but at the moment I'm 
-					//not completely sure how to handle it. 
+					//specific bheaviour for stripping hyperlinks within the text.
+					//I suspect that I'll have to come back to this, but at the moment I'm
+					//not completely sure how to handle it.
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
-					value += res.first; 
-					value_stripped += res.second; 
+					value += res.first;
+					value_stripped += res.second;
 				}
 				else if(childname.compare("span") == 0) {
 					//specific bheaviour for stripping span tags
-					
-					//Try to find a class attribute. 
-					CSSClass tmp; 
+					//Try to find a class attribute.
+					CSSClass tmp;
 					const auto attributes = childElement->get_attributes();
-					for(auto iter = attributes.begin(); iter != attributes.end(); ++iter)
-					{
-						const Attribute* attribute = *iter;
+
+					for(auto iter = attributes.begin(); iter != attributes.end(); ++iter) {
+						const Attribute * attribute = *iter;
+
 						if(attribute->get_name().compare("class") == 0) {
-							//We've found a class here. 
+							//We've found a class here.
 							ustring cname = attribute->get_value();
 							//Need to do this better in the future:
 							tmp = classes.get_class(ustring(".") + cname);
 						}
-						
 					}
-					
+
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+
 					if(tmp.fontweight == FONTWEIGHT_BOLD) {
-						value += __create_text("b", res.first); 
+						value += __create_text("b", res.first);
 					}
 					else if (tmp.fontstyle == FONTSTYLE_ITALIC) {
-						value += __create_text("i", res.first); 
+						value += __create_text("i", res.first);
 					}
 					else {
-						value += res.first; 
+						value += res.first;
 					}
-					value_stripped += res.second; 
+
+					value_stripped += res.second;
 				}
 				else if(childname.compare("hr") == 0)  {
 					//What to do if this is a nested <hr> tag within (frequently)
-					//a <p> tag. 
-					
+					//a <p> tag.
 					ContentType ct = HR;
-					
-					//See if we can find a CSS class for this. 
+					//See if we can find a CSS class for this.
 					CSSClass cssclass = classes.get_class("hr");
-					
 					ContentItem ci(ct, cssclass, file, __id, "", "");
 					items.push_back(ci);
-					
 					value = "";
 					value_stripped = "";
-					
 				}
-				
 			}
-			
 		}
-		
-		return pair<ustring, ustring>(value, value_stripped); 
-		
+
+		return pair<ustring, ustring>(value, value_stripped);
 	}
 
-	void __recursive_find(vector<ContentItem> & items, const CSS& classes, const path file, const Node * const node) {
-		
+	void __recursive_find(vector<ContentItem> & items, const CSS & classes, const path file, const Node * const node)
+	{
 		const auto nlist = node->get_children();
-		
-		for(auto niter = nlist.begin(); niter != nlist.end(); ++niter)
-		{
-			const Node * ntmp = *niter; 
-			
-			//Still still Genuinely horrible. 
-			const Element* tmpnode = dynamic_cast<const Element*>(ntmp);
-			
-			if(!tmpnode) continue;
-				
+
+		for(auto niter = nlist.begin(); niter != nlist.end(); ++niter) {
+			const Node * ntmp = *niter;
+			//Still still Genuinely horrible.
+			const Element * tmpnode = dynamic_cast<const Element *>(ntmp);
+
+			if(!tmpnode) {
+				continue;
+			}
+
 			const ustring tmpnodename = tmpnode->get_name();
-			
+
 			if(tmpnodename.compare("p") != 0 &&
-				tmpnodename.compare("h1") != 0 &&
-				tmpnodename.compare("h2") != 0 &&
-				tmpnodename.compare("hr") != 0) {
-					__recursive_find(items, classes, file, ntmp);
-			}		
+			        tmpnodename.compare("h1") != 0 &&
+			        tmpnodename.compare("h2") != 0 &&
+			        tmpnodename.compare("hr") != 0) {
+				__recursive_find(items, classes, file, ntmp);
+			}
 			else {
-				
 				ContentType ct = P;
-				
-				//Try to get a class for the content type. 
-				CSSClass cssclass; 
-				
+				//Try to get a class for the content type.
+				CSSClass cssclass;
+
 				if(tmpnode->get_name().compare("p") == 0) {
 					ct = P;
 					cssclass = classes.get_class("p");
@@ -320,99 +304,88 @@ namespace
 					ct = HR;
 					cssclass = classes.get_class("hr");
 				}
-				
+
 				const auto attributes = tmpnode->get_attributes();
-				for(auto iter = attributes.begin(); iter != attributes.end(); ++iter)
-				{
-					const Attribute* attribute = *iter;
-					
-					if(attribute->get_name().compare("id") == 0) __id = attribute->get_value();
+
+				for(auto iter = attributes.begin(); iter != attributes.end(); ++iter) {
+					const Attribute * attribute = *iter;
+
+					if(attribute->get_name().compare("id") == 0) {
+						__id = attribute->get_value();
+					}
+
 					if(attribute->get_name().compare("class") == 0) {
-						//We've found an additional class here. 
+						//We've found an additional class here.
 						ustring cname = attribute->get_value();
 						CSSClass tmp = classes.get_class(cname);
 						cssclass.add(tmp);
 					}
-					
 				}
-				
+
 				pair<ustring, ustring> content = __recursive_strip(items, classes, file, ntmp);
-						
-				if(content.first.compare("") == 0 && ct != HR) continue; 
-						
+
+				if(content.first.compare("") == 0 && ct != HR) {
+					continue;
+				}
+
 				#ifdef DEBUG
-				cout << tmpnode->get_name()  << " " << __id <<endl; 
-				cout << " \t " << content.first << endl; 
-				cout << " \t " << content.second << endl; 
-				#endif			
-				
+				cout << tmpnode->get_name()  << " " << __id << endl;
+				cout << " \t " << content.first << endl;
+				cout << " \t " << content.second << endl;
+				#endif
 				ContentItem ci(ct, cssclass, file, __id, content.first, content.second);
-				
 				items.push_back(ci);
-			
 			}
-			
 		}
-		
 	}
 } // end anonymous namespace
 
-Content::Content(CSS& _classes, vector<path> _files) :
+Content::Content(CSS & _classes, vector<path> _files) :
 	classes(_classes),
 	files(_files)
 {
-	
 	for(const auto file : files) {
-		
 		__id = "";
-		
+
 		if(!exists(file)) {
 			throw std::runtime_error("Content file specified in OPF file does not exist!");
 		}
-		
+
 		#ifdef DEBUG
-		cout << "Loading content file " << file << endl; 
+		cout << "Loading content file " << file << endl;
 		#endif
-		
-		DomParser parser; 
+		DomParser parser;
 		parser.parse_file(file.string());
-		
-		const Node* root = parser.get_document()->get_root_node();
-		
+		const Node * root = parser.get_document()->get_root_node();
 		const ustring rootname = root->get_name();
-		
+
 		if(rootname.compare("html") != 0) {
 			throw std::runtime_error("Linked content file isn't HTML. So we can't read it. Mostly through laziness.");
 		}
-	
+
 		const auto nlist = root->get_children();
-	
-		for(auto niter = nlist.begin(); niter != nlist.end(); ++niter)
-		{
-			const Node * ntmp = *niter; 
-			
-			//Still still Genuinely horrible. 
-			const Element* tmpnode = dynamic_cast<const Element*>(ntmp);
-			
-			if(!tmpnode) continue;
-		
-			if(tmpnode->get_name().compare("body") == 0)  {
-				
-				__recursive_find(items, classes, file, ntmp);
-				
+
+		for(auto niter = nlist.begin(); niter != nlist.end(); ++niter) {
+			const Node * ntmp = *niter;
+			//Still still Genuinely horrible.
+			const Element * tmpnode = dynamic_cast<const Element *>(ntmp);
+
+			if(!tmpnode) {
+				continue;
 			}
-			
+
+			if(tmpnode->get_name().compare("body") == 0)  {
+				__recursive_find(items, classes, file, ntmp);
+			}
 		}
 	}
-	
 }
 
 Content::Content(Content const & cpy) :
 	classes(cpy.classes),
-	files(cpy.files), 
+	files(cpy.files),
 	items(cpy.items)
 {
-	
 }
 
 Content::Content(Content && mv) :
@@ -420,24 +393,29 @@ Content::Content(Content && mv) :
 	files(move(mv.files)),
 	items(move(mv.items))
 {
-	
 }
 
-Content& Content::operator =(const Content& cpy) { 
+Content & Content::operator =(const Content & cpy)
+{
 	classes = cpy.classes;
 	files = cpy.files;
 	items = cpy.items;
-	return *this; 
-	
+	return *this;
 }
 
-Content& Content::operator =(Content && mv) {
+Content & Content::operator =(Content && mv)
+{
 	classes = mv.classes;
-	files = move(mv.files); 
+	files = move(mv.files);
 	items = move(mv.items);
 	return *this;
 }
-	
-Content::~Content() {
+
+Content::~Content()
+{
+}
+
+void Content::save_to(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index)
+{
 	
 }

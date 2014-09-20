@@ -27,34 +27,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 #include <stdlib.h>
-#include <sqlite3.h> 
+#include <sqlite3.h>
 
 #include "Epub.hpp"
 
-using std::cout; 
+using std::cout;
 using std::endl;
 
-int main(int argc, char * argv[]) {
-	
+int main(int argc, char * argv[])
+{
 	std::locale::global(std::locale(""));
-	
-	if(argc ==1) {
-		cout << "Needs a filename as an arg" << endl; 
-		exit(EXIT_FAILURE);
-	}		
-	
-	Epub book(argv[1]);
-	
-	sqlite3 * db; 
-	int rc;
 
+	if(argc == 1) {
+		cout << "Needs a filename as an arg" << endl;
+		exit(EXIT_FAILURE);
+	}
+
+	Epub book(argv[1]);
+	sqlite3 * db;
+	int rc;
 	rc = sqlite3_open("database", &db);
 
-	if( rc ){
+	if( rc ) {
 		//Failed to open
 	}
-	
+
 	book.save_to(db);
-	
 	sqlite3_close(db);
 }

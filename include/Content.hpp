@@ -36,20 +36,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "CSS.hpp"
 
-using std::vector; 
+using std::vector;
 
 using namespace boost::filesystem;
 using namespace Glib;
 
 enum ContentType {
 	P,
-	H1, 
-	H2, 
+	H1,
+	H2,
 	HR
 };
 
 class ContentItem {
-	
+
 	public:
 		ContentType type;
 		CSSClass cssclass;
@@ -57,35 +57,36 @@ class ContentItem {
 		ustring id;
 		ustring content;
 		ustring stripped_content;
-	
+
 		ContentItem(ContentType type, CSSClass, path file, ustring id, ustring content, ustring stripped_content);
-		
+
 		ContentItem(ContentItem const & cpy);
 		ContentItem(ContentItem && mv) ;
-		ContentItem& operator =(const ContentItem& cpy);
-		ContentItem& operator =(ContentItem && mv) ;
-			
+		ContentItem & operator =(const ContentItem & cpy);
+		ContentItem & operator =(ContentItem && mv) ;
+
 		~ContentItem();
-	
+
 };
 
 class Content {
-	
+
 	public :
-		CSS& classes; 
-		vector<path> files; 
-		vector<ContentItem> items; 
-	
-		Content(CSS& _classes, vector<path> files);
-		
+		CSS & classes;
+		vector<path> files;
+		vector<ContentItem> items;
+
+		Content(CSS & _classes, vector<path> files);
+
 		Content(Content const & cpy);
 		Content(Content && mv) ;
-		Content& operator =(const Content& cpy);
-		Content& operator =(Content && mv) ;
-			
+		Content & operator =(const Content & cpy);
+		Content & operator =(Content && mv) ;
+
 		~Content();
-	
-	
+
+		void save_to(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index);
+
 };
 
 
