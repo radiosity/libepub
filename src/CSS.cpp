@@ -233,6 +233,9 @@ CSS::CSS(vector<path> _files) :
 	regex regex_attr("([A-Za-z0-9-]+)\\s*:{1}\\s*([^;]*)", regex::optimize);
 	regex regex_percent("([\\d]+)%", regex::optimize);
 	regex regex_em("([\\d]+)em", regex::optimize);
+	regex regex_px("([\\d]+)px", regex::optimize);
+	regex regex_pt("([\\d]+)pt", regex::optimize);
+	regex regex_cm("([\\d]+)cm", regex::optimize);
 	
 	for (path file : files) { 
 		
@@ -385,34 +388,103 @@ CSS::CSS(vector<path> _files) :
 						
 						}
 						else if (attrname == "margin-top") {
-							smatch regex_match_margin; 
-							regex_search(attrvalue, regex_match_margin, regex_percent); 
-							if(regex_match_margin.size() != 0) {
+							smatch regex_match_margin;  
+							if(regex_search(attrvalue, regex_match_margin, regex_percent)) {
 								string match = regex_match_margin[1];
 								cssclass.margintop.value = stod(match, NULL); 
 								cssclass.margintop.type = CSS_VALUE_PERCENT;
 							}
+							else if(regex_search(attrvalue, regex_match_margin, regex_em)) {
+								string match = regex_match_margin[1];
+								cssclass.margintop.value = stod(match, NULL); 
+								cssclass.margintop.type = CSS_VALUE_EM;
+							}
+							else if(regex_search(attrvalue, regex_match_margin, regex_px)) {
+								string match = regex_match_margin[1];
+								cssclass.margintop.value = stod(match, NULL); 
+								cssclass.margintop.type = CSS_VALUE_PX;
+							}
+							else if(regex_search(attrvalue, regex_match_margin, regex_pt)) {
+								string match = regex_match_margin[1];
+								cssclass.margintop.value = stod(match, NULL); 
+								cssclass.margintop.type = CSS_VALUE_PT;
+							}
+							else if(regex_search(attrvalue, regex_match_margin, regex_cm)) {
+								string match = regex_match_margin[1];
+								cssclass.margintop.value = stod(match, NULL); 
+								cssclass.margintop.type = CSS_VALUE_CM;
+							}
 						}
 						else if (attrname == "margin-bottom") {
 							smatch regex_match_margin; 
-							regex_search(attrvalue, regex_match_margin, regex_percent); 
-							if(regex_match_margin.size() != 0) {
+							if(regex_search(attrvalue, regex_match_margin, regex_percent)) {
 								string match = regex_match_margin[1];
 								cssclass.marginbottom.value = stod(match, NULL); 
 								cssclass.marginbottom.type = CSS_VALUE_PERCENT;
+							}
+							else if(regex_search(attrvalue, regex_match_margin, regex_em)) {
+								string match = regex_match_margin[1];
+								cssclass.marginbottom.value = stod(match, NULL); 
+								cssclass.marginbottom.type = CSS_VALUE_EM;
+							}
+							else if(regex_search(attrvalue, regex_match_margin, regex_px)) {
+								string match = regex_match_margin[1];
+								cssclass.marginbottom.value = stod(match, NULL); 
+								cssclass.marginbottom.type = CSS_VALUE_PX;
+							}
+							else if(regex_search(attrvalue, regex_match_margin, regex_pt)) {
+								string match = regex_match_margin[1];
+								cssclass.marginbottom.value = stod(match, NULL); 
+								cssclass.marginbottom.type = CSS_VALUE_PT;
+							}
+							else if(regex_search(attrvalue, regex_match_margin, regex_cm)) {
+								string match = regex_match_margin[1];
+								cssclass.marginbottom.value = stod(match, NULL); 
+								cssclass.marginbottom.type = CSS_VALUE_CM;
 							}
 						}
 						else if (attrname == "margin") {
 							//to set them all. 
 							smatch regex_match_margin; 
-							regex_search(attrvalue, regex_match_margin, regex_percent); 
-							if(regex_match_margin.size() != 0) {
+							if(regex_search(attrvalue, regex_match_margin, regex_percent)) {
 								string match = regex_match_margin[1];
 								double margin = stod(match, NULL); 
 								cssclass.marginbottom.value = margin; 
 								cssclass.margintop.value = margin; 
 								cssclass.marginbottom.type = CSS_VALUE_PERCENT;
 								cssclass.margintop.type = CSS_VALUE_PERCENT;
+							}
+							else if(regex_search(attrvalue, regex_match_margin, regex_em)) {
+								string match = regex_match_margin[1];
+								double margin = stod(match, NULL); 
+								cssclass.marginbottom.value = margin; 
+								cssclass.margintop.value = margin; 
+								cssclass.marginbottom.type = CSS_VALUE_EM;
+								cssclass.margintop.type = CSS_VALUE_EM;
+							}
+							else if(regex_search(attrvalue, regex_match_margin, regex_px)) {
+								string match = regex_match_margin[1];
+								double margin = stod(match, NULL); 
+								cssclass.marginbottom.value = margin; 
+								cssclass.margintop.value = margin; 
+								cssclass.marginbottom.type = CSS_VALUE_PX;
+								cssclass.margintop.type = CSS_VALUE_PX;
+							}
+							else if(regex_search(attrvalue, regex_match_margin, regex_pt)) {
+								string match = regex_match_margin[1];
+								double margin = stod(match, NULL); 
+								cssclass.marginbottom.value = margin; 
+								cssclass.margintop.value = margin; 
+								cssclass.marginbottom.type = CSS_VALUE_PT;
+								cssclass.margintop.type = CSS_VALUE_PT;
+							}
+							else if(regex_search(attrvalue, regex_match_margin, regex_cm)) {
+								string match = regex_match_margin[1];
+								double margin = stod(match, NULL); 
+								cssclass.marginbottom.value = margin; 
+								cssclass.margintop.value = margin; 
+								cssclass.marginbottom.type = CSS_VALUE_CM;
+								cssclass.margintop.type = CSS_VALUE_CM;
 							}
 						}
 						else if (attrname == "page-break-before") {
@@ -430,8 +502,7 @@ CSS::CSS(vector<path> _files) :
 						}
 						else if (attrname == "text-indent") {
 							smatch regex_match_margin; 
-							regex_search(attrvalue, regex_match_margin, regex_percent); 
-							if(regex_match_margin.size() != 0) {
+							if(regex_search(attrvalue, regex_match_margin, regex_percent)) {
 								string match = regex_match_margin[1];
 								cssclass.textindent.value = stod(match, NULL); 
 								cssclass.textindent.type = CSS_VALUE_PERCENT;
