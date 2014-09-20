@@ -135,12 +135,12 @@ class CSSClass {
 		FontSize fontsize; 
 		FontWeight fontweight; 
 		FontStyle fontstyle; 
-		double margintop; 
-		double marginbottom; 
+		CSSValue margintop; 
+		CSSValue marginbottom; 
 		bool pagebreakbefore; 
 		bool pagebreakafter; 
 		TextAlign textalign; 
-		double textindent;
+		CSSValue textindent;
 	
 	CSSClass();
 	CSSClass(ustring name); 

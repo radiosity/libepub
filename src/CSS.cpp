@@ -102,12 +102,12 @@ CSSClass::CSSClass(ustring _name) :
 	fontsize(FONTSIZE_NORMAL),
 	fontweight(FONTWEIGHT_NORMAL),
 	fontstyle(FONTSTYLE_NORMAL), 
-	margintop(numeric_limits<double>::min()),
-	marginbottom(numeric_limits<double>::min()), 
+	margintop(),
+	marginbottom(), 
 	pagebreakbefore(false),
 	pagebreakafter(false), 
 	textalign(TEXTALIGN_LEFT),
-	textindent(numeric_limits<double>::min())
+	textindent()
 {
 	
 }
@@ -187,12 +187,12 @@ void CSSClass::add ( const CSSClass& rhs ) {
 	if(rhs.fontsize != FONTSIZE_NORMAL) fontsize = rhs.fontsize; 
 	if(rhs.fontweight != FONTWEIGHT_NORMAL) fontweight = rhs.fontweight; 
 	if(rhs.fontstyle != FONTSTYLE_NORMAL) fontstyle = rhs.fontstyle; 
-	if(rhs.margintop != numeric_limits<double>::min()) margintop = rhs.margintop; 
-	if(rhs.marginbottom != numeric_limits<double>::min()) marginbottom = rhs.marginbottom; 
+	if(rhs.margintop.type != CSS_VALUE_DEFAULT) margintop = rhs.margintop; 
+	if(rhs.marginbottom.type != CSS_VALUE_DEFAULT) marginbottom = rhs.marginbottom; 
 	if(rhs.pagebreakbefore != false) pagebreakbefore = true; 
 	if(rhs.pagebreakafter != false) pagebreakafter = true; 
 	if(rhs.textalign != TEXTALIGN_LEFT) textalign = rhs.textalign; 
-	if(rhs.textindent != numeric_limits<double>::min()) textindent = rhs.textindent; 
+	if(rhs.textindent.type != CSS_VALUE_DEFAULT) textindent = rhs.textindent; 
 	
 	//Now lets do the map of raw
 	//tags
@@ -389,7 +389,8 @@ CSS::CSS(vector<path> _files) :
 							regex_search(attrvalue, regex_match_margin, regex_percent); 
 							if(regex_match_margin.size() != 0) {
 								string match = regex_match_margin[1];
-								cssclass.margintop = stod(match, NULL); 
+								cssclass.margintop.value = stod(match, NULL); 
+								cssclass.margintop.type = CSS_VALUE_PERCENT;
 							}
 						}
 						else if (attrname == "margin-bottom") {
@@ -397,7 +398,8 @@ CSS::CSS(vector<path> _files) :
 							regex_search(attrvalue, regex_match_margin, regex_percent); 
 							if(regex_match_margin.size() != 0) {
 								string match = regex_match_margin[1];
-								cssclass.marginbottom = stod(match, NULL); 
+								cssclass.marginbottom.value = stod(match, NULL); 
+								cssclass.marginbottom.type = CSS_VALUE_PERCENT;
 							}
 						}
 						else if (attrname == "margin") {
@@ -407,8 +409,10 @@ CSS::CSS(vector<path> _files) :
 							if(regex_match_margin.size() != 0) {
 								string match = regex_match_margin[1];
 								double margin = stod(match, NULL); 
-								cssclass.marginbottom = margin; 
-								cssclass.margintop = margin; 
+								cssclass.marginbottom.value = margin; 
+								cssclass.margintop.value = margin; 
+								cssclass.marginbottom.type = CSS_VALUE_PERCENT;
+								cssclass.margintop.type = CSS_VALUE_PERCENT;
 							}
 						}
 						else if (attrname == "page-break-before") {
@@ -429,7 +433,8 @@ CSS::CSS(vector<path> _files) :
 							regex_search(attrvalue, regex_match_margin, regex_percent); 
 							if(regex_match_margin.size() != 0) {
 								string match = regex_match_margin[1];
-								cssclass.textindent = stod(match, NULL); 
+								cssclass.textindent.value = stod(match, NULL); 
+								cssclass.textindent.type = CSS_VALUE_PERCENT;
 							}
 						}
 						
@@ -494,20 +499,23 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	char* errmsg;
 	
 	const string css_table_sql = "CREATE TABLE IF NOT EXISTS css("  \
-						"css_id 			INTEGER PRIMARY KEY," \
-						"epub_file_id		INTEGER NOT NULL," \
-						"opf_id 			INTEGER NOT NULL," \
-						"name		 	TEX NOT NULL," \
-						"display_type	 	INTEGER NOT NULL," \
-						"font_size		 	INTEGER NOT NULL," \
-						"font_weight	 	INTEGER NOT NULL," \
-						"font_style	 	INTEGER NOT NULL," \
-						"margin_top	 	REAL NOT NULL," \
-						"margin_bottom	REAL NOT NULL," \
-						"pagebreakbefore	INTEGER NOT NULL," \
-						"pagebreakafter	INTEGER NOT NULL," \
-						"text_align		INTEGER NOT NULL," \
-						"text_indent 		REAL NOT NULL) ;";
+						"css_id 				INTEGER PRIMARY KEY," \
+						"epub_file_id			INTEGER NOT NULL," \
+						"opf_id 				INTEGER NOT NULL," \
+						"name			 	TEX NOT NULL," \
+						"display_type	 		INTEGER NOT NULL," \
+						"font_size		 		INTEGER NOT NULL," \
+						"font_weight	 		INTEGER NOT NULL," \
+						"font_style	 		INTEGER NOT NULL," \
+						"margin_top	 		REAL NOT NULL," \
+						"margin_top_type		INTEGER NOT NULL," \
+						"margin_bottom		REAL NOT NULL," \
+						"margin_bottom_type	INTEGER NOT NULL," \
+						"pagebreakbefore		INTEGER NOT NULL," \
+						"pagebreakafter		INTEGER NOT NULL," \
+						"text_align			INTEGER NOT NULL," \
+						"text_indent			REAL NOT NULL," \
+						"text_indent_type 		INTEGER NOT NULL) ;";
 	
 	sqlite3_exec(db, css_table_sql.c_str(), NULL, NULL, &errmsg);
 	
@@ -538,7 +546,7 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 		double textindent;
 	*/
 	
-	const string css_insert_sql = "INSERT INTO css (epub_file_id, opf_id, name, display_type, font_size, font_weight, font_style, margin_top, margin_bottom, pagebreakbefore, pagebreakafter, text_align, text_indent) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+	const string css_insert_sql = "INSERT INTO css (epub_file_id, opf_id, name, display_type, font_size, font_weight, font_style, margin_top, margin_top_type, margin_bottom, margin_bottom_type, pagebreakbefore, pagebreakafter, text_align, text_indent, text_indent_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 	const string css_tags_insert_sql = "INSERT INTO css_tags (css_id, tagname, tagvalue) VALUES (?, ?, ?);";
 	
 	rc = sqlite3_prepare_v2(db, css_insert_sql.c_str(), -1, &css_insert, 0);
@@ -557,12 +565,15 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 		sqlite3_bind_int(css_insert, 5, (int) cssclass.fontsize);
 		sqlite3_bind_int(css_insert, 6, (int) cssclass.fontweight);
 		sqlite3_bind_int(css_insert, 7, (int) cssclass.fontstyle);
-		sqlite3_bind_double(css_insert, 8, cssclass.margintop);
-		sqlite3_bind_double(css_insert, 9, cssclass.marginbottom);
-		sqlite3_bind_int(css_insert, 10, (int) cssclass.pagebreakbefore);
-		sqlite3_bind_int(css_insert, 11, (int) cssclass.pagebreakafter);
-		sqlite3_bind_int(css_insert, 12, (int) cssclass.textalign);
-		sqlite3_bind_double(css_insert, 13, cssclass.textindent);
+		sqlite3_bind_double(css_insert, 8, cssclass.margintop.value);
+		sqlite3_bind_int(css_insert, 9, (int) cssclass.margintop.type);
+		sqlite3_bind_double(css_insert, 10, cssclass.marginbottom.value);
+		sqlite3_bind_int(css_insert, 11, (int) cssclass.marginbottom.type);
+		sqlite3_bind_int(css_insert, 12, (int) cssclass.pagebreakbefore);
+		sqlite3_bind_int(css_insert, 13, (int) cssclass.pagebreakafter);
+		sqlite3_bind_int(css_insert, 14, (int) cssclass.textalign);
+		sqlite3_bind_double(css_insert, 15, cssclass.textindent.value);
+		sqlite3_bind_int(css_insert, 16, (int) cssclass.textindent.type);
 		
 		int result = sqlite3_step(css_insert);
 		if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) throw -1;
