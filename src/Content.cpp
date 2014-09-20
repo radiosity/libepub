@@ -121,6 +121,7 @@ namespace {
 	//This whole method is fairly awful.
 	pair<ustring, ustring> __recursive_strip(vector<ContentItem> & items, const CSS & classes, const path file, const Node * const node)
 	{
+
 		const TextNode * nodeText = dynamic_cast<const TextNode *>(node);
 
 		if(nodeText) {
@@ -134,11 +135,14 @@ namespace {
 
 		const Element * nodeElement = dynamic_cast<const Element *>(node);
 		const auto nodelist = nodeElement->get_children();
+
 		ustring value = "";
 		ustring value_stripped = "";
 
 		for(auto niter = nodelist.begin(); niter != nodelist.end(); ++niter) {
+
 			const Node * childNode = *niter;
+
 			//Still still Genuinely horrible.
 			const Element * childElement = dynamic_cast<const Element *>(childNode);
 			const TextNode * childText = dynamic_cast<const TextNode *>(childNode);
@@ -154,6 +158,7 @@ namespace {
 			}
 
 			if(childElement) {
+
 				const ustring childname = childElement->get_name();
 
 				if(childname.compare("i") == 0) {
@@ -244,15 +249,19 @@ namespace {
 					}
 
 					value_stripped += res.second;
+
 				}
 				else if(childname.compare("hr") == 0)  {
 					//What to do if this is a nested <hr> tag within (frequently)
 					//a <p> tag.
 					ContentType ct = HR;
+
 					//See if we can find a CSS class for this.
 					CSSClass cssclass = classes.get_class("hr");
 					ContentItem ci(ct, cssclass, file, __id, "", "");
+
 					items.push_back(ci);
+
 					value = "";
 					value_stripped = "";
 				}
@@ -267,7 +276,9 @@ namespace {
 		const auto nlist = node->get_children();
 
 		for(auto niter = nlist.begin(); niter != nlist.end(); ++niter) {
+
 			const Node * ntmp = *niter;
+
 			//Still still Genuinely horrible.
 			const Element * tmpnode = dynamic_cast<const Element *>(ntmp);
 
@@ -284,6 +295,7 @@ namespace {
 				__recursive_find(items, classes, file, ntmp);
 			}
 			else {
+
 				ContentType ct = P;
 				//Try to get a class for the content type.
 				CSSClass cssclass;
@@ -335,6 +347,7 @@ namespace {
 				#endif
 				ContentItem ci(ct, cssclass, file, __id, content.first, content.second);
 				items.push_back(ci);
+
 			}
 		}
 	}
@@ -345,6 +358,7 @@ Content::Content(CSS & _classes, vector<path> _files) :
 	files(_files)
 {
 	for(const auto file : files) {
+
 		__id = "";
 
 		if(!exists(file)) {
@@ -354,8 +368,10 @@ Content::Content(CSS & _classes, vector<path> _files) :
 		#ifdef DEBUG
 		cout << "Loading content file " << file << endl;
 		#endif
+
 		DomParser parser;
 		parser.parse_file(file.string());
+
 		const Node * root = parser.get_document()->get_root_node();
 		const ustring rootname = root->get_name();
 
@@ -366,6 +382,7 @@ Content::Content(CSS & _classes, vector<path> _files) :
 		const auto nlist = root->get_children();
 
 		for(auto niter = nlist.begin(); niter != nlist.end(); ++niter) {
+
 			const Node * ntmp = *niter;
 			//Still still Genuinely horrible.
 			const Element * tmpnode = dynamic_cast<const Element *>(ntmp);
@@ -377,6 +394,7 @@ Content::Content(CSS & _classes, vector<path> _files) :
 			if(tmpnode->get_name().compare("body") == 0)  {
 				__recursive_find(items, classes, file, ntmp);
 			}
+
 		}
 	}
 }
@@ -417,5 +435,4 @@ Content::~Content()
 
 void Content::save_to(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index)
 {
-	
 }

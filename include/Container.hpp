@@ -58,7 +58,6 @@ class RootFile {
 class Container {
 
 	public:
-
 		vector<RootFile> rootfiles;
 
 		Container();

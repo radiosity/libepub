@@ -79,6 +79,7 @@ Epub::Epub(string _filename) :
 	#ifdef DEBUG
 	cout << "\t Hash: " << hash_string << endl;
 	#endif
+
 	//Now to do work.
 	path to_tmp = temp_directory_path();
 	#ifdef DEBUG
@@ -86,12 +87,16 @@ Epub::Epub(string _filename) :
 	#endif
 	to_tmp /= "epub";
 	create_directory(to_tmp);
+
 	to_tmp /= hash_string;
 	directory_path = to_tmp;
+
 	#ifdef DEBUG
 	cout << "Temporary directory is " << to_tmp << endl;
 	#endif
+
 	create_directory(directory_path);
+
 	//OK, so we have some stuff to play with. Now. Time to inflate.
 	//This is a hack and I bloody hate it. But it'll suffice for now.
 	const char * program_path = "/usr/bin/unzip";
@@ -111,13 +116,17 @@ Epub::Epub(string _filename) :
 	}
 	else {
 		int status;
+
 		#ifdef DEBUG
 		cout << "Waiting for pid " << pid << endl;
 		#endif
+
 		waitpid(pid, &status, 0);
+
 		#ifdef DEBUG
 		cout << "PID joined " << pid << endl;
 		#endif
+
 	}
 
 	path to_mimetype = to_tmp;
@@ -150,8 +159,10 @@ Epub::Epub(string _filename) :
 	container.load(directory_path);
 
 	for(auto rf : container.rootfiles) {
+
 		OPF tmp(directory_path, rf.full_path);
 		opf_files.push_back(tmp);
+
 		vector<path> cssfiles;
 
 		for(ManifestItem mi : tmp.find_manifestitems_by_type("text/css")) {
@@ -165,6 +176,7 @@ Epub::Epub(string _filename) :
 
 		CSS cssclasses(cssfiles);
 		css.push_back(cssclasses);
+
 		vector<path> contentfiles;
 
 		for(auto si : tmp.spine) {
@@ -180,6 +192,7 @@ Epub::Epub(string _filename) :
 
 		Content content(cssclasses, contentfiles);
 		contents.push_back(content);
+
 	}
 }
 
@@ -189,17 +202,20 @@ size_t inline Epub::compute_epub_hash(string _filename)
 	unsigned int size = file_size(file);
 	time_t lmtime = last_write_time(file);
 	string timestring = lexical_cast<std::string>(lmtime);
+
 	#ifdef DEBUG
 	cout << "File Exists" << endl;
 	cout << "\t Name: " << _filename << endl;
 	cout << "\t Size: " << size << endl;
 	cout << "\t Last Modified: " << timestring << endl;
 	#endif
+
 	//Calculate the hash.
 	size_t filehash = 0;
 	hash_combine<string>(filehash, _filename);
 	hash_combine<unsigned int>(filehash, size);
 	hash_combine<string>(filehash, timestring);
+
 	return filehash;
 }
 
@@ -261,8 +277,10 @@ void Epub::save_to(sqlite3 * const db)
 {
 	int rc;
 	char * errmsg;
+
 	//Do all the following inserts in an SQLite Transaction, because this speeds up the inserts like crazy.
 	sqlite3_exec(db, "BEGIN TRANSACTION", NULL, NULL, &errmsg);
+
 	//First, write a little high-level information to the database.
 	const string table_sql = "CREATE TABLE IF NOT EXISTS epub_files("  \
 	                         "epub_file_id INTEGER PRIMARY KEY," \
@@ -271,6 +289,7 @@ void Epub::save_to(sqlite3 * const db)
 	                         "hash_string TEXT NOT NULL) ;";
 	sqlite3_exec(db, table_sql.c_str(), NULL, NULL, &errmsg);
 	//Table created.
+
 	const string files_insert_sql = "INSERT INTO epub_files (filename, hash, hash_string) VALUES (?, ?, ?);";
 	sqlite3_stmt * files_insert;
 	rc = sqlite3_prepare_v2(db, files_insert_sql.c_str(), -1, &files_insert, 0);
@@ -282,6 +301,7 @@ void Epub::save_to(sqlite3 * const db)
 	sqlite3_bind_text(files_insert, 1, filename.c_str(), -1, SQLITE_STATIC);
 	sqlite3_bind_int(files_insert, 2, hash);
 	sqlite3_bind_text(files_insert, 3, hash_string.c_str(), -1, SQLITE_STATIC);
+
 	int result = sqlite3_step(files_insert);
 
 	if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) {
@@ -290,7 +310,9 @@ void Epub::save_to(sqlite3 * const db)
 
 	//get the new id:
 	const auto key = sqlite3_last_insert_rowid(db);
+
 	sqlite3_finalize(files_insert);
+
 	container.save_to(db, key);
 	unsigned int index = 0;
 
@@ -305,5 +327,6 @@ void Epub::save_to(sqlite3 * const db)
 	}
 
 	sqlite3_exec(db, "END TRANSACTION", NULL, NULL, &errmsg);
+
 }
 

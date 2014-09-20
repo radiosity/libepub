@@ -105,7 +105,9 @@ void Container::load(path to_dir)
 	auto rfslist = root->get_children();
 
 	for(auto rfsiter = rfslist.begin(); rfsiter != rfslist.end(); ++rfsiter) {
+
 		Node * rfstmp = *rfsiter;
+
 		//Genuinely horrible.
 		const Element * rfsnode = dynamic_cast<const Element *>(rfstmp);
 
@@ -114,10 +116,13 @@ void Container::load(path to_dir)
 		}
 
 		if(rfsnode->get_name().compare("rootfiles") == 0) {
+
 			auto rflist = rfsnode->get_children();
 
 			for(auto rfiter = rflist.begin(); rfiter != rflist.end(); ++rfiter) {
+
 				Node * rftmp = *rfiter;
+
 				//Genuinely horrible.
 				const Element * rfnode = dynamic_cast<const Element *>(rftmp);
 
@@ -126,6 +131,7 @@ void Container::load(path to_dir)
 				}
 
 				if(rfnode->get_name().compare("rootfile") == 0)  {
+
 					ustring mt;
 					ustring fp;
 					const auto attributes = rfnode->get_attributes();
@@ -149,7 +155,9 @@ void Container::load(path to_dir)
 					#ifdef DEBUG
 					cout << "Root file " << mt << " " << fp << endl;
 					#endif
+
 					rootfiles.push_back(RootFile(mt, fp));
+
 				}
 			}
 		}
@@ -186,13 +194,17 @@ void Container::save_to(sqlite3 * const db, const unsigned int epub_file_id)
 {
 	int rc;
 	char * errmsg;
+
 	const string table_sql = "CREATE TABLE container("  \
 	                         "epub_file_id INTEGER NOT NULL," \
 	                         "media_type TEXT NOT NULL," \
 	                         "full_path TEXT NOT NULL) ;";
 	sqlite3_exec(db, table_sql.c_str(), NULL, NULL, &errmsg);
+
 	//Table created.
+
 	const string container_insert_sql = "INSERT INTO container (epub_file_id, media_type, full_path) VALUES (?, ?, ?);";
+
 	sqlite3_stmt * container_insert;
 	rc = sqlite3_prepare_v2(db, container_insert_sql.c_str(), -1, &container_insert, 0);
 
@@ -201,9 +213,11 @@ void Container::save_to(sqlite3 * const db, const unsigned int epub_file_id)
 	}
 
 	for(auto & rootfile : rootfiles) {
+
 		sqlite3_bind_int(container_insert, 1, epub_file_id);
 		sqlite3_bind_text(container_insert, 2, rootfile.media_type.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(container_insert, 3, rootfile.full_path.c_str(), -1, SQLITE_STATIC);
+
 		int result = sqlite3_step(container_insert);
 
 		if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) {
@@ -214,6 +228,7 @@ void Container::save_to(sqlite3 * const db, const unsigned int epub_file_id)
 	}
 
 	sqlite3_finalize(container_insert);
+
 }
 
 

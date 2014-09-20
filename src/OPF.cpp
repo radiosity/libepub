@@ -176,6 +176,7 @@ OPF::OPF(path to_dir, ustring file)
 {
 	to_file = to_dir;
 	to_file /= file.raw();
+
 	#ifdef DEBUG
 	cout << to_file << endl;;
 	#endif
@@ -196,7 +197,9 @@ OPF::OPF(path to_dir, ustring file)
 	auto nlist = root->get_children();
 
 	for(auto niter = nlist.begin(); niter != nlist.end(); ++niter) {
+
 		Node * ntmp = *niter;
+
 		//Genuinely horrible.
 		const Element * mdnode = dynamic_cast<const Element *>(ntmp);
 
@@ -205,10 +208,13 @@ OPF::OPF(path to_dir, ustring file)
 		}
 
 		if(mdnode->get_name().compare("metadata") == 0)  {
+
 			auto mdlist = mdnode->get_children();
 
 			for(auto mditer = mdlist.begin(); mditer != mdlist.end(); ++mditer) {
+
 				Node * metadatatmp = *mditer;
+
 				//Still genuinely horrible.
 				const Element * metadatanode = dynamic_cast<const Element *>(metadatatmp);
 
@@ -218,6 +224,7 @@ OPF::OPF(path to_dir, ustring file)
 
 				ustring name = metadatanode->get_name();
 				MetadataType mdtype = MetadataType_from_ustring(name);
+
 				#ifdef DEBUG
 
 				if(mdtype == UNKNOWN) {
@@ -225,6 +232,7 @@ OPF::OPF(path to_dir, ustring file)
 				}
 
 				#endif
+
 				auto textnd = metadatanode->get_child_text();
 				ustring content = "";
 
@@ -235,6 +243,7 @@ OPF::OPF(path to_dir, ustring file)
 				#ifdef DEBUG
 				cout << "Node is " << name << " - " << content << endl;
 				#endif
+
 				MetadataItem md(mdtype, content);
 				const auto attributes = metadatanode->get_attributes();
 
@@ -247,14 +256,18 @@ OPF::OPF(path to_dir, ustring file)
 				}
 
 				metadata.insert(pair<MetadataType, MetadataItem>(mdtype, md));
+
 			}
 		}
 
 		if(mdnode->get_name().compare("manifest") == 0)  {
+
 			auto mlist = mdnode->get_children();
 
 			for(auto miter = mlist.begin(); miter != mlist.end(); ++miter) {
+
 				Node * itemtmp = *miter;
+
 				//Still genuinely horrible.
 				const Element * itemnode = dynamic_cast<const Element *>(itemtmp);
 
@@ -290,15 +303,18 @@ OPF::OPF(path to_dir, ustring file)
 
 				ManifestItem tmp(href, id, media_type);
 				manifest.insert(pair<ustring, ManifestItem>(id, tmp));
+
 				#ifdef DEBUG
 				cout << "Manifest href: " << href << " id " << id << " media type " << media_type << endl;
 				#endif
+
 			}
 		}
 
 		if(mdnode->get_name().compare("spine") == 0)  {
 			auto mlist = mdnode->get_children();
 			{
+
 				const auto attributes = mdnode->get_attributes();
 
 				for(auto iter = attributes.begin(); iter != attributes.end(); ++iter) {
@@ -315,10 +331,13 @@ OPF::OPF(path to_dir, ustring file)
 					cout << "toc is " << attrvalue << endl;
 					#endif
 				}
+
 			}
 
 			for(auto miter = mlist.begin(); miter != mlist.end(); ++miter) {
+
 				Node * itemtmp = *miter;
+
 				//Still genuinely horrible.
 				const Element * itemnode = dynamic_cast<const Element *>(itemtmp);
 
@@ -357,9 +376,11 @@ OPF::OPF(path to_dir, ustring file)
 
 				SpineItem tmp(idref, linear);
 				spine.push_back(tmp);
+
 				#ifdef DEBUG
 				cout << "Spine idref: " << idref << " linear " << linear  << endl;
 				#endif
+
 			}
 		}
 	}
@@ -439,6 +460,7 @@ void OPF::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 {
 	int rc;
 	char * errmsg;
+
 	const string metadata_table_sql = "CREATE TABLE IF NOT EXISTS metadata("  \
 	                                  "metadata_id INTEGER PRIMARY KEY," \
 	                                  "epub_file_id INTEGER NOT NULL," \
@@ -446,11 +468,13 @@ void OPF::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	                                  "metadata_type INTEGER NOT NULL," \
 	                                  "contents TEXT NOT NULL) ;";
 	sqlite3_exec(db, metadata_table_sql.c_str(), NULL, NULL, &errmsg);
+
 	const string metadata_tags_table_sql = "CREATE TABLE IF NOT EXISTS metadata_tags("  \
 	                                       "metadata_id INTEGER NOT NULL," \
 	                                       "tagname TEXT NOT NULL," \
 	                                       "tagvalue TEXT NOT NULL) ;";
 	sqlite3_exec(db, metadata_tags_table_sql.c_str(), NULL, NULL, &errmsg);
+
 	const string manifest_table_sql = "CREATE TABLE IF NOT EXISTS manifest("  \
 	                                  "epub_file_id INTEGER NOT NULL," \
 	                                  "opf_id INTEGER NOT NULL," \
@@ -458,21 +482,26 @@ void OPF::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	                                  "id TEXT NOT NULL," \
 	                                  "media_type TEXT NOT NULL) ;";
 	sqlite3_exec(db, manifest_table_sql.c_str(), NULL, NULL, &errmsg);
+
 	const string spine_table_sql = "CREATE TABLE IF NOT EXISTS spine("  \
 	                               "epub_file_id INTEGER NOT NULL," \
 	                               "opf_id INTEGER NOT NULL," \
 	                               "idref TEXT NOT NULL," \
 	                               "linear INTEGER NOT NULL) ;";
 	sqlite3_exec(db, spine_table_sql.c_str(), NULL, NULL, &errmsg);
+
 	//Tables created.
+
 	sqlite3_stmt * metadata_insert;
 	sqlite3_stmt * metadata_tags_insert;
 	sqlite3_stmt * manifest_insert;
 	sqlite3_stmt * spine_insert;
+
 	const string metadata_insert_sql = "INSERT INTO metadata (epub_file_id, opf_id, metadata_type, contents) VALUES (?, ?, ?, ?);";
 	const string metadata_tags_insert_sql = "INSERT INTO metadata_tags (metadata_id, tagname, tagvalue) VALUES (?, ?, ?);";
 	const string manifest_insert_sql = "INSERT INTO manifest (epub_file_id, opf_id, href, id, media_type) VALUES (?, ?, ?, ?, ?);";
 	const string spine_insert_sql = "INSERT INTO spine (epub_file_id, opf_id, idref, linear) VALUES (?, ?, ?, ?);";
+
 	rc = sqlite3_prepare_v2(db, metadata_insert_sql.c_str(), -1, &metadata_insert, 0);
 
 	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
@@ -498,10 +527,12 @@ void OPF::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	}
 
 	for(auto & mi : metadata) {
+
 		sqlite3_bind_int(metadata_insert, 1, epub_file_id);
 		sqlite3_bind_int(metadata_insert, 2, opf_index);
 		sqlite3_bind_int(metadata_insert, 3, mi.second.type);
 		sqlite3_bind_text(metadata_insert, 4, mi.second.contents.c_str(), -1, SQLITE_STATIC);
+
 		int result = sqlite3_step(metadata_insert);
 
 		if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) {
@@ -509,10 +540,12 @@ void OPF::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 		}
 
 		sqlite3_reset(metadata_insert);
+
 		//get the new id:
 		auto key = sqlite3_last_insert_rowid(db);
 
 		for(auto tags : mi.second.other_tags) {
+
 			sqlite3_bind_int(metadata_tags_insert, 1, key);
 			sqlite3_bind_text(metadata_tags_insert, 2, tags.first.c_str(), -1, SQLITE_STATIC);
 			sqlite3_bind_text(metadata_tags_insert, 3, tags.second.c_str(), -1, SQLITE_STATIC);
@@ -523,10 +556,12 @@ void OPF::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 			}
 
 			sqlite3_reset(metadata_tags_insert);
+
 		}
 	}
 
 	for (auto & mi : manifest) {
+
 		sqlite3_bind_int(manifest_insert, 1, epub_file_id);
 		sqlite3_bind_int(manifest_insert, 2, opf_index);
 		sqlite3_bind_text(manifest_insert, 3, mi.second.href.c_str(), -1, SQLITE_STATIC);
@@ -539,9 +574,11 @@ void OPF::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 		}
 
 		sqlite3_reset(manifest_insert);
+
 	}
 
 	for (auto & si : spine) {
+
 		sqlite3_bind_int(spine_insert, 1, epub_file_id);
 		sqlite3_bind_int(spine_insert, 2, opf_index);
 		sqlite3_bind_text(spine_insert, 3, si.idref.c_str(), -1, SQLITE_STATIC);
@@ -553,13 +590,16 @@ void OPF::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 		}
 
 		sqlite3_reset(spine_insert);
+
 	}
 
 	//Create an index for the metadata tags
 	const string metadata_index_sql = "CREATE INDEX index_metadata_tags ON metadata_tags(metadata_id);";
 	sqlite3_exec(db, metadata_index_sql.c_str(), NULL, NULL, &errmsg);
+
 	sqlite3_finalize(metadata_insert);
 	sqlite3_finalize(metadata_tags_insert);
 	sqlite3_finalize(manifest_insert);
 	sqlite3_finalize(spine_insert);
+
 }

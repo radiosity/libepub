@@ -258,16 +258,22 @@ CSS::CSS(vector<path> _files) :
 	regex regex_cm("([\\d]+)cm", regex::optimize);
 
 	for (path file : files) {
+
 		#ifdef DEBUG
 		cout << "CSS File is "  << file << endl;
 		#endif
+
 		bool class_is_open = false;
 		bool is_at_rule = false;
+
 		ifstream cssfile (file.string());
 
 		if(cssfile.is_open()) {
+
 			CSSClass cssclass;
+
 			string line;
+
 			//You can declare that multiple things are affected by one declaration.
 			//For example:
 			//div, p, pre, h1, h2, h3, h4, h5, h6 {
@@ -277,7 +283,9 @@ CSS::CSS(vector<path> _files) :
 			vector<ustring> classnames;
 
 			while(!cssfile.eof()) {
+
 				getline(cssfile, line);
+
 				#ifdef DEBUG
 				cout << "Line is "  << line << endl;
 				#endif
@@ -288,6 +296,7 @@ CSS::CSS(vector<path> _files) :
 				}
 
 				if(line.find("}") != string::npos) {
+
 					#ifdef DEBUG
 
 					if (!is_at_rule) {
@@ -313,6 +322,7 @@ CSS::CSS(vector<path> _files) :
 					class_is_open = false;
 					is_at_rule = false;
 					continue;
+
 				}
 
 				//skip at rule lines;
@@ -347,8 +357,10 @@ CSS::CSS(vector<path> _files) :
 							#endif
 						}
 					}
+
 				}
 				else {
+
 					smatch regex_matches;
 					regex_search(line, regex_matches, regex_attr);
 
@@ -582,6 +594,7 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 {
 	int rc;
 	char * errmsg;
+
 	const string css_table_sql = "CREATE TABLE IF NOT EXISTS css("  \
 	                             "css_id 				INTEGER PRIMARY KEY," \
 	                             "epub_file_id			INTEGER NOT NULL," \
@@ -601,16 +614,20 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	                             "text_indent			REAL NOT NULL," \
 	                             "text_indent_type 		INTEGER NOT NULL) ;";
 	sqlite3_exec(db, css_table_sql.c_str(), NULL, NULL, &errmsg);
+
 	const string css_tags_table_sql = "CREATE TABLE IF NOT EXISTS css_tags("  \
 	                                  "css_id INTEGER NOT NULL," \
 	                                  "tagname TEXT NOT NULL," \
 	                                  "tagvalue TEXT NOT NULL) ;";
 	sqlite3_exec(db, css_tags_table_sql.c_str(), NULL, NULL, &errmsg);
+
 	//Tables created.
 	sqlite3_stmt * css_insert;
 	sqlite3_stmt * css_tags_insert;
+
 	const string css_insert_sql = "INSERT INTO css (epub_file_id, opf_id, name, display_type, font_size, font_weight, font_style, margin_top, margin_top_type, margin_bottom, margin_bottom_type, pagebreakbefore, pagebreakafter, text_align, text_indent, text_indent_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 	const string css_tags_insert_sql = "INSERT INTO css_tags (css_id, tagname, tagvalue) VALUES (?, ?, ?);";
+
 	rc = sqlite3_prepare_v2(db, css_insert_sql.c_str(), -1, &css_insert, 0);
 
 	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
@@ -624,7 +641,9 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	}
 
 	for(auto & csspair : classes) {
+
 		CSSClass cssclass = csspair.second;
+
 		sqlite3_bind_int(css_insert, 1, epub_file_id);
 		sqlite3_bind_int(css_insert, 2, opf_index);
 		sqlite3_bind_text(css_insert, 3, cssclass.name.c_str(), -1, SQLITE_STATIC);
@@ -641,6 +660,7 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 		sqlite3_bind_int(css_insert, 14, (int) cssclass.textalign);
 		sqlite3_bind_double(css_insert, 15, cssclass.textindent.value);
 		sqlite3_bind_int(css_insert, 16, (int) cssclass.textindent.type);
+
 		int result = sqlite3_step(css_insert);
 
 		if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) {
@@ -648,13 +668,16 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 		}
 
 		sqlite3_reset(css_insert);
+
 		//get the new id:
 		const auto key = sqlite3_last_insert_rowid(db);
 
 		for(auto & pair : cssclass.raw_pairs) {
+
 			sqlite3_bind_int(css_tags_insert, 1, key);
 			sqlite3_bind_text(css_tags_insert, 2, pair.first.c_str(), -1, SQLITE_STATIC);
 			sqlite3_bind_text(css_tags_insert, 3, pair.second.c_str(), -1, SQLITE_STATIC);
+
 			int result = sqlite3_step(css_tags_insert);
 
 			if(result != SQLITE_OK && result != SQLITE_ROW && result != SQLITE_DONE) {
@@ -662,12 +685,15 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 			}
 
 			sqlite3_reset(css_tags_insert);
+
 		}
 	}
 
 	//Create an index for the css tags
 	const string css_index_sql = "CREATE INDEX index_css_tags ON css_tags(css_id);";
 	sqlite3_exec(db, css_index_sql.c_str(), NULL, NULL, &errmsg);
+
 	sqlite3_finalize(css_insert);
 	sqlite3_finalize(css_tags_insert);
+
 }
