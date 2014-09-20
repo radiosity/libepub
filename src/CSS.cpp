@@ -231,8 +231,8 @@ CSS::CSS(vector<path> _files) :
 	regex regex_atrule_single("^@.*;$", regex::optimize);
 	regex regex_atrule_multiple("^@.*\\{", regex::optimize);
 	regex regex_attr("([A-Za-z0-9-]+)\\s*:{1}\\s*([^;]*)", regex::optimize);
-	regex regex_percent("([\\d\\.]+)%", regex::optimize);
-	regex regex_em("([\\d\\.]+)em", regex::optimize);
+	regex regex_percent("([\\d]+)%", regex::optimize);
+	regex regex_em("([\\d]+)em", regex::optimize);
 	
 	for (path file : files) { 
 		
