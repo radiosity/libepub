@@ -196,6 +196,20 @@ OPF::OPF(path to_dir, ustring file)
 
 	auto nlist = root->get_children();
 
+	//setup collation keys for improved speed:
+	const string metadata_key = ustring("metadata").collate_key();
+	const string manifest_key = ustring("manifest").collate_key();
+	const string item_key = ustring("item").collate_key();
+	const string href_key = ustring("href").collate_key();
+	const string id_key = ustring("id").collate_key();
+	const string media_type_key = ustring("media-type").collate_key();
+	const string spine_key = ustring("spine").collate_key();
+	const string toc_key = ustring("toc-type").collate_key();
+	const string itemref_key = ustring("itemref").collate_key();
+	const string idref_key = ustring("idref").collate_key();
+	const string linear_key = ustring("linear").collate_key();
+	const string yes_key = ustring("yes").collate_key();
+
 	for(auto niter = nlist.begin(); niter != nlist.end(); ++niter) {
 
 		Node * ntmp = *niter;
@@ -207,7 +221,7 @@ OPF::OPF(path to_dir, ustring file)
 			continue;
 		}
 
-		if(mdnode->get_name().compare("metadata") == 0)  {
+		if(mdnode->get_name().collate_key() == metadata_key)  {
 
 			auto mdlist = mdnode->get_children();
 
@@ -260,7 +274,7 @@ OPF::OPF(path to_dir, ustring file)
 			}
 		}
 
-		if(mdnode->get_name().compare("manifest") == 0)  {
+		if(mdnode->get_name().collate_key() == manifest_key)  {
 
 			auto mlist = mdnode->get_children();
 
@@ -277,7 +291,7 @@ OPF::OPF(path to_dir, ustring file)
 
 				ustring name = itemnode->get_name();
 
-				if(name.compare("item") != 0) {
+				if(name.collate_key() != item_key) {
 					continue;
 				}
 
@@ -290,13 +304,13 @@ OPF::OPF(path to_dir, ustring file)
 					ustring attrname = attribute->get_name();
 					ustring attrvalue = attribute->get_value();
 
-					if(attrname.compare("href") == 0) {
+					if(attrname.collate_key() == href_key) {
 						href = attrvalue;
 					}
-					else if(attrname.compare("id") == 0) {
+					else if(attrname.collate_key() == id_key) {
 						id = attrvalue;
 					}
-					else if(attrname.compare("media-type") == 0) {
+					else if(attrname.collate_key() == media_type_key) {
 						media_type = attrvalue;
 					}
 				}
@@ -311,7 +325,8 @@ OPF::OPF(path to_dir, ustring file)
 			}
 		}
 
-		if(mdnode->get_name().compare("spine") == 0)  {
+		if(mdnode->get_name().collate_key() == spine_key)  {
+
 			auto mlist = mdnode->get_children();
 			{
 
@@ -323,7 +338,7 @@ OPF::OPF(path to_dir, ustring file)
 					ustring attrname = attribute->get_name();
 					ustring attrvalue = attribute->get_value();
 
-					if(attrname.compare("toc") == 0) {
+					if(attrname.collate_key() == toc_key) {
 						spine_toc = attrvalue;
 					}
 
@@ -347,7 +362,7 @@ OPF::OPF(path to_dir, ustring file)
 
 				ustring name = itemnode->get_name();
 
-				if(name.compare("itemref") != 0) {
+				if(name.collate_key() != itemref_key) {
 					continue;
 				}
 
@@ -361,11 +376,11 @@ OPF::OPF(path to_dir, ustring file)
 					ustring attrname = attribute->get_name();
 					ustring attrvalue = attribute->get_value();
 
-					if(attrname.compare("idref") == 0) {
+					if(attrname.collate_key() == idref_key) {
 						idref = attrvalue;
 					}
-					else if(attrname.compare("linear") == 0) {
-						if(attrvalue.compare("yes") == 0) {
+					else if(attrname.collate_key() == linear_key) {
+						if(attrvalue.collate_key() == yes_key) {
 							linear = true;
 						}
 						else {

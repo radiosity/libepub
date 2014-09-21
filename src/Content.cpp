@@ -103,7 +103,7 @@ ContentItem::~ContentItem()
 
 ///////////////////////
 namespace {
-	inline ustring __create_text(ustring nodename, ustring nodecontents)
+	inline ustring __create_text(const ustring & nodename, const ustring & nodecontents)
 	{
 		ustring tmp;
 		tmp += "<";
@@ -117,6 +117,25 @@ namespace {
 	}
 
 	ustring __id = "";
+
+	string i_key;
+	string b_key;
+	string big_key;
+	string s_key;
+	string sub_key;
+	string sup_key;
+	string small_key;
+	string tt_key;
+	string u_key;
+	string a_key;
+	string span_key;
+	string class_key;
+	string hr_key;
+	string p_key;
+	string h1_key;
+	string h2_key;
+	string id_key;
+	string _blank_key;
 
 	//This whole method is fairly awful.
 	pair<ustring, ustring> __recursive_strip(vector<ContentItem> & items, const CSS & classes, const path file, const Node * const node)
@@ -160,58 +179,59 @@ namespace {
 			if(childElement) {
 
 				const ustring childname = childElement->get_name();
+				const ustring childname_key = childname.collate_key();
 
-				if(childname.compare("i") == 0) {
+				if(childname_key == i_key) {
 					//italic.
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("i", res.first);
 					value_stripped += res.second;
 				}
-				else if(childname.compare("b") == 0) {
+				else if(childname_key == b_key) {
 					//bold;
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("b", res.first);
 					value_stripped += res.second;
 				}
-				else if(childname.compare("big") == 0) {
+				else if(childname_key == big_key) {
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("big", res.first);
 					value_stripped += res.second;
 				}
-				else if(childname.compare("s") == 0) {
+				else if(childname_key == s_key) {
 					//strikethrough
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("s", res.first);
 					value_stripped += res.second;
 				}
-				else if(childname.compare("sub") == 0) {
+				else if(childname_key == sub_key) {
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("sub", res.first);
 					value_stripped += res.second;
 				}
-				else if(childname.compare("sup") == 0) {
+				else if(childname_key == sup_key) {
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("sup", res.first);
 					value_stripped += res.second;
 				}
-				else if(childname.compare("small") == 0) {
+				else if(childname_key == small_key) {
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("i", res.first);
 					value_stripped += res.second;
 				}
-				else if(childname.compare("tt") == 0) {
+				else if(childname_key == tt_key) {
 					//monospace
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("tt", res.first);
 					value_stripped += res.second;
 				}
-				else if(childname.compare("u") == 0) {
+				else if(childname_key == u_key) {
 					//underline
 					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
 					value += __create_text("u", res.first);
 					value_stripped += res.second;
 				}
-				else if(childname.compare("a") == 0) {
+				else if(childname_key == a_key) {
 					//specific bheaviour for stripping hyperlinks within the text.
 					//I suspect that I'll have to come back to this, but at the moment I'm
 					//not completely sure how to handle it.
@@ -219,16 +239,17 @@ namespace {
 					value += res.first;
 					value_stripped += res.second;
 				}
-				else if(childname.compare("span") == 0) {
+				else if(childname_key == span_key) {
 					//specific bheaviour for stripping span tags
 					//Try to find a class attribute.
 					CSSClass tmp;
 					const auto attributes = childElement->get_attributes();
 
 					for(auto iter = attributes.begin(); iter != attributes.end(); ++iter) {
+						
 						const Attribute * attribute = *iter;
 
-						if(attribute->get_name().compare("class") == 0) {
+						if(attribute->get_name().collate_key() == class_key) {
 							//We've found a class here.
 							ustring cname = attribute->get_value();
 							//Need to do this better in the future:
@@ -251,7 +272,7 @@ namespace {
 					value_stripped += res.second;
 
 				}
-				else if(childname.compare("hr") == 0)  {
+				else if(childname_key == hr_key)  {
 					//What to do if this is a nested <hr> tag within (frequently)
 					//a <p> tag.
 					ContentType ct = HR;
@@ -287,11 +308,9 @@ namespace {
 			}
 
 			const ustring tmpnodename = tmpnode->get_name();
+			const string name_key = tmpnodename.collate_key();
 
-			if(tmpnodename.compare("p") != 0 &&
-			        tmpnodename.compare("h1") != 0 &&
-			        tmpnodename.compare("h2") != 0 &&
-			        tmpnodename.compare("hr") != 0) {
+			if(name_key != p_key && name_key !=  h1_key && name_key != h2_key && name_key != hr_key) {
 				__recursive_find(items, classes, file, ntmp);
 			}
 			else {
@@ -300,19 +319,19 @@ namespace {
 				//Try to get a class for the content type.
 				CSSClass cssclass;
 
-				if(tmpnode->get_name().compare("p") == 0) {
+				if(name_key == p_key) {
 					ct = P;
 					cssclass = classes.get_class("p");
 				}
-				else if (tmpnode->get_name().compare("h1") == 0) {
+				else if (name_key == h1_key) {
 					ct = H1;
 					cssclass = classes.get_class("h1");
 				}
-				else if (tmpnode->get_name().compare("h2") == 0) {
+				else if (name_key == h2_key) {
 					ct = H2;
 					cssclass = classes.get_class("h2");
 				}
-				else if (tmpnode->get_name().compare("hr") == 0) {
+				else if (name_key == hr_key) {
 					ct = HR;
 					cssclass = classes.get_class("hr");
 				}
@@ -322,11 +341,13 @@ namespace {
 				for(auto iter = attributes.begin(); iter != attributes.end(); ++iter) {
 					const Attribute * attribute = *iter;
 
-					if(attribute->get_name().compare("id") == 0) {
+					const string attr_key = attribute->get_name().collate_key();
+
+					if(attr_key == id_key) {
 						__id = attribute->get_value();
 					}
 
-					if(attribute->get_name().compare("class") == 0) {
+					if(attr_key == class_key) {
 						//We've found an additional class here.
 						ustring cname = attribute->get_value();
 						CSSClass tmp = classes.get_class(cname);
@@ -336,7 +357,7 @@ namespace {
 
 				pair<ustring, ustring> content = __recursive_strip(items, classes, file, ntmp);
 
-				if(content.first.compare("") == 0 && ct != HR) {
+				if(content.first.collate_key() == _blank_key && ct != HR) {
 					continue;
 				}
 
@@ -371,6 +392,32 @@ Content::Content(CSS & _classes, vector<path> _files) :
 
 		DomParser parser;
 		parser.parse_file(file.string());
+
+		//The DomParser futzes with the locale,
+		//which means that the collation keys
+		//created _before_ this will be incompatible
+		//with the collation keys created during the
+		//recursive methods.
+		//
+		//So, setup the keys here.
+		i_key = ustring("i").collate_key();
+		b_key = ustring("b").collate_key();
+		big_key = ustring("big").collate_key();
+		s_key = ustring("s").collate_key();
+		sub_key = ustring("sub").collate_key();
+		sup_key = ustring("sup").collate_key();
+		small_key = ustring("small").collate_key();
+		tt_key = ustring("tt").collate_key();
+		u_key = ustring("u").collate_key();
+		a_key = ustring("a").collate_key();
+		span_key = ustring("span").collate_key();
+		class_key = ustring("class").collate_key();
+		hr_key = ustring("hr").collate_key();
+		p_key = ustring("p").collate_key();
+		h1_key = ustring("h1").collate_key();
+		h2_key = ustring("h2").collate_key();
+		id_key = ustring("id").collate_key();
+		_blank_key = ustring ("").collate_key();
 
 		const Node * root = parser.get_document()->get_root_node();
 		const ustring rootname = root->get_name();

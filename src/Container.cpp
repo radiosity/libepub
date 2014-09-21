@@ -102,6 +102,11 @@ void Container::load(path to_dir)
 		throw std::runtime_error("container.xml does not contain a <container> node as root");
 	}
 
+	const string rootfiles_key = ustring("rootfiles").collate_key();
+	const string rootfile_key = ustring("rootfile").collate_key();
+	const string media_type_key = ustring("media-type").collate_key();
+	const string full_path_key = ustring("full-path").collate_key();
+
 	auto rfslist = root->get_children();
 
 	for(auto rfsiter = rfslist.begin(); rfsiter != rfslist.end(); ++rfsiter) {
@@ -115,7 +120,7 @@ void Container::load(path to_dir)
 			continue;
 		}
 
-		if(rfsnode->get_name().compare("rootfiles") == 0) {
+		if(rfsnode->get_name().collate_key() == rootfiles_key) {
 
 			auto rflist = rfsnode->get_children();
 
@@ -130,7 +135,7 @@ void Container::load(path to_dir)
 					continue;
 				}
 
-				if(rfnode->get_name().compare("rootfile") == 0)  {
+				if(rfnode->get_name().collate_key() == rootfile_key)  {
 
 					ustring mt;
 					ustring fp;
@@ -144,10 +149,10 @@ void Container::load(path to_dir)
 						//if(!namespace_prefix.empty()) cout << namespace_prefix  << ":";
 						//cout << attribute->get_name() << " = " << attribute->get_value() << endl;
 
-						if(attribute->get_name().compare("media-type") == 0) {
+						if(attribute->get_name().collate_key() == media_type_key) {
 							mt = attribute->get_value();
 						}
-						else if(attribute->get_name().compare("full-path") == 0) {
+						else if(attribute->get_name().collate_key() == full_path_key) {
 							fp = attribute->get_value();
 						}
 					}
