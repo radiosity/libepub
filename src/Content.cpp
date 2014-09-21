@@ -357,7 +357,7 @@ namespace {
 
 				pair<ustring, ustring> content = __recursive_strip(items, classes, file, ntmp);
 
-				if(content.first.collate_key() == _blank_key && ct != HR) {
+				if(ct != HR && content.first.empty()) {
 					continue;
 				}
 
