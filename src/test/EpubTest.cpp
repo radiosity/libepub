@@ -26,11 +26,49 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <gtest/gtest.h>
+#include <sqlite3.h>
+#include <boost/filesystem.hpp>
 
 #include "Epub.hpp"
 
+using namespace boost::filesystem;
+
 TEST(EpubTest, One) {
-  EXPECT_EQ(1, 1);
+	
+	//Unpack the ebook
+	ASSERT_NO_THROW(Epub book("books/PrideAndPrejudice.epub"));
+	
+	Epub file_book("books/PrideAndPrejudice.epub");
+	
+	sqlite3 * db;
+	
+	//Delete the database, if it exists. 
+	if(exists("database")) {
+		remove("database");
+	}
+	
+	ASSERT_EQ(0, sqlite3_open("database", &db));
+
+	ASSERT_NO_THROW(file_book.save_to(db));
+	
+	sqlite3_close(db);
+	
+	ASSERT_EQ(0, sqlite3_open("database", &db));
+
+	ASSERT_NO_THROW(Epub book(db, 1));
+	
+	Epub sql_book(db, 1);
+	
+	ASSERT_TRUE(file_book.filename == sql_book.filename);
+	ASSERT_TRUE(file_book.absolute_path == sql_book.absolute_path);
+	ASSERT_TRUE(file_book.hash == sql_book.hash);
+	ASSERT_TRUE(file_book.hash_string == sql_book.hash_string);
+	
+	sqlite3_close(db);
+	
+	//Delete the database 
+	remove("database");
+	
 }
 
 
