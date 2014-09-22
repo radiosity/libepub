@@ -170,7 +170,7 @@ class CSS {
 		CSS & operator =(const CSS & cpy);
 		CSS & operator =(CSS && mv);
 
-		CSSClass get_class(ustring name) const;
+		CSSClass get_class(const ustring & name) const;
 
 		~CSS();
 

@@ -579,7 +579,7 @@ CSS & CSS::operator =(CSS && mv)
 
 CSS::~CSS() { }
 
-CSSClass CSS::get_class(ustring name) const
+CSSClass CSS::get_class(const ustring & name) const
 {
 	if(classes.count(name) == 0) {
 		//It doesn't exist in the database. Return a CSSClass with all defaults.
