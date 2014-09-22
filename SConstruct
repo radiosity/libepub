@@ -87,3 +87,35 @@ sources = Glob('build/debug/cli/*.cpp')
 sources += ['bin/libepub++-debug.a']
  
 envDebug.Program('bin/debug', sources)
+
+#
+
+envTestRelease = Environment()
+
+envTestRelease['CXXFLAGS'] = "-O2 -std=c++11 -Wall -Wfatal-errors -pedantic"
+envTestRelease['CPPPATH'] = "include"
+	
+envTestRelease.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
+envTestRelease.Append(LIBS=['boost_system', 'boost_filesystem', 'cryptopp', 'sqlite3', 'gtest'])
+ 
+sources = Glob('build/release/test/*.cpp') 
+sources += ['bin/libepub++.a']
+ 
+envTestRelease.Program('bin/test_release', sources)
+
+#
+
+envTestDebug = Environment()
+
+envTestDebug['CXXFLAGS'] = "-O0 -g -std=c++11 -Wall -Wfatal-errors -pedantic"
+envTestDebug['CPPPATH'] = "include"
+	
+envTestDebug.ParseConfig('pkg-config libxml++-2.6 glibmm-2.4 --cflags --libs')
+envTestDebug.Append(LIBS=['boost_system', 'boost_filesystem', 'cryptopp', 'sqlite3', 'gtest'])
+envTestDebug.Append(CPPDEFINES=['DEBUG'])
+ 
+sources = Glob('build/debug/test/*.cpp') 
+sources += ['bin/libepub++-debug.a']
+ 
+envTestDebug.Program('bin/test_debug', sources)
+
