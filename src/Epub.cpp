@@ -39,6 +39,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/lexical_cast.hpp>
 #include <boost/functional/hash.hpp>
 
+#include "SQLiteUtils.hpp"
+
 using std::string;
 using std::move;
 using std::size_t;
@@ -57,15 +59,16 @@ using std::endl;
 #endif
 
 Epub::Epub(string _filename) :
+	from_epub(true),
 	filename(_filename)
 {
 	//check if the file exists first.
-	if(!exists(_filename)) {
+	if(!exists(filename)) {
 		throw std::runtime_error("No such filename");
 	}
 
 	//setup the absolute path
-	absolute_path = absolute(path(filename));
+	absolute_path = absolute(filename);
 	
 	//It does exist.
 	//Compute the hash
@@ -111,10 +114,11 @@ Epub::Epub(string _filename) :
 	}
 	else if (pid == 0) {
 		const char * argv0 = program_name;
-		const char * argv1 = filename.c_str();
-		const char * argv2 = "-d";
-		const char * argv3 = directory_path.string().c_str();
-		execl(program_path, argv0, argv1, argv2, argv3, NULL);
+		const char * argv1 = "-qq";
+		const char * argv2 = filename.c_str();
+		const char * argv3 = "-d";
+		const char * argv4 = directory_path.string().c_str();
+		execl(program_path, argv0, argv1, argv2, argv3, argv4, NULL);
 		throw std::runtime_error("Some problem with execl");
 	}
 	else {
@@ -199,6 +203,36 @@ Epub::Epub(string _filename) :
 	}
 }
 
+Epub::Epub(sqlite3 * const db, const unsigned int file_id) : from_epub(false) {
+
+	int rc; 
+	
+	const string files_select_sql = "SELECT * FROM epub_files WHERE epub_file_id=?;";
+	sqlite3_stmt * files_select;
+	rc = sqlite3_prepare_v2(db, files_select_sql.c_str(), -1, &files_select, 0);
+	
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
+		throw - 1;
+	}
+
+	sqlite3_bind_int(files_select, 1, file_id);
+	
+	rc = sqlite3_step(files_select);
+	
+	if(rc != SQLITE_ROW) {
+		//Can't find that file ID.
+		throw - 1;		
+	}
+	
+	filename = path(sqlite3_column_string(files_select, 1));
+	absolute_path = path(sqlite3_column_string(files_select, 2));
+	hash = (size_t) sqlite3_column_int64(files_select, 3);
+	hash_string = sqlite3_column_string(files_select, 4);
+	
+	sqlite3_finalize(files_select);
+	
+}
+
 size_t inline Epub::compute_epub_hash(const path & _absolute_path)
 {
 
@@ -224,6 +258,7 @@ size_t inline Epub::compute_epub_hash(const path & _absolute_path)
 }
 
 Epub::Epub(Epub const & cpy) :
+	from_epub(cpy.from_epub),
 	filename(cpy.filename),
 	absolute_path(cpy.absolute_path),
 	hash(cpy.hash),
@@ -236,6 +271,7 @@ Epub::Epub(Epub const & cpy) :
 }
 
 Epub::Epub(Epub && mv)  :
+	from_epub(move(mv.from_epub)),
 	filename (move(mv.filename)),
 	absolute_path(move(mv.absolute_path)),
 	hash(move(mv.hash)),
@@ -249,6 +285,7 @@ Epub::Epub(Epub && mv)  :
 
 Epub & Epub::operator =(const Epub & cpy)
 {
+	from_epub = cpy.from_epub;
 	filename = cpy.filename;
 	absolute_path = cpy.absolute_path;
 	hash = cpy.hash;
@@ -262,6 +299,7 @@ Epub & Epub::operator =(const Epub & cpy)
 
 Epub & Epub::operator =(Epub && mv)
 {
+	from_epub = move(mv.from_epub);
 	filename = move(mv.filename);
 	absolute_path = move(mv.absolute_path);
 	hash = move(mv.hash);
@@ -275,10 +313,12 @@ Epub & Epub::operator =(Epub && mv)
 
 Epub::~Epub()
 {
-	#ifdef DEBUG
-	cout << "Cleaning up EpubFile in dir" << directory_path << endl;
-	#endif
-	remove_all(directory_path);
+	if(from_epub) {
+		#ifdef DEBUG
+		cout << "Cleaning up EpubFile in dir" << directory_path << endl;
+		#endif
+		remove_all(directory_path);
+	}
 }
 
 void Epub::save_to(sqlite3 * const db)
@@ -309,7 +349,7 @@ void Epub::save_to(sqlite3 * const db)
 
 	sqlite3_bind_text(files_insert, 1, filename.c_str(), -1, SQLITE_STATIC);
 	sqlite3_bind_text(files_insert, 2, absolute_path.c_str(), -1, SQLITE_STATIC);
-	sqlite3_bind_int(files_insert, 3, hash);
+	sqlite3_bind_int64(files_insert, 3, hash);
 	sqlite3_bind_text(files_insert, 4, hash_string.c_str(), -1, SQLITE_STATIC);
 
 	int result = sqlite3_step(files_insert);

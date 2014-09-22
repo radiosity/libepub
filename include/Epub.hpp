@@ -44,9 +44,12 @@ using std::size_t;
 
 class Epub {
 
-	public:
-
-		string filename;
+	private:
+		bool from_epub;
+	
+	public: 
+	
+		path filename;
 		path absolute_path; 
 	
 		size_t hash;
@@ -60,6 +63,7 @@ class Epub {
 		vector<Content> contents;
 
 		Epub(string _filename);
+		Epub(sqlite3 * const db, const unsigned int file_id); 
 
 		Epub(Epub const & cpy);
 		Epub(Epub && mv);
