@@ -285,12 +285,13 @@ void Epub::save_to(sqlite3 * const db)
 	const string table_sql = "CREATE TABLE IF NOT EXISTS epub_files("  \
 	                         "epub_file_id INTEGER PRIMARY KEY," \
 	                         "filename TEXT NOT NULL," \
+	                         "absolute_path TEXT NOT NULL," \
 	                         "hash INTEGER NOT NULL," \
 	                         "hash_string TEXT NOT NULL) ;";
 	sqlite3_exec(db, table_sql.c_str(), NULL, NULL, &errmsg);
 	//Table created.
 
-	const string files_insert_sql = "INSERT INTO epub_files (filename, hash, hash_string) VALUES (?, ?, ?);";
+	const string files_insert_sql = "INSERT INTO epub_files (filename, absolute_path, hash, hash_string) VALUES (?, ?, ?, ?);";
 	sqlite3_stmt * files_insert;
 	rc = sqlite3_prepare_v2(db, files_insert_sql.c_str(), -1, &files_insert, 0);
 
@@ -299,8 +300,9 @@ void Epub::save_to(sqlite3 * const db)
 	}
 
 	sqlite3_bind_text(files_insert, 1, filename.c_str(), -1, SQLITE_STATIC);
-	sqlite3_bind_int(files_insert, 2, hash);
-	sqlite3_bind_text(files_insert, 3, hash_string.c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_text(files_insert, 2, absolute(path(filename)).c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_int(files_insert, 3, hash);
+	sqlite3_bind_text(files_insert, 4, hash_string.c_str(), -1, SQLITE_STATIC);
 
 	int result = sqlite3_step(files_insert);
 
