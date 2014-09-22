@@ -64,6 +64,9 @@ Epub::Epub(string _filename) :
 		throw std::runtime_error("No such filename");
 	}
 
+	//setup the absolute path
+	absolute_path = absolute(path(filename));
+	
 	//It does exist.
 	//Compute the hash
 	hash = compute_epub_hash(_filename);
@@ -79,7 +82,7 @@ Epub::Epub(string _filename) :
 	#ifdef DEBUG
 	cout << "\t Hash: " << hash_string << endl;
 	#endif
-
+	
 	//Now to do work.
 	path to_tmp = temp_directory_path();
 	#ifdef DEBUG
@@ -221,6 +224,7 @@ size_t inline Epub::compute_epub_hash(string _filename)
 
 Epub::Epub(Epub const & cpy) :
 	filename(cpy.filename),
+	absolute_path(cpy.absolute_path),
 	hash(cpy.hash),
 	hash_string(cpy.hash_string),
 	directory_path(cpy.directory_path),
@@ -232,6 +236,7 @@ Epub::Epub(Epub const & cpy) :
 
 Epub::Epub(Epub && mv)  :
 	filename (move(mv.filename)),
+	absolute_path(move(mv.absolute_path)),
 	hash(move(mv.hash)),
 	hash_string(move(mv.hash_string)),
 	directory_path(move(mv.directory_path)),
@@ -244,6 +249,7 @@ Epub::Epub(Epub && mv)  :
 Epub & Epub::operator =(const Epub & cpy)
 {
 	filename = cpy.filename;
+	absolute_path = cpy.absolute_path;
 	hash = cpy.hash;
 	hash_string = cpy.hash_string;
 	directory_path = cpy.directory_path;
@@ -256,6 +262,7 @@ Epub & Epub::operator =(const Epub & cpy)
 Epub & Epub::operator =(Epub && mv)
 {
 	filename = move(mv.filename);
+	absolute_path = move(mv.absolute_path);
 	hash = move(mv.hash);
 	hash_string = move(mv.hash_string);
 	directory_path = move(mv.directory_path);
@@ -300,7 +307,7 @@ void Epub::save_to(sqlite3 * const db)
 	}
 
 	sqlite3_bind_text(files_insert, 1, filename.c_str(), -1, SQLITE_STATIC);
-	sqlite3_bind_text(files_insert, 2, absolute(path(filename)).c_str(), -1, SQLITE_STATIC);
+	sqlite3_bind_text(files_insert, 2, absolute_path.c_str(), -1, SQLITE_STATIC);
 	sqlite3_bind_int(files_insert, 3, hash);
 	sqlite3_bind_text(files_insert, 4, hash_string.c_str(), -1, SQLITE_STATIC);
 

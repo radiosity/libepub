@@ -47,6 +47,8 @@ class Epub {
 	public:
 
 		string filename;
+		path absolute_path; 
+	
 		size_t hash;
 		string hash_string;
 
