@@ -70,7 +70,7 @@ class Epub {
 
 		void save_to(sqlite3 * const db);
 
-		static inline size_t compute_epub_hash(string _filename);
+		static inline size_t compute_epub_hash(path _absolute_path);
 
 };
 

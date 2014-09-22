@@ -69,7 +69,7 @@ Epub::Epub(string _filename) :
 	
 	//It does exist.
 	//Compute the hash
-	hash = compute_epub_hash(_filename);
+	hash = compute_epub_hash(absolute_path);
 	stringstream stream;
 	//Have to set the locale on the stringstream
 	//to "C" otherwise it does insane things like
@@ -199,23 +199,24 @@ Epub::Epub(string _filename) :
 	}
 }
 
-size_t inline Epub::compute_epub_hash(string _filename)
+size_t inline Epub::compute_epub_hash(path _absolute_path)
 {
-	path file(_filename);
-	unsigned int size = file_size(file);
-	time_t lmtime = last_write_time(file);
+
+	unsigned int size = file_size(_absolute_path);
+	time_t lmtime = last_write_time(_absolute_path);
 	string timestring = lexical_cast<std::string>(lmtime);
 
 	#ifdef DEBUG
 	cout << "File Exists" << endl;
-	cout << "\t Name: " << _filename << endl;
+	cout << "\t Name: " << _absolute_path.filename().string() << endl;
+	cout << "\t Absolute path: " << _absolute_path.string() << endl;
 	cout << "\t Size: " << size << endl;
 	cout << "\t Last Modified: " << timestring << endl;
 	#endif
 
 	//Calculate the hash.
 	size_t filehash = 0;
-	hash_combine<string>(filehash, _filename);
+	hash_combine<string>(filehash, _absolute_path.string());
 	hash_combine<unsigned int>(filehash, size);
 	hash_combine<string>(filehash, timestring);
 
