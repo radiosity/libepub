@@ -199,7 +199,7 @@ Epub::Epub(string _filename) :
 	}
 }
 
-size_t inline Epub::compute_epub_hash(path _absolute_path)
+size_t inline Epub::compute_epub_hash(const path & _absolute_path)
 {
 
 	unsigned int size = file_size(_absolute_path);
