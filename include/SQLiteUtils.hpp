@@ -30,8 +30,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlite3.h>
 #include <glibmm.h>
+#include <string>
 
 using Glib::ustring;
+using std::string; 
 
 inline string sqlite3_column_string(sqlite3_stmt * stmt, unsigned int colnum)
 {
