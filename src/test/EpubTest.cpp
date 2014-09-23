@@ -33,42 +33,57 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using namespace boost::filesystem;
 
-TEST(EpubTest, One) {
-	
+TEST(EpubTest, Database)
+{
+
 	//Unpack the ebook
 	ASSERT_NO_THROW(Epub book("books/PrideAndPrejudice.epub"));
-	
+
 	Epub file_book("books/PrideAndPrejudice.epub");
-	
+
 	sqlite3 * db;
-	
-	//Delete the database, if it exists. 
+
+	//Delete the database, if it exists.
 	if(exists("database")) {
 		remove("database");
 	}
-	
+
 	ASSERT_EQ(0, sqlite3_open("database", &db));
 
 	ASSERT_NO_THROW(file_book.save_to(db));
-	
+
 	sqlite3_close(db);
-	
+
 	ASSERT_EQ(0, sqlite3_open("database", &db));
 
 	ASSERT_NO_THROW(Epub book(db, 1));
-	
+
 	Epub sql_book(db, 1);
-	
+
 	ASSERT_TRUE(file_book.filename == sql_book.filename);
 	ASSERT_TRUE(file_book.absolute_path == sql_book.absolute_path);
 	ASSERT_TRUE(file_book.hash == sql_book.hash);
 	ASSERT_TRUE(file_book.hash_string == sql_book.hash_string);
-	
+
+	ASSERT_TRUE(file_book.container.rootfiles.size() == sql_book.container.rootfiles.size());
+
+	unsigned int i;
+
+	for(i = 0; i < file_book.container.rootfiles.size(); i++) {
+
+		RootFile & rf_book = file_book.container.rootfiles[i];
+		RootFile & rf_sql = sql_book.container.rootfiles[i];
+
+		ASSERT_TRUE(rf_book.media_type == rf_sql.media_type);
+		ASSERT_TRUE(rf_book.full_path == rf_sql.full_path);
+
+	}
+
 	sqlite3_close(db);
-	
-	//Delete the database 
+
+	//Delete the database
 	remove("database");
-	
+
 }
 
 
