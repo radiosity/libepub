@@ -95,6 +95,7 @@ CSSClass::CSSClass() :
 
 CSSClass::CSSClass(ustring _name) :
 	name(_name),
+	collation_key(name.collate_key()),
 	raw_pairs(),
 	displaytype(DISPLAY_INLINE),
 	fontsize(FONTSIZE_NORMAL),
@@ -111,6 +112,7 @@ CSSClass::CSSClass(ustring _name) :
 
 CSSClass::CSSClass(CSSClass const & cpy) :
 	name(cpy.name),
+	collation_key(cpy.collation_key),
 	raw_pairs(cpy.raw_pairs),
 	displaytype(cpy.displaytype),
 	fontsize(cpy.fontsize),
@@ -127,6 +129,7 @@ CSSClass::CSSClass(CSSClass const & cpy) :
 
 CSSClass::CSSClass(CSSClass && mv) :
 	name(move(mv.name)),
+	collation_key(move(mv.collation_key)),
 	raw_pairs(move(mv.raw_pairs)),
 	displaytype(move(mv.displaytype)),
 	fontsize(move(mv.fontsize)),
@@ -144,6 +147,7 @@ CSSClass::CSSClass(CSSClass && mv) :
 CSSClass & CSSClass::operator =(const CSSClass & cpy)
 {
 	name = cpy.name;
+	collation_key = cpy.collation_key;
 	raw_pairs = cpy.raw_pairs;
 	displaytype = cpy.displaytype;
 	fontsize = cpy.fontsize;
@@ -161,6 +165,7 @@ CSSClass & CSSClass::operator =(const CSSClass & cpy)
 CSSClass & CSSClass::operator =(CSSClass && mv)
 {
 	name = move(mv.name);
+	collation_key = move(mv.collation_key);
 	raw_pairs = move(mv.raw_pairs);
 	displaytype = move(mv.displaytype);
 	fontsize = move(mv.fontsize);
@@ -313,7 +318,8 @@ CSS::CSS(vector<path> _files) :
 						}
 						else {
 							cssclass.name = classname;
-							classes.insert(pair<ustring, CSSClass>(classname, cssclass));
+							cssclass.collation_key = classname.collate_key();
+							classes.insert(pair<string, CSSClass>(cssclass.collation_key, cssclass));
 						}
 					}
 
@@ -581,12 +587,14 @@ CSS::~CSS() { }
 
 CSSClass CSS::get_class(const ustring & name) const
 {
-	if(classes.count(name) == 0) {
+	string key = name.collate_key();
+
+	if(classes.count(key) == 0) {
 		//It doesn't exist in the database. Return a CSSClass with all defaults.
 		return CSSClass();
 	}
 	else {
-		return classes.at(name);
+		return classes.at(key);
 	}
 }
 
@@ -600,6 +608,7 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	                             "epub_file_id			INTEGER NOT NULL," \
 	                             "opf_id 				INTEGER NOT NULL," \
 	                             "name			 	TEX NOT NULL," \
+	                             "collation_key		 	TEX NOT NULL," \
 	                             "display_type	 		INTEGER NOT NULL," \
 	                             "font_size		 		INTEGER NOT NULL," \
 	                             "font_weight	 		INTEGER NOT NULL," \
@@ -625,7 +634,7 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	sqlite3_stmt * css_insert;
 	sqlite3_stmt * css_tags_insert;
 
-	const string css_insert_sql = "INSERT INTO css (epub_file_id, opf_id, name, display_type, font_size, font_weight, font_style, margin_top, margin_top_type, margin_bottom, margin_bottom_type, pagebreakbefore, pagebreakafter, text_align, text_indent, text_indent_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+	const string css_insert_sql = "INSERT INTO css (epub_file_id, opf_id, name, collation_key, display_type, font_size, font_weight, font_style, margin_top, margin_top_type, margin_bottom, margin_bottom_type, pagebreakbefore, pagebreakafter, text_align, text_indent, text_indent_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 	const string css_tags_insert_sql = "INSERT INTO css_tags (css_id, tagname, tagvalue) VALUES (?, ?, ?);";
 
 	rc = sqlite3_prepare_v2(db, css_insert_sql.c_str(), -1, &css_insert, 0);
@@ -647,19 +656,20 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 		sqlite3_bind_int(css_insert, 1, epub_file_id);
 		sqlite3_bind_int(css_insert, 2, opf_index);
 		sqlite3_bind_text(css_insert, 3, cssclass.name.c_str(), -1, SQLITE_STATIC);
-		sqlite3_bind_int(css_insert, 4, (int) cssclass.displaytype);
-		sqlite3_bind_int(css_insert, 5, (int) cssclass.fontsize);
-		sqlite3_bind_int(css_insert, 6, (int) cssclass.fontweight);
-		sqlite3_bind_int(css_insert, 7, (int) cssclass.fontstyle);
-		sqlite3_bind_double(css_insert, 8, cssclass.margintop.value);
-		sqlite3_bind_int(css_insert, 9, (int) cssclass.margintop.type);
-		sqlite3_bind_double(css_insert, 10, cssclass.marginbottom.value);
-		sqlite3_bind_int(css_insert, 11, (int) cssclass.marginbottom.type);
-		sqlite3_bind_int(css_insert, 12, (int) cssclass.pagebreakbefore);
-		sqlite3_bind_int(css_insert, 13, (int) cssclass.pagebreakafter);
-		sqlite3_bind_int(css_insert, 14, (int) cssclass.textalign);
-		sqlite3_bind_double(css_insert, 15, cssclass.textindent.value);
-		sqlite3_bind_int(css_insert, 16, (int) cssclass.textindent.type);
+		sqlite3_bind_text(css_insert, 4, cssclass.collation_key.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_int(css_insert, 5, (int) cssclass.displaytype);
+		sqlite3_bind_int(css_insert, 6, (int) cssclass.fontsize);
+		sqlite3_bind_int(css_insert, 7, (int) cssclass.fontweight);
+		sqlite3_bind_int(css_insert, 8, (int) cssclass.fontstyle);
+		sqlite3_bind_double(css_insert, 9, cssclass.margintop.value);
+		sqlite3_bind_int(css_insert, 10, (int) cssclass.margintop.type);
+		sqlite3_bind_double(css_insert, 11, cssclass.marginbottom.value);
+		sqlite3_bind_int(css_insert, 12, (int) cssclass.marginbottom.type);
+		sqlite3_bind_int(css_insert, 13, (int) cssclass.pagebreakbefore);
+		sqlite3_bind_int(css_insert, 14, (int) cssclass.pagebreakafter);
+		sqlite3_bind_int(css_insert, 15, (int) cssclass.textalign);
+		sqlite3_bind_double(css_insert, 16, cssclass.textindent.value);
+		sqlite3_bind_int(css_insert, 17, (int) cssclass.textindent.type);
 
 		int result = sqlite3_step(css_insert);
 

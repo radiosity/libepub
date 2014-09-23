@@ -33,11 +33,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <map>
 #include <vector>
 #include <sqlite3.h>
+#include <string>
 
 using Glib::ustring;
 
 using std::map;
 using std::vector;
+using std::string;
 
 using namespace boost::filesystem;
 
@@ -130,6 +132,7 @@ class CSSClass {
 
 	public:
 		ustring name;
+		string collation_key;
 		map<ustring, ustring> raw_pairs;
 		DisplayType displaytype;
 		FontSize fontsize;
@@ -160,7 +163,7 @@ class CSS {
 
 	public:
 		vector <path> files;
-		map <ustring, CSSClass> classes;
+		map <string, CSSClass> classes;
 
 		CSS();
 		CSS(vector<path> files);
