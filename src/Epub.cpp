@@ -69,7 +69,7 @@ Epub::Epub(string _filename) :
 
 	//setup the absolute path
 	absolute_path = absolute(filename);
-	
+
 	//It does exist.
 	//Compute the hash
 	hash = compute_epub_hash(absolute_path);
@@ -85,7 +85,7 @@ Epub::Epub(string _filename) :
 	#ifdef DEBUG
 	cout << "\t Hash: " << hash_string << endl;
 	#endif
-	
+
 	//Now to do work.
 	path to_tmp = temp_directory_path();
 	#ifdef DEBUG
@@ -203,34 +203,39 @@ Epub::Epub(string _filename) :
 	}
 }
 
-Epub::Epub(sqlite3 * const db, const unsigned int file_id) : from_epub(false) {
+Epub::Epub(sqlite3 * const db, const unsigned int file_id) : from_epub(false)
+{
 
-	int rc; 
-	
+	int rc;
+
 	const string files_select_sql = "SELECT * FROM epub_files WHERE epub_file_id=?;";
+
 	sqlite3_stmt * files_select;
+
 	rc = sqlite3_prepare_v2(db, files_select_sql.c_str(), -1, &files_select, 0);
-	
+
 	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
 		throw - 1;
 	}
 
 	sqlite3_bind_int(files_select, 1, file_id);
-	
+
 	rc = sqlite3_step(files_select);
-	
+
 	if(rc != SQLITE_ROW) {
 		//Can't find that file ID.
-		throw - 1;		
+		throw - 1;
 	}
-	
+
 	filename = path(sqlite3_column_string(files_select, 1));
 	absolute_path = path(sqlite3_column_string(files_select, 2));
 	hash = (size_t) sqlite3_column_int64(files_select, 3);
 	hash_string = sqlite3_column_string(files_select, 4);
-	
+
 	sqlite3_finalize(files_select);
-	
+
+	container.load(db, file_id);
+
 }
 
 size_t inline Epub::compute_epub_hash(const path & _absolute_path)
