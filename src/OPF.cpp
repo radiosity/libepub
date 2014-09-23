@@ -32,6 +32,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <libxml++/libxml++.h>
 #include <exception>
 
+#include "SQLiteUtils.hpp"
+
 using std::move;
 using std::pair;
 
@@ -401,6 +403,127 @@ OPF::OPF(path to_dir, ustring file)
 	}
 }
 
+OPF::OPF(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index)
+{
+
+	int rc;
+
+	const string metadata_select_sql = "SELECT metadata_id, metadata_type, contents FROM metadata WHERE epub_file_id=? AND opf_id=?;";
+	const string metadata_tags_select_sql = "SELECT tagname, tagvalue FROM metadata_tags WHERE metadata_id=?;";
+	const string manifest_select_sql = "SELECT href, id, media_type FROM manifest WHERE epub_file_id=? AND opf_id=?;";
+	const string spine_select_sql = "SELECT idref, linear FROM spine WHERE epub_file_id=? AND opf_id=?;";
+
+	sqlite3_stmt * metadata_select;
+	sqlite3_stmt * metadata_tags_select;
+	sqlite3_stmt * manifest_select;
+	sqlite3_stmt * spine_select;
+
+	rc = sqlite3_prepare_v2(db, metadata_select_sql.c_str(), -1, &metadata_select, 0);
+
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
+		throw - 1;
+	}
+
+	rc = sqlite3_prepare_v2(db, metadata_tags_select_sql.c_str(), -1, &metadata_tags_select, 0);
+
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
+		throw - 1;
+	}
+
+	rc = sqlite3_prepare_v2(db, manifest_select_sql.c_str(), -1, &manifest_select, 0);
+
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
+		throw - 1;
+	}
+
+	rc = sqlite3_prepare_v2(db, spine_select_sql.c_str(), -1, &spine_select, 0);
+
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
+		throw - 1;
+	}
+
+	sqlite3_bind_int(metadata_select, 1, epub_file_id);
+	sqlite3_bind_int(metadata_select, 2, opf_index);
+
+	rc = sqlite3_step(metadata_select);
+
+	while ( rc == SQLITE_ROW ) {
+
+		//Get the basic data
+		unsigned int metadata_id = sqlite3_column_int(metadata_select, 0);
+		MetadataType mdtype = (MetadataType) sqlite3_column_int(metadata_select, 1);
+		ustring content = sqlite3_column_ustring(metadata_select, 2);
+
+		//Create the object
+		MetadataItem md(mdtype, content);
+
+		int rc2;
+
+		sqlite3_bind_int(metadata_tags_select, 1, metadata_id);
+
+		rc2 = sqlite3_step(metadata_tags_select);
+
+		while(rc2 == SQLITE_ROW) {
+
+			ustring tagname = sqlite3_column_ustring(metadata_tags_select, 0);
+			ustring tagvalue = sqlite3_column_ustring(metadata_tags_select, 1);
+
+			md.add_attribute(tagname, tagvalue);
+
+			rc2 = sqlite3_step(metadata_tags_select);
+
+		}
+
+		metadata.insert(pair<MetadataType, MetadataItem>(mdtype, md));
+
+		sqlite3_reset(metadata_tags_select);
+
+		rc = sqlite3_step(metadata_select);
+
+	}
+
+	sqlite3_bind_int(manifest_select, 1, epub_file_id);
+	sqlite3_bind_int(manifest_select, 2, opf_index);
+
+	rc = sqlite3_step(manifest_select);
+
+	while ( rc == SQLITE_ROW ) {
+
+		ustring href = sqlite3_column_ustring(manifest_select, 0);
+		ustring id = sqlite3_column_ustring(manifest_select, 1);
+		ustring media_type = sqlite3_column_ustring(manifest_select, 2);
+
+		ManifestItem tmp(href, id, media_type);
+		manifest.insert(pair<ustring, ManifestItem>(id, tmp));
+
+		rc = sqlite3_step(manifest_select);
+
+	}
+
+	sqlite3_bind_int(spine_select, 1, epub_file_id);
+	sqlite3_bind_int(spine_select, 2, opf_index);
+
+	rc = sqlite3_step(spine_select);
+
+	while ( rc == SQLITE_ROW ) {
+
+		ustring idref = sqlite3_column_ustring(spine_select, 0);
+		bool linear = (bool) sqlite3_column_int(spine_select, 1);
+
+		SpineItem tmp(idref, linear);
+		spine.push_back(tmp);
+
+		rc = sqlite3_step(spine_select);
+
+	}
+
+	sqlite3_finalize(metadata_select);
+	sqlite3_finalize(metadata_tags_select);
+	sqlite3_finalize(manifest_select);
+	sqlite3_finalize(spine_select);
+
+}
+
 OPF::OPF(OPF const & cpy) :
 	to_file(cpy.to_file),
 	metadata(cpy.metadata),
@@ -476,6 +599,11 @@ void OPF::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	int rc;
 	char * errmsg;
 
+	const string opf_table_sql = "CREATE TABLE IF NOT EXISTS opf("  \
+	                             "epub_file_id INTEGER NOT NULL," \
+	                             "opf_id INTEGER NOT NULL) ;";
+	sqlite3_exec(db, opf_table_sql.c_str(), NULL, NULL, &errmsg);
+
 	const string metadata_table_sql = "CREATE TABLE IF NOT EXISTS metadata("  \
 	                                  "metadata_id INTEGER PRIMARY KEY," \
 	                                  "epub_file_id INTEGER NOT NULL," \
@@ -507,15 +635,23 @@ void OPF::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 
 	//Tables created.
 
+	sqlite3_stmt * opf_insert;
 	sqlite3_stmt * metadata_insert;
 	sqlite3_stmt * metadata_tags_insert;
 	sqlite3_stmt * manifest_insert;
 	sqlite3_stmt * spine_insert;
 
+	const string opf_insert_sql = "INSERT INTO opf (epub_file_id, opf_id) VALUES (?, ?);";
 	const string metadata_insert_sql = "INSERT INTO metadata (epub_file_id, opf_id, metadata_type, contents) VALUES (?, ?, ?, ?);";
 	const string metadata_tags_insert_sql = "INSERT INTO metadata_tags (metadata_id, tagname, tagvalue) VALUES (?, ?, ?);";
 	const string manifest_insert_sql = "INSERT INTO manifest (epub_file_id, opf_id, href, id, media_type) VALUES (?, ?, ?, ?, ?);";
 	const string spine_insert_sql = "INSERT INTO spine (epub_file_id, opf_id, idref, linear) VALUES (?, ?, ?, ?);";
+
+	rc = sqlite3_prepare_v2(db, opf_insert_sql.c_str(), -1, &opf_insert, 0);
+
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
+		throw - 1;
+	}
 
 	rc = sqlite3_prepare_v2(db, metadata_insert_sql.c_str(), -1, &metadata_insert, 0);
 
@@ -538,6 +674,16 @@ void OPF::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	rc = sqlite3_prepare_v2(db, spine_insert_sql.c_str(), -1, &spine_insert, 0);
 
 	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
+		throw - 1;
+	}
+
+	//Populate the OPF table:
+	sqlite3_bind_int(opf_insert, 1, epub_file_id);
+	sqlite3_bind_int(opf_insert, 2, opf_index);
+
+	rc = sqlite3_step(opf_insert);
+
+	if(rc != SQLITE_OK && rc != SQLITE_ROW && rc != SQLITE_DONE) {
 		throw - 1;
 	}
 
@@ -608,10 +754,27 @@ void OPF::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 
 	}
 
-	//Create an index for the metadata tags
-	const string metadata_index_sql = "CREATE INDEX index_metadata_tags ON metadata_tags(metadata_id);";
+	//Create an index for the opf table
+	const string opf_index_sql = "CREATE INDEX index_opf ON opf(epub_file_id);";
+	sqlite3_exec(db, opf_index_sql.c_str(), NULL, NULL, &errmsg);
+
+	//Create an index for the metadata
+	const string metadata_index_sql = "CREATE INDEX index_metadata ON metadata(epub_file_id, opf_id);";
 	sqlite3_exec(db, metadata_index_sql.c_str(), NULL, NULL, &errmsg);
 
+	//Create an index for the metadata tags
+	const string metadata_tags_index_sql = "CREATE INDEX index_metadata_tags ON metadata_tags(metadata_id);";
+	sqlite3_exec(db, metadata_tags_index_sql.c_str(), NULL, NULL, &errmsg);
+
+	//Create an index for the manifest
+	const string manifest_index_sql = "CREATE INDEX index_manifest ON manifest(epub_file_id, opf_id);";
+	sqlite3_exec(db, manifest_index_sql.c_str(), NULL, NULL, &errmsg);
+
+	//Create an index for the spine
+	const string spine_index_sql = "CREATE INDEX index_spine ON spine(epub_file_id, opf_id);";
+	sqlite3_exec(db, spine_index_sql.c_str(), NULL, NULL, &errmsg);
+
+	sqlite3_finalize(opf_insert);
 	sqlite3_finalize(metadata_insert);
 	sqlite3_finalize(metadata_tags_insert);
 	sqlite3_finalize(manifest_insert);

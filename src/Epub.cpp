@@ -236,6 +236,17 @@ Epub::Epub(sqlite3 * const db, const unsigned int file_id) : from_epub(false)
 
 	container.load(db, file_id);
 
+	//There should be an opf file for each root file.
+
+	unsigned int i = 0;
+	unsigned int n_opf = container.rootfiles.size();
+
+	for( ; i < n_opf; i++) {
+		OPF tmp(db, file_id, i);
+		opf_files.push_back(tmp);
+	}
+
+
 }
 
 size_t inline Epub::compute_epub_hash(const path & _absolute_path)

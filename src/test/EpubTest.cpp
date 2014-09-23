@@ -77,6 +77,77 @@ TEST(EpubTest, Database)
 		ASSERT_TRUE(rf_book.media_type == rf_sql.media_type);
 		ASSERT_TRUE(rf_book.full_path == rf_sql.full_path);
 
+		ASSERT_TRUE(file_book.opf_files[i].metadata.size() == sql_book.opf_files[i].metadata.size());
+
+		auto book_metadata_it = file_book.opf_files[i].metadata.begin();
+		auto sql_metadata_it = sql_book.opf_files[i].metadata.begin();
+
+		while(book_metadata_it != file_book.opf_files[i].metadata.end()) {
+
+			MetadataItem m_book = (*book_metadata_it).second;
+			MetadataItem m_sql = (*sql_metadata_it).second;
+
+			ASSERT_TRUE(m_book.type == m_sql.type);
+			ASSERT_TRUE(m_book.contents.compare(m_sql.contents) == 0);
+
+			auto book_tags_it = m_book.other_tags.begin();
+			auto sql_tags_it = m_sql.other_tags.begin();
+
+			while(book_tags_it != m_book.other_tags.end()) {
+
+				ustring book_first = (*book_tags_it).first;
+				ustring book_second = (*book_tags_it).second;
+				ustring sql_first = (*sql_tags_it).first;
+				ustring sql_second = (*sql_tags_it).second;
+
+				ASSERT_TRUE(book_first.compare(sql_first) == 0);
+				ASSERT_TRUE(book_second.compare(sql_second) == 0);
+
+				++book_tags_it;
+				++sql_tags_it;
+
+			}
+
+			++book_metadata_it;
+			++sql_metadata_it;
+
+		}
+
+		ASSERT_TRUE(file_book.opf_files[i].manifest.size() == sql_book.opf_files[i].manifest.size());
+
+		auto book_manifest_it = file_book.opf_files[i].manifest.begin();
+		auto sql_manifest_it = sql_book.opf_files[i].manifest.begin();
+
+		while(book_manifest_it != file_book.opf_files[i].manifest.end()) {
+
+			ustring href_book = (*book_manifest_it).second.href;
+			ustring href_sql = (*sql_manifest_it).second.href;
+			ustring id_book = (*book_manifest_it).second.id;
+			ustring id_sql = (*sql_manifest_it).second.id;
+			ustring media_type_book = (*book_manifest_it).second.media_type;
+			ustring media_type_sql = (*sql_manifest_it).second.media_type;
+
+			ASSERT_TRUE(href_book.compare(href_sql) == 0);
+			ASSERT_TRUE(id_book.compare(id_sql) == 0);
+			ASSERT_TRUE(media_type_book.compare(media_type_sql) == 0);
+
+			++book_manifest_it;
+			++sql_manifest_it;
+
+		}
+
+		ASSERT_TRUE(file_book.opf_files[i].spine.size() == sql_book.opf_files[i].spine.size());
+
+		for(unsigned int j = 0; j < file_book.opf_files[i].spine.size(); j++) {
+
+			SpineItem book_si = file_book.opf_files[i].spine[j];
+			SpineItem sql_si = file_book.opf_files[i].spine[j];
+
+			ASSERT_TRUE(book_si.idref.compare(sql_si.idref) == 0);
+			ASSERT_TRUE(book_si.linear == sql_si.linear);
+
+		}
+
 	}
 
 	sqlite3_close(db);

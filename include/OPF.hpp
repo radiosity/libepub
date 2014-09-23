@@ -199,6 +199,7 @@ class OPF {
 		ustring spine_toc;
 
 		OPF(path to_dir, ustring file);
+		OPF(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index);
 
 		OPF(OPF const & cpy);
 		OPF(OPF && mv) ;
