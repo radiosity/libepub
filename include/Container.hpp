@@ -70,6 +70,7 @@ class Container {
 		~Container();
 
 		void load(path to_dir);
+		void load(sqlite3 * const db, const unsigned int file_id);
 		void save_to(sqlite3 * const db, const unsigned int epub_file_id);
 
 };

@@ -35,6 +35,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <exception>
 #include <string>
 
+#include "SQLiteUtils.hpp"
+
 using std::vector;
 using std::move;
 
@@ -161,12 +163,44 @@ void Container::load(path to_dir)
 					cout << "Root file " << mt << " " << fp << endl;
 					#endif
 
-					rootfiles.push_back(RootFile(mt, fp));
+					rootfiles.emplace_back(mt, fp);
 
 				}
 			}
 		}
 	}
+}
+
+void Container::load(sqlite3 * const db, const unsigned int file_id)
+{
+
+	int rc;
+
+	const string container_select_sql = "SELECT * FROM container WHERE epub_file_id=?;";
+	sqlite3_stmt * container_select;
+	rc = sqlite3_prepare_v2(db, container_select_sql.c_str(), -1, &container_select, 0);
+
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
+		throw - 1;
+	}
+
+	sqlite3_bind_int(container_select, 1, file_id);
+
+	rc = sqlite3_step(container_select);
+
+	while ( rc == SQLITE_ROW ) {
+
+		const ustring media_type = sqlite3_column_ustring(container_select, 1);
+		const ustring full_path = sqlite3_column_ustring(container_select, 2);
+
+		rootfiles.emplace_back(media_type, full_path);
+
+		rc = sqlite3_step(container_select);
+
+	}
+
+	sqlite3_finalize(container_select);
+
 }
 
 Container::Container()
