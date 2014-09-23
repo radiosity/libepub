@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 
 using Glib::ustring;
-using std::string; 
+using std::string;
 
 inline string sqlite3_column_string(sqlite3_stmt * stmt, unsigned int colnum)
 {

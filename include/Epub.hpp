@@ -46,12 +46,12 @@ class Epub {
 
 	private:
 		bool from_epub;
-	
-	public: 
-	
+
+	public:
+
 		path filename;
-		path absolute_path; 
-	
+		path absolute_path;
+
 		size_t hash;
 		string hash_string;
 
@@ -63,7 +63,7 @@ class Epub {
 		vector<Content> contents;
 
 		Epub(string _filename);
-		Epub(sqlite3 * const db, const unsigned int file_id); 
+		Epub(sqlite3 * const db, const unsigned int file_id);
 
 		Epub(Epub const & cpy);
 		Epub(Epub && mv);

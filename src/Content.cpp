@@ -246,7 +246,7 @@ namespace {
 					const auto attributes = childElement->get_attributes();
 
 					for(auto iter = attributes.begin(); iter != attributes.end(); ++iter) {
-						
+
 						const Attribute * attribute = *iter;
 
 						if(attribute->get_name().collate_key() == class_key) {
