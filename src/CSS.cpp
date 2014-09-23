@@ -690,7 +690,11 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	}
 
 	//Create an index for the css tags
-	const string css_index_sql = "CREATE INDEX index_css_tags ON css_tags(css_id);";
+	const string css_tags_index_sql = "CREATE INDEX index_css_tags ON css_tags(css_id);";
+	sqlite3_exec(db, css_tags_index_sql.c_str(), NULL, NULL, &errmsg);
+
+	//Create an index for the css itself
+	const string css_index_sql = "CREATE INDEX index_css ON css(epub_file_id, opf_id);";
 	sqlite3_exec(db, css_index_sql.c_str(), NULL, NULL, &errmsg);
 
 	sqlite3_finalize(css_insert);
