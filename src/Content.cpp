@@ -179,7 +179,7 @@ namespace {
 			if(childElement) {
 
 				const ustring childname = childElement->get_name();
-				const ustring childname_key = childname.collate_key();
+				const string childname_key = childname.collate_key();
 
 				if(childname_key == i_key) {
 					//italic.
