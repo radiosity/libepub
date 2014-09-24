@@ -34,6 +34,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <regex>
 #include <limits>
 
+#include "SQLiteUtils.hpp"
+
 using std::string;
 using std::move;
 using std::ifstream;
@@ -555,6 +557,106 @@ CSS::CSS(vector<path> _files) :
 			throw std::runtime_error("CSS File does not exist!");
 		}
 	}
+}
+
+CSS::CSS(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index)  :
+	files(),
+	classes()
+{
+
+	int rc;
+
+	const string css_select_sql = "SELECT * FROM css WHERE epub_file_id=? AND opf_id=?;";
+	const string css_tags_select_sql = "SELECT tagname, tagvalue FROM css_tags WHERE css_id=?;";
+
+	sqlite3_stmt * css_select;
+	sqlite3_stmt * css_tags_select;
+
+	rc = sqlite3_prepare_v2(db, css_select_sql.c_str(), -1, &css_select, 0);
+
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
+		throw - 1;
+	}
+
+	rc = sqlite3_prepare_v2(db, css_tags_select_sql.c_str(), -1, &css_tags_select, 0);
+
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
+		throw - 1;
+	}
+
+	sqlite3_bind_int(css_select, 1, epub_file_id);
+	sqlite3_bind_int(css_select, 2, opf_index);
+
+	rc = sqlite3_step(css_select);
+
+	while ( rc == SQLITE_ROW ) {
+
+		//Default-construct the object:
+		CSSClass cssclass;
+
+		//Get the basic data
+		unsigned int css_id = sqlite3_column_int(css_select, 0);
+
+		ustring name = sqlite3_column_ustring(css_select, 3);
+		string collation_key = sqlite3_column_string(css_select, 4);
+		DisplayType displaytype = (DisplayType) sqlite3_column_int(css_select, 5);
+		FontSize fontsize = (FontSize) sqlite3_column_int(css_select, 6);
+		FontWeight fontweight = (FontWeight) sqlite3_column_int(css_select, 7);
+		FontStyle fontstyle = (FontStyle) sqlite3_column_int(css_select, 8);
+		double margintop = sqlite3_column_double(css_select, 9);
+		CSSValueType margintop_type = (CSSValueType) sqlite3_column_int(css_select, 10);
+		double marginbottom = sqlite3_column_double(css_select, 11);
+		CSSValueType marginbottom_type = (CSSValueType) sqlite3_column_int(css_select, 12);
+		bool pagebreakbefore = (bool) sqlite3_column_int(css_select, 13);
+		bool pagebreakafter = (bool) sqlite3_column_int(css_select, 14);
+		TextAlign textalign = (TextAlign) sqlite3_column_int(css_select, 15);
+		double textindent = sqlite3_column_double(css_select, 16);
+		CSSValueType textindent_type = (CSSValueType) sqlite3_column_int(css_select, 17);
+
+		cssclass.name = name;
+		cssclass.collation_key = collation_key;
+		cssclass.displaytype = displaytype;
+		cssclass.fontsize = fontsize;
+		cssclass.fontweight = fontweight;
+		cssclass.fontstyle = fontstyle;
+		cssclass.margintop.value = margintop;
+		cssclass.margintop.type = margintop_type;
+		cssclass.marginbottom.value = marginbottom;
+		cssclass.marginbottom.type = marginbottom_type;
+		cssclass.pagebreakbefore = pagebreakbefore;
+		cssclass.pagebreakafter = pagebreakafter;
+		cssclass.textalign = textalign;
+		cssclass.textindent.value = textindent;
+		cssclass.textindent.type = textindent_type;
+
+		int rc2;
+
+		sqlite3_bind_int(css_tags_select, 1, css_id);
+
+		rc2 = sqlite3_step(css_tags_select);
+
+		while(rc2 == SQLITE_ROW) {
+
+			ustring tagname = sqlite3_column_ustring(css_tags_select, 0);
+			ustring tagvalue = sqlite3_column_ustring(css_tags_select, 1);
+
+			cssclass.raw_pairs.insert(pair<ustring, ustring>(tagname, tagvalue));
+
+			rc2 = sqlite3_step(css_tags_select);
+
+		}
+
+		classes.insert(pair<string, CSSClass>(cssclass.collation_key, cssclass));
+
+		sqlite3_reset(css_tags_select);
+
+		rc = sqlite3_step(css_select);
+
+	}
+
+	sqlite3_finalize(css_select);
+	sqlite3_finalize(css_tags_select);
+
 }
 
 CSS::CSS(CSS const & cpy) :

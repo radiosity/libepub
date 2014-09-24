@@ -126,6 +126,18 @@ class CSSValue {
 
 		~CSSValue();
 
+		inline bool operator==(const CSSValue & rhs) {
+			if(value != rhs.value) {
+				return false;
+			}
+
+			if(type != rhs.type) {
+				return false;
+			}
+
+			return true;
+		}
+
 };
 
 class CSSClass {
@@ -167,6 +179,7 @@ class CSS {
 
 		CSS();
 		CSS(vector<path> files);
+		CSS(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index);
 
 		CSS(CSS const & cpy);
 		CSS(CSS && mv) ;

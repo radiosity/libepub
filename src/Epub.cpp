@@ -244,8 +244,10 @@ Epub::Epub(sqlite3 * const db, const unsigned int file_id) : from_epub(false)
 	for( ; i < n_opf; i++) {
 		OPF tmp(db, file_id, i);
 		opf_files.push_back(tmp);
-	}
 
+		CSS cssclasses(db, file_id, i);
+		css.push_back(cssclasses);
+	}
 
 }
 

@@ -148,6 +148,53 @@ TEST(EpubTest, Database)
 
 		}
 
+		ASSERT_TRUE(file_book.css[i].classes.size() == sql_book.css[i].classes.size());
+
+		auto book_css_it = file_book.css[i].classes.begin();
+		auto sql_css_it = sql_book.css[i].classes.begin();
+
+		while(book_css_it != file_book.css[i].classes.end()) {
+
+			CSSClass c_book = (*book_css_it).second;
+			CSSClass c_sql = (*sql_css_it).second;
+
+			ASSERT_TRUE(c_book.name == c_sql.name);
+			ASSERT_TRUE(c_book.collation_key == c_sql.collation_key);
+			ASSERT_TRUE(c_book.displaytype == c_sql.displaytype);
+			ASSERT_TRUE(c_book.fontsize == c_sql.fontsize);
+			ASSERT_TRUE(c_book.fontweight == c_sql.fontweight);
+			ASSERT_TRUE(c_book.fontstyle == c_sql.fontstyle);
+			ASSERT_TRUE(c_book.margintop == c_sql.margintop);
+			ASSERT_TRUE(c_book.marginbottom == c_sql.marginbottom);
+			ASSERT_TRUE(c_book.pagebreakbefore == c_sql.pagebreakbefore);
+			ASSERT_TRUE(c_book.pagebreakafter == c_sql.pagebreakafter);
+			ASSERT_TRUE(c_book.textalign == c_sql.textalign);
+			ASSERT_TRUE(c_book.textindent == c_sql.textindent);
+
+			auto book_tags_it = c_book.raw_pairs.begin();
+			auto sql_tags_it = c_sql.raw_pairs.begin();
+
+			while(book_tags_it != c_book.raw_pairs.end()) {
+
+				ustring book_first = (*book_tags_it).first;
+				ustring book_second = (*book_tags_it).second;
+				ustring sql_first = (*sql_tags_it).first;
+				ustring sql_second = (*sql_tags_it).second;
+
+				ASSERT_TRUE(book_first.compare(sql_first) == 0);
+				ASSERT_TRUE(book_second.compare(sql_second) == 0);
+
+				++book_tags_it;
+				++sql_tags_it;
+
+			}
+
+			++book_css_it;
+			++sql_css_it;
+
+		}
+
+
 	}
 
 	sqlite3_close(db);
