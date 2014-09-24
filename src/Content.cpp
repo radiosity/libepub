@@ -140,7 +140,7 @@ namespace {
 	string _blank_key;
 
 	//This whole method is fairly awful.
-	pair<ustring, ustring> __recursive_strip(vector<ContentItem> & items, const CSS & classes, const path & file, const Node * const node)
+	pair<ustring, ustring> __recursive_strip(vector<ContentItem> & items, const CSS & css, const path & file, const Node * const node)
 	{
 
 		const TextNode * nodeText = dynamic_cast<const TextNode *>(node);
@@ -173,7 +173,7 @@ namespace {
 			}
 
 			if(childText) {
-				pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+				pair<ustring, ustring> res = __recursive_strip(items, css, file, childNode);
 				value += res.first;
 				value_stripped += res.second;
 			}
@@ -185,51 +185,51 @@ namespace {
 
 				if(childname_key == i_key) {
 					//italic.
-					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, css, file, childNode);
 					value += __create_text("i", res.first);
 					value_stripped += res.second;
 				}
 				else if(childname_key == b_key) {
 					//bold;
-					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, css, file, childNode);
 					value += __create_text("b", res.first);
 					value_stripped += res.second;
 				}
 				else if(childname_key == big_key) {
-					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, css, file, childNode);
 					value += __create_text("big", res.first);
 					value_stripped += res.second;
 				}
 				else if(childname_key == s_key) {
 					//strikethrough
-					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, css, file, childNode);
 					value += __create_text("s", res.first);
 					value_stripped += res.second;
 				}
 				else if(childname_key == sub_key) {
-					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, css, file, childNode);
 					value += __create_text("sub", res.first);
 					value_stripped += res.second;
 				}
 				else if(childname_key == sup_key) {
-					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, css, file, childNode);
 					value += __create_text("sup", res.first);
 					value_stripped += res.second;
 				}
 				else if(childname_key == small_key) {
-					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, css, file, childNode);
 					value += __create_text("i", res.first);
 					value_stripped += res.second;
 				}
 				else if(childname_key == tt_key) {
 					//monospace
-					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, css, file, childNode);
 					value += __create_text("tt", res.first);
 					value_stripped += res.second;
 				}
 				else if(childname_key == u_key) {
 					//underline
-					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, css, file, childNode);
 					value += __create_text("u", res.first);
 					value_stripped += res.second;
 				}
@@ -237,7 +237,7 @@ namespace {
 					//specific bheaviour for stripping hyperlinks within the text.
 					//I suspect that I'll have to come back to this, but at the moment I'm
 					//not completely sure how to handle it.
-					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, css, file, childNode);
 					value += res.first;
 					value_stripped += res.second;
 				}
@@ -255,11 +255,11 @@ namespace {
 							//We've found a class here.
 							ustring cname = attribute->get_value();
 							//Need to do this better in the future:
-							tmp = classes.get_rule(ustring(".") + cname);
+							tmp = css.get_rule(ustring(".") + cname);
 						}
 					}
 
-					pair<ustring, ustring> res = __recursive_strip(items, classes, file, childNode);
+					pair<ustring, ustring> res = __recursive_strip(items, css, file, childNode);
 
 					if(tmp.fontweight == FONTWEIGHT_BOLD) {
 						value += __create_text("b", res.first);
@@ -280,7 +280,7 @@ namespace {
 					ContentType ct = HR;
 
 					//See if we can find a CSS class for this.
-					CSSRule rule = classes.get_rule("hr");
+					CSSRule rule = css.get_rule("hr");
 
 					//Add it directly to the items:
 					items.emplace_back(ct, rule, file, __id, "", "");
@@ -294,7 +294,7 @@ namespace {
 		return pair<ustring, ustring>(value, value_stripped);
 	}
 
-	void __recursive_find(vector<ContentItem> & items, const CSS & classes, const path & file, const Node * const node)
+	void __recursive_find(vector<ContentItem> & items, const CSS & css, const path & file, const Node * const node)
 	{
 		const auto nlist = node->get_children();
 
@@ -313,7 +313,7 @@ namespace {
 			const string name_key = tmpnodename.collate_key();
 
 			if(name_key != p_key && name_key !=  h1_key && name_key != h2_key && name_key != hr_key) {
-				__recursive_find(items, classes, file, ntmp);
+				__recursive_find(items, css, file, ntmp);
 			}
 			else {
 
@@ -323,19 +323,19 @@ namespace {
 
 				if(name_key == p_key) {
 					ct = P;
-					rule = classes.get_rule("p");
+					rule = css.get_rule("p");
 				}
 				else if (name_key == h1_key) {
 					ct = H1;
-					rule = classes.get_rule("h1");
+					rule = css.get_rule("h1");
 				}
 				else if (name_key == h2_key) {
 					ct = H2;
-					rule = classes.get_rule("h2");
+					rule = css.get_rule("h2");
 				}
 				else if (name_key == hr_key) {
 					ct = HR;
-					rule = classes.get_rule("hr");
+					rule = css.get_rule("hr");
 				}
 
 				const auto attributes = tmpnode->get_attributes();
@@ -359,7 +359,7 @@ namespace {
 					*/
 				}
 
-				pair<ustring, ustring> content = __recursive_strip(items, classes, file, ntmp);
+				pair<ustring, ustring> content = __recursive_strip(items, css, file, ntmp);
 
 				if(ct != HR && content.first.empty()) {
 					continue;
@@ -377,8 +377,8 @@ namespace {
 	}
 } // end anonymous namespace
 
-Content::Content(CSS & _classes, vector<path> _files) :
-	classes(_classes),
+Content::Content(CSS & _css, vector<path> _files) :
+	css(_css),
 	files(_files)
 {
 	for(const auto file : files) {
@@ -442,15 +442,15 @@ Content::Content(CSS & _classes, vector<path> _files) :
 			}
 
 			if(tmpnode->get_name().compare("body") == 0)  {
-				__recursive_find(items, classes, file, ntmp);
+				__recursive_find(items, _css, file, ntmp);
 			}
 
 		}
 	}
 }
 
-Content::Content(CSS & _classes, sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index) :
-	classes(_classes),
+Content::Content(CSS & _css, sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index) :
+	css(_css),
 	files()
 {
 
@@ -475,7 +475,7 @@ Content::Content(CSS & _classes, sqlite3 * const db, const unsigned int epub_fil
 	while ( rc == SQLITE_ROW ) {
 
 		ContentType type = (ContentType) sqlite3_column_int(content_select, 3);
-		CSSRule rule = _classes.get_rule(sqlite3_column_ustring(content_select, 4));
+		CSSRule rule = _css.get_rule(sqlite3_column_ustring(content_select, 4));
 		path file(sqlite3_column_string(content_select, 5));
 		ustring id = sqlite3_column_ustring(content_select, 6);
 		ustring content = sqlite3_column_ustring(content_select, 7);
@@ -492,14 +492,14 @@ Content::Content(CSS & _classes, sqlite3 * const db, const unsigned int epub_fil
 }
 
 Content::Content(Content const & cpy) :
-	classes(cpy.classes),
+	css(cpy.css),
 	files(cpy.files),
 	items(cpy.items)
 {
 }
 
 Content::Content(Content && mv) :
-	classes(mv.classes),
+	css(mv.css),
 	files(move(mv.files)),
 	items(move(mv.items))
 {
@@ -507,7 +507,7 @@ Content::Content(Content && mv) :
 
 Content & Content::operator =(const Content & cpy)
 {
-	classes = cpy.classes;
+	css = cpy.css;
 	files = cpy.files;
 	items = cpy.items;
 	return *this;
@@ -515,7 +515,7 @@ Content & Content::operator =(const Content & cpy)
 
 Content & Content::operator =(Content && mv)
 {
-	classes = mv.classes;
+	css = mv.css;
 	files = move(mv.files);
 	items = move(mv.items);
 	return *this;
