@@ -138,7 +138,7 @@ namespace {
 	string _blank_key;
 
 	//This whole method is fairly awful.
-	pair<ustring, ustring> __recursive_strip(vector<ContentItem> & items, const CSS & classes, const path file, const Node * const node)
+	pair<ustring, ustring> __recursive_strip(vector<ContentItem> & items, const CSS & classes, const path & file, const Node * const node)
 	{
 
 		const TextNode * nodeText = dynamic_cast<const TextNode *>(node);
@@ -279,9 +279,9 @@ namespace {
 
 					//See if we can find a CSS class for this.
 					CSSClass cssclass = classes.get_class("hr");
-					ContentItem ci(ct, cssclass, file, __id, "", "");
 
-					items.push_back(ci);
+					//Add it directly to the items:
+					items.emplace_back(ct, cssclass, file, __id, "", "");
 
 					value = "";
 					value_stripped = "";
@@ -292,7 +292,7 @@ namespace {
 		return pair<ustring, ustring>(value, value_stripped);
 	}
 
-	void __recursive_find(vector<ContentItem> & items, const CSS & classes, const path file, const Node * const node)
+	void __recursive_find(vector<ContentItem> & items, const CSS & classes, const path & file, const Node * const node)
 	{
 		const auto nlist = node->get_children();
 
@@ -366,8 +366,7 @@ namespace {
 				cout << " \t " << content.first << endl;
 				cout << " \t " << content.second << endl;
 				#endif
-				ContentItem ci(ct, cssclass, file, __id, content.first, content.second);
-				items.push_back(ci);
+				items.emplace_back(ct, cssclass, file, __id, content.first, content.second);
 
 			}
 		}
