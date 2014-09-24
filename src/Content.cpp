@@ -451,7 +451,42 @@ Content::Content(CSS & _classes, sqlite3 * const db, const unsigned int epub_fil
 	classes(_classes),
 	files()
 {
-	
+
+
+	int rc;
+
+	const string content_select_sql = "SELECT * FROM content WHERE epub_file_id=? AND opf_id=?;";
+
+	sqlite3_stmt * content_select;
+
+	rc = sqlite3_prepare_v2(db, content_select_sql.c_str(), -1, &content_select, 0);
+
+	if(rc != SQLITE_OK && rc != SQLITE_DONE) {
+		throw - 1;
+	}
+
+	sqlite3_bind_int(content_select, 1, epub_file_id);
+	sqlite3_bind_int(content_select, 2, opf_index);
+
+	rc = sqlite3_step(content_select);
+
+	while ( rc == SQLITE_ROW ) {
+
+		ContentType type = (ContentType) sqlite3_column_int(content_select, 3);
+		CSSClass cssclass = _classes.get_class(sqlite3_column_ustring(content_select, 4));
+		path file(sqlite3_column_string(content_select, 5));
+		ustring id = sqlite3_column_ustring(content_select, 6);
+		ustring content = sqlite3_column_ustring(content_select, 7);
+		ustring stripped_content = sqlite3_column_ustring(content_select, 8);
+
+		items.emplace_back(type, cssclass, file, id, content, stripped_content);
+
+		rc = sqlite3_step(content_select);
+
+	}
+
+	sqlite3_finalize(content_select);
+
 }
 
 Content::Content(Content const & cpy) :
