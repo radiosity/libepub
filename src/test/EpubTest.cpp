@@ -158,7 +158,7 @@ TEST(EpubTest, Database)
 			CSSClass c_book = (*book_css_it).second;
 			CSSClass c_sql = (*sql_css_it).second;
 
-			ASSERT_TRUE(c_book.name == c_sql.name);
+			ASSERT_TRUE(c_book.selector == c_sql.selector);
 			ASSERT_TRUE(c_book.collation_key == c_sql.collation_key);
 			ASSERT_TRUE(c_book.displaytype == c_sql.displaytype);
 			ASSERT_TRUE(c_book.fontsize == c_sql.fontsize);

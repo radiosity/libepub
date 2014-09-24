@@ -95,9 +95,9 @@ CSSClass::CSSClass() :
 {
 }
 
-CSSClass::CSSClass(ustring _name) :
-	name(_name),
-	collation_key(name.collate_key()),
+CSSClass::CSSClass(ustring _selector) :
+	selector(_selector),
+	collation_key(selector.collate_key()),
 	raw_pairs(),
 	displaytype(DISPLAY_INLINE),
 	fontsize(FONTSIZE_NORMAL),
@@ -113,7 +113,7 @@ CSSClass::CSSClass(ustring _name) :
 }
 
 CSSClass::CSSClass(CSSClass const & cpy) :
-	name(cpy.name),
+	selector(cpy.selector),
 	collation_key(cpy.collation_key),
 	raw_pairs(cpy.raw_pairs),
 	displaytype(cpy.displaytype),
@@ -130,7 +130,7 @@ CSSClass::CSSClass(CSSClass const & cpy) :
 }
 
 CSSClass::CSSClass(CSSClass && mv) :
-	name(move(mv.name)),
+	selector(move(mv.selector)),
 	collation_key(move(mv.collation_key)),
 	raw_pairs(move(mv.raw_pairs)),
 	displaytype(move(mv.displaytype)),
@@ -148,7 +148,7 @@ CSSClass::CSSClass(CSSClass && mv) :
 
 CSSClass & CSSClass::operator =(const CSSClass & cpy)
 {
-	name = cpy.name;
+	selector = cpy.selector;
 	collation_key = cpy.collation_key;
 	raw_pairs = cpy.raw_pairs;
 	displaytype = cpy.displaytype;
@@ -166,7 +166,7 @@ CSSClass & CSSClass::operator =(const CSSClass & cpy)
 
 CSSClass & CSSClass::operator =(CSSClass && mv)
 {
-	name = move(mv.name);
+	selector = move(mv.selector);
 	collation_key = move(mv.collation_key);
 	raw_pairs = move(mv.raw_pairs);
 	displaytype = move(mv.displaytype);
@@ -254,7 +254,7 @@ CSS::CSS(vector<path> _files) :
 	classes()
 {
 	//prepare the regular expressions:
-	regex regex_classname ("([A-Za-z0-9\\.-]+)", regex::optimize);
+	regex regex_selector ("([A-Za-z0-9\\.-]+)", regex::optimize);
 	regex regex_atrule_single("^@.*;$", regex::optimize);
 	regex regex_atrule_multiple("^@.*\\{", regex::optimize);
 	regex regex_attr("([A-Za-z0-9-]+)\\s*:{1}\\s*([^;]*)", regex::optimize);
@@ -286,8 +286,8 @@ CSS::CSS(vector<path> _files) :
 			//div, p, pre, h1, h2, h3, h4, h5, h6 {
 			//	margin-left: 0;
 			//}
-			//This means we need to keep a list of names for the style
-			vector<ustring> classnames;
+			//This means we need to keep a list of selectors for the style
+			vector<ustring> selectors;
 
 			while(!cssfile.eof()) {
 
@@ -312,21 +312,21 @@ CSS::CSS(vector<path> _files) :
 
 					#endif
 
-					for (auto classname : classnames) {
+					for (auto selector : selectors) {
 						//Check if the classname exists - if it does we need to update it.
-						if(classes.count(classname) != 0) {
+						if(classes.count(selector) != 0) {
 							//It exists! update it.
-							classes[classname].add(cssclass);
+							classes[selector].add(cssclass);
 						}
 						else {
-							cssclass.name = classname;
-							cssclass.collation_key = classname.collate_key();
+							cssclass.selector = selector;
+							cssclass.collation_key = selector.collate_key();
 							classes.insert(pair<string, CSSClass>(cssclass.collation_key, cssclass));
 						}
 					}
 
 					cssclass = CSSClass();
-					classnames.clear();
+					selectors.clear();
 					class_is_open = false;
 					is_at_rule = false;
 					continue;
@@ -352,16 +352,16 @@ CSS::CSS(vector<path> _files) :
 					else {
 						class_is_open = true;
 						smatch regex_matches;
-						auto line_begin = sregex_iterator(line.begin(), line.end(), regex_classname);
+						auto line_begin = sregex_iterator(line.begin(), line.end(), regex_selector);
 						auto line_end = sregex_iterator();
-						classnames.reserve(distance(line_begin, line_end));
+						selectors.reserve(distance(line_begin, line_end));
 
 						for (sregex_iterator i = line_begin; i != line_end; ++i) {
 							smatch match = *i;
-							string classname = match.str();
-							classnames.push_back(ustring(classname));
+							string selector = match.str();
+							selectors.push_back(ustring(selector));
 							#ifdef DEBUG
-							cout << "\tCSS Class name: "  << classname << endl;
+							cout << "\tCSS Selector: "  << selector << endl;
 							#endif
 						}
 					}
@@ -597,7 +597,7 @@ CSS::CSS(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int
 		//Get the basic data
 		unsigned int css_id = sqlite3_column_int(css_select, 0);
 
-		ustring name = sqlite3_column_ustring(css_select, 3);
+		ustring selector = sqlite3_column_ustring(css_select, 3);
 		string collation_key = sqlite3_column_string(css_select, 4);
 		DisplayType displaytype = (DisplayType) sqlite3_column_int(css_select, 5);
 		FontSize fontsize = (FontSize) sqlite3_column_int(css_select, 6);
@@ -613,7 +613,7 @@ CSS::CSS(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int
 		double textindent = sqlite3_column_double(css_select, 16);
 		CSSValueType textindent_type = (CSSValueType) sqlite3_column_int(css_select, 17);
 
-		cssclass.name = name;
+		cssclass.selector = selector;
 		cssclass.collation_key = collation_key;
 		cssclass.displaytype = displaytype;
 		cssclass.fontsize = fontsize;
@@ -687,9 +687,9 @@ CSS & CSS::operator =(CSS && mv)
 
 CSS::~CSS() { }
 
-CSSClass CSS::get_class(const ustring & name) const
+CSSClass CSS::get_class(const ustring & selector) const
 {
-	string key = name.collate_key();
+	string key = selector.collate_key();
 
 	if(classes.count(key) == 0) {
 		//It doesn't exist in the database. Return a CSSClass with all defaults.
@@ -709,7 +709,7 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	                             "css_id 				INTEGER PRIMARY KEY," \
 	                             "epub_file_id			INTEGER NOT NULL," \
 	                             "opf_id 				INTEGER NOT NULL," \
-	                             "name			 	TEX NOT NULL," \
+	                             "selector			 	TEX NOT NULL," \
 	                             "collation_key		 	TEX NOT NULL," \
 	                             "display_type	 		INTEGER NOT NULL," \
 	                             "font_size		 		INTEGER NOT NULL," \
@@ -736,7 +736,7 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 	sqlite3_stmt * css_insert;
 	sqlite3_stmt * css_tags_insert;
 
-	const string css_insert_sql = "INSERT INTO css (epub_file_id, opf_id, name, collation_key, display_type, font_size, font_weight, font_style, margin_top, margin_top_type, margin_bottom, margin_bottom_type, pagebreakbefore, pagebreakafter, text_align, text_indent, text_indent_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+	const string css_insert_sql = "INSERT INTO css (epub_file_id, opf_id, selector, collation_key, display_type, font_size, font_weight, font_style, margin_top, margin_top_type, margin_bottom, margin_bottom_type, pagebreakbefore, pagebreakafter, text_align, text_indent, text_indent_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 	const string css_tags_insert_sql = "INSERT INTO css_tags (css_id, tagname, tagvalue) VALUES (?, ?, ?);";
 
 	rc = sqlite3_prepare_v2(db, css_insert_sql.c_str(), -1, &css_insert, 0);
@@ -757,7 +757,7 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 
 		sqlite3_bind_int(css_insert, 1, epub_file_id);
 		sqlite3_bind_int(css_insert, 2, opf_index);
-		sqlite3_bind_text(css_insert, 3, cssclass.name.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(css_insert, 3, cssclass.selector.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(css_insert, 4, cssclass.collation_key.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_int(css_insert, 5, (int) cssclass.displaytype);
 		sqlite3_bind_int(css_insert, 6, (int) cssclass.fontsize);

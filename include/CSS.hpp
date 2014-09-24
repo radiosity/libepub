@@ -143,7 +143,7 @@ class CSSValue {
 class CSSClass {
 
 	public:
-		ustring name;
+		ustring selector;
 		string collation_key;
 		map<ustring, ustring> raw_pairs;
 		DisplayType displaytype;
@@ -158,7 +158,7 @@ class CSSClass {
 		CSSValue textindent;
 
 		CSSClass();
-		CSSClass(ustring name);
+		CSSClass(ustring selector);
 
 		CSSClass(CSSClass const & cpy);
 		CSSClass(CSSClass && mv) ;
@@ -186,7 +186,7 @@ class CSS {
 		CSS & operator =(const CSS & cpy);
 		CSS & operator =(CSS && mv);
 
-		CSSClass get_class(const ustring & name) const;
+		CSSClass get_class(const ustring & selector) const;
 
 		~CSS();
 

@@ -534,7 +534,7 @@ void Content::save_to(sqlite3 * const db, const unsigned int epub_file_id, const
 	                                 "epub_file_id			INTEGER NOT NULL," \
 	                                 "opf_id 				INTEGER NOT NULL," \
 	                                 "type			 		INTEGER NOT NULL," \
-	                                 "css_class		 		TEXT NOT NULL," \
+	                                 "css_selector		 		TEXT NOT NULL," \
 	                                 "filename	 			TEXT NOT NULL," \
 	                                 "id			 		TEXT NOT NULL," \
 	                                 "content	 			TEXT NOT NULL," \
@@ -545,7 +545,7 @@ void Content::save_to(sqlite3 * const db, const unsigned int epub_file_id, const
 
 	sqlite3_stmt * content_insert;
 
-	const string content_insert_sql = "INSERT INTO content (epub_file_id, opf_id, type, css_class, filename, id, content, stripped_content) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+	const string content_insert_sql = "INSERT INTO content (epub_file_id, opf_id, type, css_selector, filename, id, content, stripped_content) VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
 	rc = sqlite3_prepare_v2(db, content_insert_sql.c_str(), -1, &content_insert, 0);
 
@@ -558,7 +558,7 @@ void Content::save_to(sqlite3 * const db, const unsigned int epub_file_id, const
 		sqlite3_bind_int(content_insert, 1, epub_file_id);
 		sqlite3_bind_int(content_insert, 2, opf_index);
 		sqlite3_bind_int(content_insert, 3, (int) contentitem.type);
-		sqlite3_bind_text(content_insert, 4, contentitem.cssclass.name.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(content_insert, 4, contentitem.cssclass.selector.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(content_insert, 5, contentitem.file.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(content_insert, 6,  contentitem.id.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(content_insert, 7, contentitem.content.c_str(), -1, SQLITE_STATIC);
