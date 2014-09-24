@@ -47,9 +47,9 @@ using std::endl;
 using namespace boost::filesystem;
 using namespace xmlpp;
 
-ContentItem::ContentItem(ContentType _type, CSSClass _cssclass, path _file, ustring _id, ustring _content, ustring _stripped_content) :
+ContentItem::ContentItem(ContentType _type, CSSRule _rule, path _file, ustring _id, ustring _content, ustring _stripped_content) :
 	type(_type),
-	cssclass(_cssclass),
+	rule(_rule),
 	file(_file),
 	id(_id),
 	content(_content),
@@ -59,7 +59,7 @@ ContentItem::ContentItem(ContentType _type, CSSClass _cssclass, path _file, ustr
 
 ContentItem::ContentItem(ContentItem const & cpy)  :
 	type(cpy.type),
-	cssclass(cpy.cssclass),
+	rule(cpy.rule),
 	file(cpy.file),
 	id(cpy.id),
 	content(cpy.content),
@@ -69,7 +69,7 @@ ContentItem::ContentItem(ContentItem const & cpy)  :
 
 ContentItem::ContentItem(ContentItem && mv)  :
 	type(move(mv.type)),
-	cssclass(move(mv.cssclass)),
+	rule(move(mv.rule)),
 	file(move(mv.file)),
 	id(move(mv.id)),
 	content(move(mv.content)),
@@ -80,7 +80,7 @@ ContentItem::ContentItem(ContentItem && mv)  :
 ContentItem & ContentItem::operator =(const ContentItem & cpy)
 {
 	type = cpy.type;
-	cssclass = cpy.cssclass;
+	rule = cpy.rule;
 	file = cpy.file;
 	id = cpy.id;
 	content = cpy.content;
@@ -91,7 +91,7 @@ ContentItem & ContentItem::operator =(const ContentItem & cpy)
 ContentItem & ContentItem::operator =(ContentItem && mv)
 {
 	type = move(mv.type);
-	cssclass = move(mv.cssclass);
+	rule = move(mv.rule);
 	file = move(mv.file);
 	id = move(mv.id);
 	content = move(mv.content);
@@ -244,7 +244,7 @@ namespace {
 				else if(childname_key == span_key) {
 					//specific bheaviour for stripping span tags
 					//Try to find a class attribute.
-					CSSClass tmp;
+					CSSRule tmp;
 					const auto attributes = childElement->get_attributes();
 
 					for(auto iter = attributes.begin(); iter != attributes.end(); ++iter) {
@@ -255,7 +255,7 @@ namespace {
 							//We've found a class here.
 							ustring cname = attribute->get_value();
 							//Need to do this better in the future:
-							tmp = classes.get_class(ustring(".") + cname);
+							tmp = classes.get_rule(ustring(".") + cname);
 						}
 					}
 
@@ -280,10 +280,10 @@ namespace {
 					ContentType ct = HR;
 
 					//See if we can find a CSS class for this.
-					CSSClass cssclass = classes.get_class("hr");
+					CSSRule rule = classes.get_rule("hr");
 
 					//Add it directly to the items:
-					items.emplace_back(ct, cssclass, file, __id, "", "");
+					items.emplace_back(ct, rule, file, __id, "", "");
 
 					value = "";
 					value_stripped = "";
@@ -319,23 +319,23 @@ namespace {
 
 				ContentType ct = P;
 				//Try to get a class for the content type.
-				CSSClass cssclass;
+				CSSRule rule;
 
 				if(name_key == p_key) {
 					ct = P;
-					cssclass = classes.get_class("p");
+					rule = classes.get_rule("p");
 				}
 				else if (name_key == h1_key) {
 					ct = H1;
-					cssclass = classes.get_class("h1");
+					rule = classes.get_rule("h1");
 				}
 				else if (name_key == h2_key) {
 					ct = H2;
-					cssclass = classes.get_class("h2");
+					rule = classes.get_rule("h2");
 				}
 				else if (name_key == hr_key) {
 					ct = HR;
-					cssclass = classes.get_class("hr");
+					rule = classes.get_rule("hr");
 				}
 
 				const auto attributes = tmpnode->get_attributes();
@@ -349,12 +349,14 @@ namespace {
 						__id = attribute->get_value();
 					}
 
+					/* TODO!!!!!
 					if(attr_key == class_key) {
 						//We've found an additional class here.
 						ustring cname = attribute->get_value();
 						CSSClass tmp = classes.get_class(cname);
 						cssclass.add(tmp);
 					}
+					*/
 				}
 
 				pair<ustring, ustring> content = __recursive_strip(items, classes, file, ntmp);
@@ -368,7 +370,7 @@ namespace {
 				cout << " \t " << content.first << endl;
 				cout << " \t " << content.second << endl;
 				#endif
-				items.emplace_back(ct, cssclass, file, __id, content.first, content.second);
+				items.emplace_back(ct, rule, file, __id, content.first, content.second);
 
 			}
 		}
@@ -473,13 +475,13 @@ Content::Content(CSS & _classes, sqlite3 * const db, const unsigned int epub_fil
 	while ( rc == SQLITE_ROW ) {
 
 		ContentType type = (ContentType) sqlite3_column_int(content_select, 3);
-		CSSClass cssclass = _classes.get_class(sqlite3_column_ustring(content_select, 4));
+		CSSRule rule = _classes.get_rule(sqlite3_column_ustring(content_select, 4));
 		path file(sqlite3_column_string(content_select, 5));
 		ustring id = sqlite3_column_ustring(content_select, 6);
 		ustring content = sqlite3_column_ustring(content_select, 7);
 		ustring stripped_content = sqlite3_column_ustring(content_select, 8);
 
-		items.emplace_back(type, cssclass, file, id, content, stripped_content);
+		items.emplace_back(type, rule, file, id, content, stripped_content);
 
 		rc = sqlite3_step(content_select);
 
@@ -558,7 +560,7 @@ void Content::save_to(sqlite3 * const db, const unsigned int epub_file_id, const
 		sqlite3_bind_int(content_insert, 1, epub_file_id);
 		sqlite3_bind_int(content_insert, 2, opf_index);
 		sqlite3_bind_int(content_insert, 3, (int) contentitem.type);
-		sqlite3_bind_text(content_insert, 4, contentitem.cssclass.selector.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(content_insert, 4, contentitem.rule.selector.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(content_insert, 5, contentitem.file.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(content_insert, 6,  contentitem.id.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(content_insert, 7, contentitem.content.c_str(), -1, SQLITE_STATIC);

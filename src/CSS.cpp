@@ -90,12 +90,12 @@ CSSValue::~CSSValue()
 {
 }
 
-CSSClass::CSSClass() :
-	CSSClass("")
+CSSRule::CSSRule() :
+	CSSRule("")
 {
 }
 
-CSSClass::CSSClass(ustring _selector) :
+CSSRule::CSSRule(ustring _selector) :
 	selector(_selector),
 	collation_key(selector.collate_key()),
 	raw_pairs(),
@@ -112,7 +112,7 @@ CSSClass::CSSClass(ustring _selector) :
 {
 }
 
-CSSClass::CSSClass(CSSClass const & cpy) :
+CSSRule::CSSRule(CSSRule const & cpy) :
 	selector(cpy.selector),
 	collation_key(cpy.collation_key),
 	raw_pairs(cpy.raw_pairs),
@@ -129,7 +129,7 @@ CSSClass::CSSClass(CSSClass const & cpy) :
 {
 }
 
-CSSClass::CSSClass(CSSClass && mv) :
+CSSRule::CSSRule(CSSRule && mv) :
 	selector(move(mv.selector)),
 	collation_key(move(mv.collation_key)),
 	raw_pairs(move(mv.raw_pairs)),
@@ -146,7 +146,7 @@ CSSClass::CSSClass(CSSClass && mv) :
 {
 }
 
-CSSClass & CSSClass::operator =(const CSSClass & cpy)
+CSSRule & CSSRule::operator =(const CSSRule & cpy)
 {
 	selector = cpy.selector;
 	collation_key = cpy.collation_key;
@@ -164,7 +164,7 @@ CSSClass & CSSClass::operator =(const CSSClass & cpy)
 	return *this;
 }
 
-CSSClass & CSSClass::operator =(CSSClass && mv)
+CSSRule & CSSRule::operator =(CSSRule && mv)
 {
 	selector = move(mv.selector);
 	collation_key = move(mv.collation_key);
@@ -182,9 +182,9 @@ CSSClass & CSSClass::operator =(CSSClass && mv)
 	return *this;
 }
 
-CSSClass::~CSSClass() { }
+CSSRule::~CSSRule() { }
 
-void CSSClass::add ( const CSSClass & rhs )
+void CSSRule::add ( const CSSRule & rhs )
 {
 	//Do the basics:
 	if(rhs.displaytype != DISPLAY_INLINE) {
@@ -245,13 +245,13 @@ void CSSClass::add ( const CSSClass & rhs )
 
 CSS::CSS() :
 	files(),
-	classes()
+	rules()
 {
 }
 
 CSS::CSS(vector<path> _files) :
 	files(_files),
-	classes()
+	rules()
 {
 	//prepare the regular expressions:
 	regex regex_selector ("([A-Za-z0-9\\.-]+)", regex::optimize);
@@ -277,7 +277,7 @@ CSS::CSS(vector<path> _files) :
 
 		if(cssfile.is_open()) {
 
-			CSSClass cssclass;
+			CSSRule rule;
 
 			string line;
 
@@ -314,18 +314,18 @@ CSS::CSS(vector<path> _files) :
 
 					for (auto selector : selectors) {
 						//Check if the classname exists - if it does we need to update it.
-						if(classes.count(selector) != 0) {
+						if(rules.count(selector) != 0) {
 							//It exists! update it.
-							classes[selector].add(cssclass);
+							rules[selector].add(rule);
 						}
 						else {
-							cssclass.selector = selector;
-							cssclass.collation_key = selector.collate_key();
-							classes.insert(pair<string, CSSClass>(cssclass.collation_key, cssclass));
+							rule.selector = selector;
+							rule.collation_key = selector.collate_key();
+							rules.insert(pair<string, CSSRule>(rule.collation_key, rule));
 						}
 					}
 
-					cssclass = CSSClass();
+					rule = CSSRule();
 					selectors.clear();
 					class_is_open = false;
 					is_at_rule = false;
@@ -376,7 +376,7 @@ CSS::CSS(vector<path> _files) :
 						//We found an attr.
 						string attrname = regex_matches[1];
 						string attrvalue = regex_matches[2];
-						cssclass.raw_pairs.insert(pair<ustring, ustring>(attrname, attrvalue));
+						rule.raw_pairs.insert(pair<ustring, ustring>(attrname, attrvalue));
 						#ifdef DEBUG
 						cout << "\tCSS Attribute name: "  << attrname << endl;
 						cout << "\tCSS Attribute value "  << attrvalue << endl;
@@ -384,7 +384,7 @@ CSS::CSS(vector<path> _files) :
 
 						if(attrname == "display") {
 							if(attrvalue == "block") {
-								cssclass.displaytype = DISPLAY_BLOCK;
+								rule.displaytype = DISPLAY_BLOCK;
 							}
 						}
 						else if (attrname == "font-size") {
@@ -396,24 +396,24 @@ CSS::CSS(vector<path> _files) :
 								double size = stod(regex_match_size[1], NULL);
 
 								if(size < 1.0) {
-									cssclass.fontsize = FONTSIZE_SMALLER;
+									rule.fontsize = FONTSIZE_SMALLER;
 								}
 								else if(size == 1.0) {
-									cssclass.fontsize = FONTSIZE_NORMAL;
+									rule.fontsize = FONTSIZE_NORMAL;
 								}
 								else {
-									cssclass.fontsize = FONTSIZE_LARGER;
+									rule.fontsize = FONTSIZE_LARGER;
 								}
 							}
 						}
 						else if (attrname == "font-weight") {
 							if(attrvalue == "bold") {
-								cssclass.fontweight = FONTWEIGHT_BOLD;
+								rule.fontweight = FONTWEIGHT_BOLD;
 							}
 						}
 						else if (attrname == "font-style") {
 							if(attrvalue == "italic") {
-								cssclass.fontstyle = FONTSTYLE_ITALIC;
+								rule.fontstyle = FONTSTYLE_ITALIC;
 							}
 						}
 						else if (attrname == "margin-top") {
@@ -421,28 +421,28 @@ CSS::CSS(vector<path> _files) :
 
 							if(regex_search(attrvalue, regex_match_margin, regex_percent)) {
 								string match = regex_match_margin[1];
-								cssclass.margintop.value = stod(match, NULL);
-								cssclass.margintop.type = CSS_VALUE_PERCENT;
+								rule.margintop.value = stod(match, NULL);
+								rule.margintop.type = CSS_VALUE_PERCENT;
 							}
 							else if(regex_search(attrvalue, regex_match_margin, regex_em)) {
 								string match = regex_match_margin[1];
-								cssclass.margintop.value = stod(match, NULL);
-								cssclass.margintop.type = CSS_VALUE_EM;
+								rule.margintop.value = stod(match, NULL);
+								rule.margintop.type = CSS_VALUE_EM;
 							}
 							else if(regex_search(attrvalue, regex_match_margin, regex_px)) {
 								string match = regex_match_margin[1];
-								cssclass.margintop.value = stod(match, NULL);
-								cssclass.margintop.type = CSS_VALUE_PX;
+								rule.margintop.value = stod(match, NULL);
+								rule.margintop.type = CSS_VALUE_PX;
 							}
 							else if(regex_search(attrvalue, regex_match_margin, regex_pt)) {
 								string match = regex_match_margin[1];
-								cssclass.margintop.value = stod(match, NULL);
-								cssclass.margintop.type = CSS_VALUE_PT;
+								rule.margintop.value = stod(match, NULL);
+								rule.margintop.type = CSS_VALUE_PT;
 							}
 							else if(regex_search(attrvalue, regex_match_margin, regex_cm)) {
 								string match = regex_match_margin[1];
-								cssclass.margintop.value = stod(match, NULL);
-								cssclass.margintop.type = CSS_VALUE_CM;
+								rule.margintop.value = stod(match, NULL);
+								rule.margintop.type = CSS_VALUE_CM;
 							}
 						}
 						else if (attrname == "margin-bottom") {
@@ -450,28 +450,28 @@ CSS::CSS(vector<path> _files) :
 
 							if(regex_search(attrvalue, regex_match_margin, regex_percent)) {
 								string match = regex_match_margin[1];
-								cssclass.marginbottom.value = stod(match, NULL);
-								cssclass.marginbottom.type = CSS_VALUE_PERCENT;
+								rule.marginbottom.value = stod(match, NULL);
+								rule.marginbottom.type = CSS_VALUE_PERCENT;
 							}
 							else if(regex_search(attrvalue, regex_match_margin, regex_em)) {
 								string match = regex_match_margin[1];
-								cssclass.marginbottom.value = stod(match, NULL);
-								cssclass.marginbottom.type = CSS_VALUE_EM;
+								rule.marginbottom.value = stod(match, NULL);
+								rule.marginbottom.type = CSS_VALUE_EM;
 							}
 							else if(regex_search(attrvalue, regex_match_margin, regex_px)) {
 								string match = regex_match_margin[1];
-								cssclass.marginbottom.value = stod(match, NULL);
-								cssclass.marginbottom.type = CSS_VALUE_PX;
+								rule.marginbottom.value = stod(match, NULL);
+								rule.marginbottom.type = CSS_VALUE_PX;
 							}
 							else if(regex_search(attrvalue, regex_match_margin, regex_pt)) {
 								string match = regex_match_margin[1];
-								cssclass.marginbottom.value = stod(match, NULL);
-								cssclass.marginbottom.type = CSS_VALUE_PT;
+								rule.marginbottom.value = stod(match, NULL);
+								rule.marginbottom.type = CSS_VALUE_PT;
 							}
 							else if(regex_search(attrvalue, regex_match_margin, regex_cm)) {
 								string match = regex_match_margin[1];
-								cssclass.marginbottom.value = stod(match, NULL);
-								cssclass.marginbottom.type = CSS_VALUE_CM;
+								rule.marginbottom.value = stod(match, NULL);
+								rule.marginbottom.type = CSS_VALUE_CM;
 							}
 						}
 						else if (attrname == "margin") {
@@ -481,63 +481,63 @@ CSS::CSS(vector<path> _files) :
 							if(regex_search(attrvalue, regex_match_margin, regex_percent)) {
 								string match = regex_match_margin[1];
 								double margin = stod(match, NULL);
-								cssclass.marginbottom.value = margin;
-								cssclass.margintop.value = margin;
-								cssclass.marginbottom.type = CSS_VALUE_PERCENT;
-								cssclass.margintop.type = CSS_VALUE_PERCENT;
+								rule.marginbottom.value = margin;
+								rule.margintop.value = margin;
+								rule.marginbottom.type = CSS_VALUE_PERCENT;
+								rule.margintop.type = CSS_VALUE_PERCENT;
 							}
 							else if(regex_search(attrvalue, regex_match_margin, regex_em)) {
 								string match = regex_match_margin[1];
 								double margin = stod(match, NULL);
-								cssclass.marginbottom.value = margin;
-								cssclass.margintop.value = margin;
-								cssclass.marginbottom.type = CSS_VALUE_EM;
-								cssclass.margintop.type = CSS_VALUE_EM;
+								rule.marginbottom.value = margin;
+								rule.margintop.value = margin;
+								rule.marginbottom.type = CSS_VALUE_EM;
+								rule.margintop.type = CSS_VALUE_EM;
 							}
 							else if(regex_search(attrvalue, regex_match_margin, regex_px)) {
 								string match = regex_match_margin[1];
 								double margin = stod(match, NULL);
-								cssclass.marginbottom.value = margin;
-								cssclass.margintop.value = margin;
-								cssclass.marginbottom.type = CSS_VALUE_PX;
-								cssclass.margintop.type = CSS_VALUE_PX;
+								rule.marginbottom.value = margin;
+								rule.margintop.value = margin;
+								rule.marginbottom.type = CSS_VALUE_PX;
+								rule.margintop.type = CSS_VALUE_PX;
 							}
 							else if(regex_search(attrvalue, regex_match_margin, regex_pt)) {
 								string match = regex_match_margin[1];
 								double margin = stod(match, NULL);
-								cssclass.marginbottom.value = margin;
-								cssclass.margintop.value = margin;
-								cssclass.marginbottom.type = CSS_VALUE_PT;
-								cssclass.margintop.type = CSS_VALUE_PT;
+								rule.marginbottom.value = margin;
+								rule.margintop.value = margin;
+								rule.marginbottom.type = CSS_VALUE_PT;
+								rule.margintop.type = CSS_VALUE_PT;
 							}
 							else if(regex_search(attrvalue, regex_match_margin, regex_cm)) {
 								string match = regex_match_margin[1];
 								double margin = stod(match, NULL);
-								cssclass.marginbottom.value = margin;
-								cssclass.margintop.value = margin;
-								cssclass.marginbottom.type = CSS_VALUE_CM;
-								cssclass.margintop.type = CSS_VALUE_CM;
+								rule.marginbottom.value = margin;
+								rule.margintop.value = margin;
+								rule.marginbottom.type = CSS_VALUE_CM;
+								rule.margintop.type = CSS_VALUE_CM;
 							}
 						}
 						else if (attrname == "page-break-before") {
 							if(attrvalue == "always") {
-								cssclass.pagebreakbefore = true;
+								rule.pagebreakbefore = true;
 							}
 						}
 						else if (attrname == "page-break-after") {
 							if(attrvalue == "always") {
-								cssclass.pagebreakafter = true;
+								rule.pagebreakafter = true;
 							}
 						}
 						else if (attrname == "text-align") {
 							if(attrvalue == "right") {
-								cssclass.textalign = TEXTALIGN_RIGHT;
+								rule.textalign = TEXTALIGN_RIGHT;
 							}
 							else if(attrvalue == "center") {
-								cssclass.textalign = TEXTALIGN_CENTER;
+								rule.textalign = TEXTALIGN_CENTER;
 							}
 							else {
-								cssclass.textalign = TEXTALIGN_LEFT;
+								rule.textalign = TEXTALIGN_LEFT;
 							}
 						}
 						else if (attrname == "text-indent") {
@@ -545,8 +545,8 @@ CSS::CSS(vector<path> _files) :
 
 							if(regex_search(attrvalue, regex_match_margin, regex_percent)) {
 								string match = regex_match_margin[1];
-								cssclass.textindent.value = stod(match, NULL);
-								cssclass.textindent.type = CSS_VALUE_PERCENT;
+								rule.textindent.value = stod(match, NULL);
+								rule.textindent.type = CSS_VALUE_PERCENT;
 							}
 						}
 					}
@@ -561,7 +561,7 @@ CSS::CSS(vector<path> _files) :
 
 CSS::CSS(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index)  :
 	files(),
-	classes()
+	rules()
 {
 
 	int rc;
@@ -592,7 +592,7 @@ CSS::CSS(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int
 	while ( rc == SQLITE_ROW ) {
 
 		//Default-construct the object:
-		CSSClass cssclass;
+		CSSRule rule;
 
 		//Get the basic data
 		unsigned int css_id = sqlite3_column_int(css_select, 0);
@@ -613,21 +613,21 @@ CSS::CSS(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int
 		double textindent = sqlite3_column_double(css_select, 16);
 		CSSValueType textindent_type = (CSSValueType) sqlite3_column_int(css_select, 17);
 
-		cssclass.selector = selector;
-		cssclass.collation_key = collation_key;
-		cssclass.displaytype = displaytype;
-		cssclass.fontsize = fontsize;
-		cssclass.fontweight = fontweight;
-		cssclass.fontstyle = fontstyle;
-		cssclass.margintop.value = margintop;
-		cssclass.margintop.type = margintop_type;
-		cssclass.marginbottom.value = marginbottom;
-		cssclass.marginbottom.type = marginbottom_type;
-		cssclass.pagebreakbefore = pagebreakbefore;
-		cssclass.pagebreakafter = pagebreakafter;
-		cssclass.textalign = textalign;
-		cssclass.textindent.value = textindent;
-		cssclass.textindent.type = textindent_type;
+		rule.selector = selector;
+		rule.collation_key = collation_key;
+		rule.displaytype = displaytype;
+		rule.fontsize = fontsize;
+		rule.fontweight = fontweight;
+		rule.fontstyle = fontstyle;
+		rule.margintop.value = margintop;
+		rule.margintop.type = margintop_type;
+		rule.marginbottom.value = marginbottom;
+		rule.marginbottom.type = marginbottom_type;
+		rule.pagebreakbefore = pagebreakbefore;
+		rule.pagebreakafter = pagebreakafter;
+		rule.textalign = textalign;
+		rule.textindent.value = textindent;
+		rule.textindent.type = textindent_type;
 
 		int rc2;
 
@@ -640,13 +640,13 @@ CSS::CSS(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int
 			ustring tagname = sqlite3_column_ustring(css_tags_select, 0);
 			ustring tagvalue = sqlite3_column_ustring(css_tags_select, 1);
 
-			cssclass.raw_pairs.insert(pair<ustring, ustring>(tagname, tagvalue));
+			rule.raw_pairs.insert(pair<ustring, ustring>(tagname, tagvalue));
 
 			rc2 = sqlite3_step(css_tags_select);
 
 		}
 
-		classes.insert(pair<string, CSSClass>(cssclass.collation_key, cssclass));
+		rules.insert(pair<string, CSSRule>(rule.collation_key, rule));
 
 		sqlite3_reset(css_tags_select);
 
@@ -661,42 +661,42 @@ CSS::CSS(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int
 
 CSS::CSS(CSS const & cpy) :
 	files(cpy.files),
-	classes(cpy.classes)
+	rules(cpy.rules)
 {
 }
 
 CSS::CSS(CSS && mv) :
 	files(move(mv.files)),
-	classes(move(mv.classes))
+	rules(move(mv.rules))
 {
 }
 
 CSS & CSS::operator =(const CSS & cpy)
 {
 	files = cpy.files;
-	classes = cpy.classes;
+	rules = cpy.rules;
 	return *this;
 }
 
 CSS & CSS::operator =(CSS && mv)
 {
 	files = move(mv.files);
-	classes = move(mv.classes);
+	rules = move(mv.rules);
 	return *this;
 }
 
 CSS::~CSS() { }
 
-CSSClass CSS::get_class(const ustring & selector) const
+CSSRule CSS::get_rule(const ustring & selector) const
 {
 	string key = selector.collate_key();
 
-	if(classes.count(key) == 0) {
-		//It doesn't exist in the database. Return a CSSClass with all defaults.
-		return CSSClass();
+	if(rules.count(key) == 0) {
+		//It doesn't exist in the database. Return a CSSRule with all defaults.
+		return CSSRule();
 	}
 	else {
-		return classes.at(key);
+		return rules.at(key);
 	}
 }
 
@@ -751,27 +751,27 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 		throw - 1;
 	}
 
-	for(auto & csspair : classes) {
+	for(auto & csspair : rules) {
 
-		CSSClass cssclass = csspair.second;
+		CSSRule rule = csspair.second;
 
 		sqlite3_bind_int(css_insert, 1, epub_file_id);
 		sqlite3_bind_int(css_insert, 2, opf_index);
-		sqlite3_bind_text(css_insert, 3, cssclass.selector.c_str(), -1, SQLITE_STATIC);
-		sqlite3_bind_text(css_insert, 4, cssclass.collation_key.c_str(), -1, SQLITE_STATIC);
-		sqlite3_bind_int(css_insert, 5, (int) cssclass.displaytype);
-		sqlite3_bind_int(css_insert, 6, (int) cssclass.fontsize);
-		sqlite3_bind_int(css_insert, 7, (int) cssclass.fontweight);
-		sqlite3_bind_int(css_insert, 8, (int) cssclass.fontstyle);
-		sqlite3_bind_double(css_insert, 9, cssclass.margintop.value);
-		sqlite3_bind_int(css_insert, 10, (int) cssclass.margintop.type);
-		sqlite3_bind_double(css_insert, 11, cssclass.marginbottom.value);
-		sqlite3_bind_int(css_insert, 12, (int) cssclass.marginbottom.type);
-		sqlite3_bind_int(css_insert, 13, (int) cssclass.pagebreakbefore);
-		sqlite3_bind_int(css_insert, 14, (int) cssclass.pagebreakafter);
-		sqlite3_bind_int(css_insert, 15, (int) cssclass.textalign);
-		sqlite3_bind_double(css_insert, 16, cssclass.textindent.value);
-		sqlite3_bind_int(css_insert, 17, (int) cssclass.textindent.type);
+		sqlite3_bind_text(css_insert, 3, rule.selector.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(css_insert, 4, rule.collation_key.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_int(css_insert, 5, (int) rule.displaytype);
+		sqlite3_bind_int(css_insert, 6, (int) rule.fontsize);
+		sqlite3_bind_int(css_insert, 7, (int) rule.fontweight);
+		sqlite3_bind_int(css_insert, 8, (int) rule.fontstyle);
+		sqlite3_bind_double(css_insert, 9, rule.margintop.value);
+		sqlite3_bind_int(css_insert, 10, (int) rule.margintop.type);
+		sqlite3_bind_double(css_insert, 11, rule.marginbottom.value);
+		sqlite3_bind_int(css_insert, 12, (int) rule.marginbottom.type);
+		sqlite3_bind_int(css_insert, 13, (int) rule.pagebreakbefore);
+		sqlite3_bind_int(css_insert, 14, (int) rule.pagebreakafter);
+		sqlite3_bind_int(css_insert, 15, (int) rule.textalign);
+		sqlite3_bind_double(css_insert, 16, rule.textindent.value);
+		sqlite3_bind_int(css_insert, 17, (int) rule.textindent.type);
 
 		int result = sqlite3_step(css_insert);
 
@@ -784,7 +784,7 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 		//get the new id:
 		const auto key = sqlite3_last_insert_rowid(db);
 
-		for(auto & pair : cssclass.raw_pairs) {
+		for(auto & pair : rule.raw_pairs) {
 
 			sqlite3_bind_int(css_tags_insert, 1, key);
 			sqlite3_bind_text(css_tags_insert, 2, pair.first.c_str(), -1, SQLITE_STATIC);

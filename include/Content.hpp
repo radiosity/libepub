@@ -53,13 +53,13 @@ class ContentItem {
 
 	public:
 		ContentType type;
-		CSSClass cssclass;
+		CSSRule rule;
 		path file;
 		ustring id;
 		ustring content;
 		ustring stripped_content;
 
-		ContentItem(ContentType type, CSSClass, path file, ustring id, ustring content, ustring stripped_content);
+		ContentItem(ContentType type, CSSRule, path file, ustring id, ustring content, ustring stripped_content);
 
 		ContentItem(ContentItem const & cpy);
 		ContentItem(ContentItem && mv) ;

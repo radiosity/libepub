@@ -148,15 +148,15 @@ TEST(EpubTest, Database)
 
 		}
 
-		ASSERT_TRUE(file_book.css[i].classes.size() == sql_book.css[i].classes.size());
+		ASSERT_TRUE(file_book.css[i].rules.size() == sql_book.css[i].rules.size());
 
-		auto book_css_it = file_book.css[i].classes.begin();
-		auto sql_css_it = sql_book.css[i].classes.begin();
+		auto book_css_it = file_book.css[i].rules.begin();
+		auto sql_css_it = sql_book.css[i].rules.begin();
 
-		while(book_css_it != file_book.css[i].classes.end()) {
+		while(book_css_it != file_book.css[i].rules.end()) {
 
-			CSSClass c_book = (*book_css_it).second;
-			CSSClass c_sql = (*sql_css_it).second;
+			CSSRule c_book = (*book_css_it).second;
+			CSSRule c_sql = (*sql_css_it).second;
 
 			ASSERT_TRUE(c_book.selector == c_sql.selector);
 			ASSERT_TRUE(c_book.collation_key == c_sql.collation_key);

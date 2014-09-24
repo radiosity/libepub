@@ -140,7 +140,7 @@ class CSSValue {
 
 };
 
-class CSSClass {
+class CSSRule {
 
 	public:
 		ustring selector;
@@ -157,17 +157,17 @@ class CSSClass {
 		TextAlign textalign;
 		CSSValue textindent;
 
-		CSSClass();
-		CSSClass(ustring selector);
+		CSSRule();
+		CSSRule(ustring selector);
 
-		CSSClass(CSSClass const & cpy);
-		CSSClass(CSSClass && mv) ;
-		CSSClass & operator =(const CSSClass & cpy);
-		CSSClass & operator =(CSSClass && mv) ;
+		CSSRule(CSSRule const & cpy);
+		CSSRule(CSSRule && mv) ;
+		CSSRule & operator =(const CSSRule & cpy);
+		CSSRule & operator =(CSSRule && mv) ;
 
-		~CSSClass();
+		~CSSRule();
 
-		void add(const CSSClass & rhs);
+		void add(const CSSRule & rhs);
 
 };
 
@@ -175,7 +175,7 @@ class CSS {
 
 	public:
 		vector <path> files;
-		map <string, CSSClass> classes;
+		map <string, CSSRule> rules;
 
 		CSS();
 		CSS(vector<path> files);
@@ -186,7 +186,7 @@ class CSS {
 		CSS & operator =(const CSS & cpy);
 		CSS & operator =(CSS && mv);
 
-		CSSClass get_class(const ustring & selector) const;
+		CSSRule get_rule(const ustring & selector) const;
 
 		~CSS();
 
