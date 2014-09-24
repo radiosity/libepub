@@ -32,6 +32,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <libxml++/libxml++.h>
 #include <exception>
 
+#include "SQLiteUtils.hpp"
+
 using std::move;
 using std::pair;
 using std::string;
@@ -531,5 +533,9 @@ void Content::save_to(sqlite3 * const db, const unsigned int epub_file_id, const
 	}
 
 	sqlite3_finalize(content_insert);
+
+	//Create an index
+	const string content_index_sql = "CREATE INDEX index_content ON content(epub_file_id, opf_id);";
+	sqlite3_exec(db, content_index_sql.c_str(), NULL, NULL, &errmsg);
 
 }
