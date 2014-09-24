@@ -447,6 +447,13 @@ Content::Content(CSS & _classes, vector<path> _files) :
 	}
 }
 
+Content::Content(CSS & _classes, sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index) :
+	classes(_classes),
+	files()
+{
+	
+}
+
 Content::Content(Content const & cpy) :
 	classes(cpy.classes),
 	files(cpy.files),

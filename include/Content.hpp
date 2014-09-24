@@ -78,6 +78,7 @@ class Content {
 		vector<ContentItem> items;
 
 		Content(CSS & _classes, vector<path> files);
+		Content(CSS & _classes, sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index);
 
 		Content(Content const & cpy);
 		Content(Content && mv) ;
