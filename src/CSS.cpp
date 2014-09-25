@@ -700,6 +700,13 @@ CSSRule CSS::get_rule(const ustring & selector) const
 	}
 }
 
+bool CSS::contains_rule(const ustring & selector) const
+{
+	string key = selector.collate_key();
+
+	return rules.count(key) != 0;
+}
+
 void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index)
 {
 	int rc;

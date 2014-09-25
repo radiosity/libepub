@@ -187,6 +187,7 @@ class CSS {
 		CSS & operator =(CSS && mv);
 
 		CSSRule get_rule(const ustring & selector) const;
+		bool contains_rule(const ustring & selector) const;
 
 		~CSS();
 
