@@ -254,7 +254,7 @@ CSS::CSS(vector<path> _files) :
 	rules()
 {
 	//prepare the regular expressions:
-	regex regex_selector ("([A-Za-z0-9\\.-]+)", regex::optimize);
+	regex regex_selector ("([A-Za-z0-9\\.#-]+)", regex::optimize);
 	regex regex_atrule_single("^@.*;$", regex::optimize);
 	regex regex_atrule_multiple("^@.*\\{", regex::optimize);
 	regex regex_attr("([A-Za-z0-9-]+)\\s*:{1}\\s*([^;]*)", regex::optimize);
