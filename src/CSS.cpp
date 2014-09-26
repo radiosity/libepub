@@ -54,7 +54,7 @@ using std::cout;
 using std::endl;
 #endif
 
-CSSSpecificity::CSSSpecificity(unsigned int _a, unsigned int _b, unsigned int _c, unsigned int _d) :
+CSSSpecificity::CSSSpecificity(const unsigned int _a, const unsigned int _b, const unsigned int _c, const unsigned int _d) :
 	a(_a),
 	b(_b),
 	c(_c),
