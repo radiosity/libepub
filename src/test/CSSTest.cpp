@@ -25,12 +25,34 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+/*
+Info:
+
+Selectors : http://www.w3.org/TR/WD-css2-971104/selector.html
+
+*/
+
 #include <gtest/gtest.h>
 
 #include "CSS.hpp"
 
-TEST(CSSTest, Specificity)
+TEST(CSSTest, Specificity_Equality)
 {
+
+	CSSSpecificity test_a(0, 0, 0, 0);
+	CSSSpecificity test_b(0, 0, 0, 0);
+
+	ASSERT_TRUE(test_a == test_b);
+
+	CSSSpecificity test_c1(1, 0, 0, 0);
+	CSSSpecificity test_c2(0, 1, 0, 0);
+	CSSSpecificity test_c3(0, 0, 1, 0);
+	CSSSpecificity test_c4(0, 0, 0, 1);
+
+	ASSERT_TRUE(test_a != test_c1);
+	ASSERT_TRUE(test_a != test_c2);
+	ASSERT_TRUE(test_a != test_c3);
+	ASSERT_TRUE(test_a != test_c4);
 
 }
 

@@ -111,6 +111,93 @@ enum CSSValueType {
 	CSS_VALUE_PERCENT
 };
 
+class CSSSpecificity {
+
+	private:
+		unsigned int a;
+		unsigned int b;
+		unsigned int c;
+		unsigned int d;
+
+	public:
+		CSSSpecificity(unsigned int _a, unsigned int _b, unsigned int _c, unsigned int _d);
+
+		CSSSpecificity(CSSSpecificity const & cpy);
+		CSSSpecificity(CSSSpecificity && mv) ;
+		CSSSpecificity & operator =(const CSSSpecificity & cpy);
+		CSSSpecificity & operator =(CSSSpecificity && mv) ;
+
+		~CSSSpecificity();
+
+		friend inline bool operator==(const CSSSpecificity & lhs, const CSSSpecificity & rhs);
+		friend inline bool operator!=(const CSSSpecificity & lhs, const CSSSpecificity & rhs);
+
+		friend inline bool operator< (const CSSSpecificity & lhs, const CSSSpecificity & rhs);
+		friend inline bool operator> (const CSSSpecificity & lhs, const CSSSpecificity & rhs);
+		friend inline bool operator<=(const CSSSpecificity & lhs, const CSSSpecificity & rhs);
+		friend inline bool operator>=(const CSSSpecificity & lhs, const CSSSpecificity & rhs);
+
+};
+
+inline bool operator==(const CSSSpecificity & lhs, const CSSSpecificity & rhs)
+{
+	if(lhs.d != rhs.d) {
+		return false;
+	}
+
+	if(lhs.c != rhs.c) {
+		return false;
+	}
+
+	if(lhs.b != rhs.b) {
+		return false;
+	}
+
+	if(lhs.a != rhs.a) {
+		return false;
+	}
+
+	return true;
+}
+
+inline bool operator!=(const CSSSpecificity & lhs, const CSSSpecificity & rhs)
+{
+	return !(rhs == lhs);
+}
+
+inline bool operator< (const CSSSpecificity & lhs, const CSSSpecificity & rhs)
+{
+	if(lhs.a < rhs.a) {
+		return true;
+	}
+
+	if(lhs.b < rhs.b) {
+		return true;
+	}
+
+	if(lhs.c < rhs.c) {
+		return true;
+	}
+
+	if(lhs.d < rhs.d) {
+		return true;
+	}
+
+	return false;
+}
+inline bool operator> (const CSSSpecificity & lhs, const CSSSpecificity & rhs)
+{
+	return rhs < lhs;
+}
+inline bool operator<=(const CSSSpecificity & lhs, const CSSSpecificity & rhs)
+{
+	return !(lhs > rhs);
+}
+inline bool operator>=(const CSSSpecificity & lhs, const CSSSpecificity & rhs)
+{
+	return !(lhs < rhs);
+}
+
 class CSSValue {
 
 	public:

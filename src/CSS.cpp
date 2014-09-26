@@ -54,6 +54,56 @@ using std::cout;
 using std::endl;
 #endif
 
+CSSSpecificity::CSSSpecificity(unsigned int _a, unsigned int _b, unsigned int _c, unsigned int _d) :
+	a(_a),
+	b(_b),
+	c(_c),
+	d(_d)
+{
+
+}
+
+CSSSpecificity::CSSSpecificity(CSSSpecificity const & cpy) :
+	a(cpy.a),
+	b(cpy.b),
+	c(cpy.c),
+	d(cpy.d)
+{
+
+}
+
+CSSSpecificity::CSSSpecificity(CSSSpecificity && mv) :
+	a(move(mv.a)),
+	b(move(mv.b)),
+	c(move(mv.c)),
+	d(move(mv.d))
+{
+
+}
+
+CSSSpecificity & CSSSpecificity::operator =(const CSSSpecificity & cpy)
+{
+	a = cpy.a;
+	b = cpy.b;
+	c = cpy.c;
+	d = cpy.d;
+	return *this;
+}
+
+CSSSpecificity & CSSSpecificity::operator =(CSSSpecificity && mv)
+{
+	a = move(mv.a);
+	b = move(mv.b);
+	c = move(mv.c);
+	d = move(mv.d);
+	return *this;
+}
+
+CSSSpecificity::~CSSSpecificity()
+{
+
+}
+
 CSSValue::CSSValue() :
 	value(numeric_limits<double>::min()),
 	type(CSS_VALUE_DEFAULT)
