@@ -56,4 +56,37 @@ TEST(CSSTest, Specificity_Equality)
 
 }
 
+TEST(CSSTest, Specificity_Relational)
+{
+
+	CSSSpecificity test_a(0, 0, 0, 0);
+	CSSSpecificity test_b(0, 0, 0, 0);
+
+	ASSERT_TRUE(test_a <= test_b);
+
+	test_a = CSSSpecificity(0, 0, 0, 0);
+	test_b = CSSSpecificity(0, 0, 0, 1);
+
+	ASSERT_TRUE(test_a < test_b);
+	ASSERT_FALSE(test_a > test_b);
+
+	CSSSpecificity test_c1(1, 0, 0, 0);
+	CSSSpecificity test_c2(0, 1, 0, 0);
+	CSSSpecificity test_c3(0, 0, 1, 0);
+	CSSSpecificity test_c4(0, 0, 0, 1);
+
+	ASSERT_TRUE(test_c1 != test_c2);
+	ASSERT_FALSE(test_c1 < test_c2);
+	ASSERT_TRUE(test_c1 > test_c2);
+
+	ASSERT_TRUE(test_c2 != test_c3);
+	ASSERT_FALSE(test_c2 < test_c3);
+	ASSERT_TRUE(test_c2 > test_c3);
+
+	ASSERT_TRUE(test_c3 != test_c4);
+	ASSERT_FALSE(test_c3 < test_c4);
+	ASSERT_TRUE(test_c3 > test_c4);
+
+}
+
 

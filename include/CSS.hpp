@@ -167,23 +167,46 @@ inline bool operator!=(const CSSSpecificity & lhs, const CSSSpecificity & rhs)
 
 inline bool operator< (const CSSSpecificity & lhs, const CSSSpecificity & rhs)
 {
+	// Is 1,0,0,0 less than 0,1,0,0? No.
+	// Is 0,1,0,0 less than 1,0,0,0? Yes
+
+	// Check greater or less for a, then b etc.
+	// Only cascade through if the values are equal.
+
 	if(lhs.a < rhs.a) {
 		return true;
+	}
+
+	if(lhs.a > rhs.a) {
+		return false;
 	}
 
 	if(lhs.b < rhs.b) {
 		return true;
 	}
 
+	if(lhs.b > rhs.b) {
+		return false;
+	}
+
 	if(lhs.c < rhs.c) {
 		return true;
+	}
+
+	if(lhs.c > rhs.c) {
+		return false;
 	}
 
 	if(lhs.d < rhs.d) {
 		return true;
 	}
 
+	if(lhs.d > rhs.d) {
+		return false;
+	}
+
 	return false;
+
 }
 inline bool operator> (const CSSSpecificity & lhs, const CSSSpecificity & rhs)
 {
