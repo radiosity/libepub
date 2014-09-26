@@ -63,6 +63,9 @@ TEST(CSSTest, Specificity_Relational)
 	CSSSpecificity test_b(0, 0, 0, 0);
 
 	ASSERT_TRUE(test_a <= test_b);
+	ASSERT_TRUE(test_a >= test_b);
+	ASSERT_TRUE(test_b <= test_a);
+	ASSERT_TRUE(test_b >= test_a);
 
 	test_a = CSSSpecificity(0, 0, 0, 0);
 	test_b = CSSSpecificity(0, 0, 0, 1);
