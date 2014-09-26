@@ -89,4 +89,23 @@ TEST(CSSTest, Specificity_Relational)
 
 }
 
+TEST(CSSTest, Specificity_CopyConstructor)
+{
+
+	CSSSpecificity test_a(0, 0, 0, 0);
+	CSSSpecificity test_b(test_a);
+
+	ASSERT_TRUE(test_a == test_b);
+
+}
+
+TEST(CSSTest, Specificity_CopyAssignment)
+{
+
+	CSSSpecificity test_a(0, 0, 0, 0);
+	CSSSpecificity test_b = test_a;
+
+	ASSERT_TRUE(test_a == test_b);
+
+}
 
