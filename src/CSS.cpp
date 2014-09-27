@@ -54,6 +54,12 @@ using std::cout;
 using std::endl;
 #endif
 
+CSSSpecificity::CSSSpecificity() :
+	CSSSpecificity(0, 0, 0, 0)
+{
+
+}
+
 CSSSpecificity::CSSSpecificity(const unsigned int _a, const unsigned int _b, const unsigned int _c, const unsigned int _d) :
 	a(_a),
 	b(_b),
@@ -102,6 +108,80 @@ CSSSpecificity & CSSSpecificity::operator =(CSSSpecificity && mv)
 CSSSpecificity::~CSSSpecificity()
 {
 
+}
+
+CSSSelector::CSSSelector(string _raw_text) :
+	raw_text(_raw_text),
+	selector_keys(),
+	selector_text(),
+	specificity()
+{
+
+	regex regex_selector_split ("\\s*([a-zA-Z0-9.#\\s]+),*", regex::optimize);
+
+	smatch regex_matches;
+	auto line_begin = sregex_iterator(_raw_text.begin(), _raw_text.end(), regex_selector_split);
+	auto line_end = sregex_iterator();
+	selector_keys.reserve(distance(line_begin, line_end));
+	selector_text.reserve(distance(line_begin, line_end));
+
+	for (sregex_iterator i = line_begin; i != line_end; ++i) {
+		smatch match = *i;
+		string selector = match[1];
+		ustring ustr_selector(selector);
+		selector_keys.push_back(ustr_selector.collate_key());
+		selector_text.push_back(ustr_selector);
+		#ifdef DEBUG
+		cout << "\tCSS Selector: "  << selector << endl;
+		#endif
+	}
+
+}
+
+CSSSelector::CSSSelector(CSSSelector const & cpy) :
+	raw_text(cpy.raw_text),
+	selector_keys(cpy.selector_keys),
+	selector_text(cpy.selector_text),
+	specificity(cpy.specificity)
+{
+
+}
+
+CSSSelector::CSSSelector(CSSSelector && mv) :
+	raw_text(move(mv.raw_text)),
+	selector_keys(move(mv.selector_keys)),
+	selector_text(move(mv.selector_text)),
+	specificity(move(mv.specificity))
+{
+
+}
+
+CSSSelector & CSSSelector::operator =(const CSSSelector & cpy)
+{
+	raw_text = cpy.raw_text;
+	selector_keys = cpy.selector_keys,
+	selector_text = cpy.selector_text;
+	specificity = cpy.specificity;
+	return *this;
+}
+
+CSSSelector & CSSSelector::operator =(CSSSelector && mv)
+{
+	raw_text = move(mv.raw_text);
+	selector_keys = move(mv.selector_keys);
+	selector_text = move(mv.selector_text);
+	specificity = move(mv.specificity);
+	return *this;
+}
+
+CSSSelector::~CSSSelector()
+{
+
+}
+
+unsigned int CSSSelector::count()
+{
+	return selector_keys.size();
 }
 
 CSSValue::CSSValue() :

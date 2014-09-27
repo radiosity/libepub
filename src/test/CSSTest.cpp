@@ -102,13 +102,31 @@ TEST(CSSTest, Specificity_CopyConstructor)
 
 }
 
-TEST(CSSTest, Specificity_CopyAssignment)
+TEST(CSSTest, Selector_Count)
 {
 
-	CSSSpecificity test_a(0, 0, 0, 0);
-	CSSSpecificity test_b = test_a;
+	CSSSelector test_a("p");
 
-	ASSERT_TRUE(test_a == test_b);
+	ASSERT_EQ(1, test_a.count());
+
+	CSSSelector test_b("h1, h2, h3");
+
+	ASSERT_EQ(3, test_b.count());
+
+	CSSSelector test_c("p span");
+
+	ASSERT_EQ(1, test_c.count());
+
+	CSSSelector test_d("p.section");
+
+	ASSERT_EQ(1, test_d.count());
+
+	CSSSelector test_e(".bold");
+
+	ASSERT_EQ(1, test_e.count());
+
+	CSSSelector test_f("#id");
+
+	ASSERT_EQ(1, test_f.count());
 
 }
-

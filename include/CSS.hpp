@@ -120,6 +120,7 @@ class CSSSpecificity {
 		unsigned int d;
 
 	public:
+		CSSSpecificity();
 		CSSSpecificity(const unsigned int _a, const unsigned int _b, const unsigned int _c, const unsigned int _d);
 
 		CSSSpecificity(CSSSpecificity const & cpy);
@@ -220,6 +221,67 @@ inline bool operator>=(const CSSSpecificity & lhs, const CSSSpecificity & rhs)
 {
 	return !(lhs < rhs);
 }
+
+class CSSSelector {
+
+		/*
+		For this thing, http://www.w3.org/TR/WD-css2-971104/selector.html
+		will be my bible.
+
+		There are many types of selector.
+
+		Selector:
+			p { padding: 10px; }
+
+		Class Selector:
+			p.section { padding: 10px; } //Only applies to p elements
+			.bold { font-weight: bold; }
+
+		ID selector:
+			#section { padding: 10px; } 	// Can only apply once.
+									NOT GOING TO ENFORCE THIS
+
+		Contextual selector:
+			p span { font-style: italic; } // all span-elements within a p-element
+
+		h1, h2, h3 { font-family: sans-serif } is equivalent to:
+		h1 { font-family: sans-serif }
+		h2 { font-family: sans-serif }
+		h3 { font-family: sans-serif }
+
+		#foo td, th {
+			? declarations
+		}
+
+		#foo td {
+			? declarations
+		}
+		th {
+			? declarations
+		}
+
+		*/
+
+	private:
+		string raw_text;
+		vector<string> selector_keys;
+		vector<ustring> selector_text;
+
+	public:
+		CSSSpecificity specificity;
+
+		CSSSelector(string _raw_text);
+
+		CSSSelector(CSSSelector const & cpy);
+		CSSSelector(CSSSelector && mv) ;
+		CSSSelector & operator =(const CSSSelector & cpy);
+		CSSSelector & operator =(CSSSelector && mv) ;
+
+		~CSSSelector();
+
+		unsigned int count();
+
+};
 
 class CSSValue {
 
