@@ -130,3 +130,38 @@ TEST(CSSTest, Selector_Count)
 	ASSERT_EQ(1, test_f.count());
 
 }
+
+
+TEST(CSSTest, Selector_Matches)
+{
+
+	CSSSelector test_a("p");
+
+	ASSERT_TRUE(test_a.matches("p"));
+
+	CSSSelector test_b("h1, h2, h3");
+
+	ASSERT_TRUE(test_b.matches("h1"));
+	ASSERT_TRUE(test_b.matches("h2"));
+	ASSERT_TRUE(test_b.matches("h3"));
+
+	/*
+	CSSSelector test_c("p span");
+
+	ASSERT_EQ(1, test_c.count());
+	*/
+
+	CSSSelector test_d("p.section");
+
+	ASSERT_TRUE(test_d.matches("p.section"));
+
+	CSSSelector test_e(".bold");
+
+	ASSERT_TRUE(test_e.matches(".bold"));
+
+	CSSSelector test_f("#id");
+
+	ASSERT_TRUE(test_f.matches("#id"));
+
+
+}

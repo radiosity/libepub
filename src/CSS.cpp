@@ -129,7 +129,7 @@ CSSSelector::CSSSelector(string _raw_text) :
 		smatch match = *i;
 		string selector = match[1];
 		ustring ustr_selector(selector);
-		selector_keys.push_back(ustr_selector.collate_key());
+		selector_keys.insert(ustr_selector.collate_key());
 		selector_text.push_back(ustr_selector);
 		#ifdef DEBUG
 		cout << "\tCSS Selector: "  << selector << endl;
@@ -182,6 +182,15 @@ CSSSelector::~CSSSelector()
 unsigned int CSSSelector::count()
 {
 	return selector_keys.size();
+}
+
+bool CSSSelector::matches(ustring name)
+{
+
+	string key = name.collate_key();
+
+	return selector_keys.count(key) > 0;
+
 }
 
 CSSValue::CSSValue() :

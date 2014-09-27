@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <glibmm.h>
 #include <map>
 #include <vector>
+#include <unordered_set>
 #include <sqlite3.h>
 #include <string>
 
@@ -39,6 +40,7 @@ using Glib::ustring;
 
 using std::map;
 using std::vector;
+using std::unordered_set;
 using std::string;
 
 using namespace boost::filesystem;
@@ -264,7 +266,7 @@ class CSSSelector {
 
 	private:
 		string raw_text;
-		vector<string> selector_keys;
+		unordered_set<string> selector_keys;
 		vector<ustring> selector_text;
 
 	public:
@@ -280,6 +282,7 @@ class CSSSelector {
 		~CSSSelector();
 
 		unsigned int count();
+		bool matches(ustring name);
 
 };
 
