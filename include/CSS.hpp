@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <boost/filesystem.hpp>
 #include <glibmm.h>
+#include <set>
 #include <map>
 #include <vector>
 #include <unordered_set>
@@ -38,6 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using Glib::ustring;
 
+using std::set;
 using std::map;
 using std::vector;
 using std::unordered_set;
@@ -265,11 +267,11 @@ class CSSSelector {
 		*/
 
 	private:
-		string raw_text;
 		unordered_set<string> selector_keys;
 		vector<ustring> selector_text;
 
 	public:
+		string raw_text;
 		CSSSpecificity specificity;
 
 		CSSSelector(string _raw_text);
@@ -281,10 +283,23 @@ class CSSSelector {
 
 		~CSSSelector();
 
-		unsigned int count();
-		bool matches(ustring name);
+		friend inline bool operator==(const CSSSelector & lhs, const CSSSelector & rhs);
+		friend inline bool operator!=(const CSSSelector & lhs, const CSSSelector & rhs);
+
+		unsigned int count() const;
+		bool matches(const ustring & name) const;
 
 };
+
+inline bool operator==(const CSSSelector & lhs, const CSSSelector & rhs)
+{
+	return lhs.raw_text == rhs.raw_text;
+}
+
+inline bool operator!=(const CSSSelector & lhs, const CSSSelector & rhs)
+{
+	return !(rhs == lhs);
+}
 
 class CSSValue {
 
@@ -318,9 +333,9 @@ class CSSValue {
 class CSSRule {
 
 	public:
-		ustring selector;
+		CSSSelector selector;
 		string collation_key;
-		map<ustring, ustring> raw_pairs;
+		map<string, string> raw_pairs;
 		DisplayType displaytype;
 		FontSize fontsize;
 		FontWeight fontweight;
@@ -333,7 +348,7 @@ class CSSRule {
 		CSSValue textindent;
 
 		CSSRule();
-		CSSRule(ustring selector);
+		CSSRule(string selector);
 
 		CSSRule(CSSRule const & cpy);
 		CSSRule(CSSRule && mv) ;
@@ -342,15 +357,38 @@ class CSSRule {
 
 		~CSSRule();
 
+		friend inline bool operator< (const CSSRule & lhs, const CSSRule & rhs);
+		friend inline bool operator> (const CSSRule & lhs, const CSSRule & rhs);
+		friend inline bool operator<=(const CSSRule & lhs, const CSSRule & rhs);
+		friend inline bool operator>=(const CSSRule & lhs, const CSSRule & rhs);
+
 		void add(const CSSRule & rhs);
 
 };
+
+inline bool operator< (const CSSRule & lhs, const CSSRule & rhs)
+{
+	//Defer to specificity.
+	return(lhs.selector.specificity < rhs.selector.specificity);
+}
+inline bool operator> (const CSSRule & lhs, const CSSRule & rhs)
+{
+	return rhs < lhs;
+}
+inline bool operator<=(const CSSRule & lhs, const CSSRule & rhs)
+{
+	return !(lhs > rhs);
+}
+inline bool operator>=(const CSSRule & lhs, const CSSRule & rhs)
+{
+	return !(lhs < rhs);
+}
 
 class CSS {
 
 	public:
 		vector <path> files;
-		map <string, CSSRule> rules;
+		set <CSSRule> rules;
 
 		CSS();
 		CSS(vector<path> files);

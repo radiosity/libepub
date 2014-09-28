@@ -560,7 +560,7 @@ void Content::save_to(sqlite3 * const db, const unsigned int epub_file_id, const
 		sqlite3_bind_int(content_insert, 1, epub_file_id);
 		sqlite3_bind_int(content_insert, 2, opf_index);
 		sqlite3_bind_int(content_insert, 3, (int) contentitem.type);
-		sqlite3_bind_text(content_insert, 4, contentitem.rule.selector.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(content_insert, 4, contentitem.rule.selector.raw_text.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(content_insert, 5, contentitem.file.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(content_insert, 6,  contentitem.id.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(content_insert, 7, contentitem.content.c_str(), -1, SQLITE_STATIC);

@@ -155,8 +155,8 @@ TEST(EpubTest, Database)
 
 		while(book_css_it != file_book.css[i].rules.end()) {
 
-			CSSRule c_book = (*book_css_it).second;
-			CSSRule c_sql = (*sql_css_it).second;
+			CSSRule c_book = *book_css_it;
+			CSSRule c_sql = *sql_css_it;
 
 			ASSERT_TRUE(c_book.selector == c_sql.selector);
 			ASSERT_TRUE(c_book.collation_key == c_sql.collation_key);

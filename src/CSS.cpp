@@ -41,6 +41,7 @@ using std::move;
 using std::ifstream;
 using std::pair;
 using std::regex;
+using std::regex_error;
 using std::regex_search;
 using std::regex_match;
 using std::sregex_iterator;
@@ -48,11 +49,11 @@ using std::smatch;
 using std::numeric_limits;
 using std::stod;
 
-#ifdef DEBUG
+//#ifdef DEBUG
 #include <iostream>
 using std::cout;
 using std::endl;
-#endif
+//#endif
 
 CSSSpecificity::CSSSpecificity() :
 	CSSSpecificity(0, 0, 0, 0)
@@ -111,9 +112,9 @@ CSSSpecificity::~CSSSpecificity()
 }
 
 CSSSelector::CSSSelector(string _raw_text) :
-	raw_text(_raw_text),
 	selector_keys(),
 	selector_text(),
+	raw_text(_raw_text),
 	specificity()
 {
 
@@ -173,18 +174,18 @@ CSSSelector::CSSSelector(string _raw_text) :
 }
 
 CSSSelector::CSSSelector(CSSSelector const & cpy) :
-	raw_text(cpy.raw_text),
 	selector_keys(cpy.selector_keys),
 	selector_text(cpy.selector_text),
+	raw_text(cpy.raw_text),
 	specificity(cpy.specificity)
 {
 
 }
 
 CSSSelector::CSSSelector(CSSSelector && mv) :
-	raw_text(move(mv.raw_text)),
 	selector_keys(move(mv.selector_keys)),
 	selector_text(move(mv.selector_text)),
+	raw_text(move(mv.raw_text)),
 	specificity(move(mv.specificity))
 {
 
@@ -192,18 +193,18 @@ CSSSelector::CSSSelector(CSSSelector && mv) :
 
 CSSSelector & CSSSelector::operator =(const CSSSelector & cpy)
 {
-	raw_text = cpy.raw_text;
 	selector_keys = cpy.selector_keys,
 	selector_text = cpy.selector_text;
+	raw_text = cpy.raw_text;
 	specificity = cpy.specificity;
 	return *this;
 }
 
 CSSSelector & CSSSelector::operator =(CSSSelector && mv)
 {
-	raw_text = move(mv.raw_text);
 	selector_keys = move(mv.selector_keys);
 	selector_text = move(mv.selector_text);
+	raw_text = move(mv.raw_text);
 	specificity = move(mv.specificity);
 	return *this;
 }
@@ -213,12 +214,12 @@ CSSSelector::~CSSSelector()
 
 }
 
-unsigned int CSSSelector::count()
+unsigned int CSSSelector::count() const
 {
 	return selector_keys.size();
 }
 
-bool CSSSelector::matches(ustring name)
+bool CSSSelector::matches(const ustring & name) const
 {
 
 	string key = name.collate_key();
@@ -268,9 +269,9 @@ CSSRule::CSSRule() :
 {
 }
 
-CSSRule::CSSRule(ustring _selector) :
+CSSRule::CSSRule(string _selector) :
 	selector(_selector),
-	collation_key(selector.collate_key()),
+	collation_key(ustring(_selector).collate_key()),
 	raw_pairs(),
 	displaytype(DISPLAY_INLINE),
 	fontsize(FONTSIZE_NORMAL),
@@ -426,16 +427,73 @@ CSS::CSS(vector<path> _files) :
 	files(_files),
 	rules()
 {
+
+
 	//prepare the regular expressions:
-	regex regex_selector ("([A-Za-z0-9\\.#-]+)", regex::optimize);
-	regex regex_atrule_single("^@.*;$", regex::optimize);
-	regex regex_atrule_multiple("^@.*\\{", regex::optimize);
-	regex regex_attr("([A-Za-z0-9-]+)\\s*:{1}\\s*([^;]*)", regex::optimize);
-	regex regex_percent("([\\d]+)%", regex::optimize);
-	regex regex_em("([\\d]+)em", regex::optimize);
-	regex regex_px("([\\d]+)px", regex::optimize);
-	regex regex_pt("([\\d]+)pt", regex::optimize);
-	regex regex_cm("([\\d]+)cm", regex::optimize);
+	regex regex_selector;
+	regex regex_atrule_single;
+	regex regex_atrule_multiple;
+	regex regex_attr;
+	regex regex_percent;
+	regex regex_em;
+	regex regex_px;
+	regex regex_pt;
+	regex regex_cm;
+
+	try {
+		regex_selector = regex("^(.+)\\{", regex::optimize);
+		regex_atrule_single = regex("^@.*;$", regex::optimize);
+		regex_atrule_multiple = regex("^@.*\\{", regex::optimize);
+		regex_attr = regex("([A-Za-z0-9-]+)\\s*:{1}\\s*([^;]*)", regex::optimize);
+		regex_percent = regex("([\\d]+)%", regex::optimize);
+		regex_em = regex("([\\d]+)em", regex::optimize);
+		regex_px = regex("([\\d]+)px", regex::optimize);
+		regex_pt = regex("([\\d]+)pt", regex::optimize);
+		regex_cm = regex("([\\d]+)cm", regex::optimize);
+	}
+	catch (regex_error re) {
+		cout << "You dun goofed " << endl;
+
+		if (re.code() == std::regex_constants::error_collate) {
+			std::cerr << "The expression contained an invalid collating element name." << endl;
+		}
+		else if (re.code() == std::regex_constants::error_ctype) {
+			std::cerr << "The expression contained an invalid character class name." << endl;
+		}
+		else if (re.code() == std::regex_constants::error_escape) {
+			std::cerr << "The expression contained an invalid escaped character, or a trailing escape." << endl;
+		}
+		else if (re.code() == std::regex_constants::error_backref) {
+			std::cerr << "The expression contained an invalid back reference." << endl;
+		}
+		else if (re.code() == std::regex_constants::error_brack) {
+			std::cerr << "The expression contained mismatched brackets ([ and ])" << endl;
+		}
+		else if (re.code() == std::regex_constants::error_paren) {
+			std::cerr << "The expression contained mismatched parentheses (( and ))." << endl;
+		}
+		else if (re.code() == std::regex_constants::error_brace) {
+			std::cerr << "The expression contained mismatched braces ({ and })." << endl;
+		}
+		else if (re.code() == std::regex_constants::error_badbrace) {
+			std::cerr << "The expression contained an invalid range between braces ({ and })." << endl;
+		}
+		else if (re.code() == std::regex_constants::error_range) {
+			std::cerr << "The expression contained an invalid character range." << endl;
+		}
+		else if (re.code() == std::regex_constants::error_space) {
+			std::cerr << "There was insufficient memory to convert the expression into a finite state machine." << endl;
+		}
+		else if (re.code() == std::regex_constants::error_badrepeat) {
+			std::cerr << "The expression contained a repeat specifier (one of *?+{) that was not preceded by a valid regular expression." << endl;
+		}
+		else if (re.code() == std::regex_constants::error_complexity) {
+			std::cerr << "The complexity of an attempted match against a regular expression exceeded a pre-set level." << endl;
+		}
+		else if (re.code() == std::regex_constants::error_stack) {
+			std::cerr << "There was insufficient memory to determine whether the regular expression could match the specified character sequence." << endl;
+		}
+	}
 
 	for (path file : files) {
 
@@ -453,14 +511,6 @@ CSS::CSS(vector<path> _files) :
 			CSSRule rule;
 
 			string line;
-
-			//You can declare that multiple things are affected by one declaration.
-			//For example:
-			//div, p, pre, h1, h2, h3, h4, h5, h6 {
-			//	margin-left: 0;
-			//}
-			//This means we need to keep a list of selectors for the style
-			vector<ustring> selectors;
 
 			while(!cssfile.eof()) {
 
@@ -480,26 +530,14 @@ CSS::CSS(vector<path> _files) :
 					#ifdef DEBUG
 
 					if (!is_at_rule) {
-						cout << "\tCSS Closing CSS class "  << endl;
+						cout << "\tCSS Closing CSS class " << endl;
 					}
 
 					#endif
 
-					for (auto selector : selectors) {
-						//Check if the classname exists - if it does we need to update it.
-						if(rules.count(selector) != 0) {
-							//It exists! update it.
-							rules[selector].add(rule);
-						}
-						else {
-							rule.selector = selector;
-							rule.collation_key = selector.collate_key();
-							rules.insert(pair<string, CSSRule>(rule.collation_key, rule));
-						}
-					}
+					rules.insert(rule);
 
 					rule = CSSRule();
-					selectors.clear();
 					class_is_open = false;
 					is_at_rule = false;
 					continue;
@@ -524,19 +562,15 @@ CSS::CSS(vector<path> _files) :
 					}
 					else {
 						class_is_open = true;
-						smatch regex_matches;
-						auto line_begin = sregex_iterator(line.begin(), line.end(), regex_selector);
-						auto line_end = sregex_iterator();
-						selectors.reserve(distance(line_begin, line_end));
 
-						for (sregex_iterator i = line_begin; i != line_end; ++i) {
-							smatch match = *i;
-							string selector = match.str();
-							selectors.push_back(ustring(selector));
-							#ifdef DEBUG
-							cout << "\tCSS Selector: "  << selector << endl;
-							#endif
+						smatch regex_matches;
+						regex_search(line, regex_matches, regex_selector);
+
+						if(regex_matches.size() != 0) {
+							string selector = regex_matches[1];
+							rule.selector = CSSSelector(selector);
 						}
+
 					}
 
 				}
@@ -770,7 +804,7 @@ CSS::CSS(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int
 		//Get the basic data
 		unsigned int css_id = sqlite3_column_int(css_select, 0);
 
-		ustring selector = sqlite3_column_ustring(css_select, 3);
+		string selector = sqlite3_column_string(css_select, 3);
 		string collation_key = sqlite3_column_string(css_select, 4);
 		DisplayType displaytype = (DisplayType) sqlite3_column_int(css_select, 5);
 		FontSize fontsize = (FontSize) sqlite3_column_int(css_select, 6);
@@ -786,7 +820,7 @@ CSS::CSS(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int
 		double textindent = sqlite3_column_double(css_select, 16);
 		CSSValueType textindent_type = (CSSValueType) sqlite3_column_int(css_select, 17);
 
-		rule.selector = selector;
+		rule.selector = CSSSelector(selector);
 		rule.collation_key = collation_key;
 		rule.displaytype = displaytype;
 		rule.fontsize = fontsize;
@@ -819,7 +853,7 @@ CSS::CSS(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int
 
 		}
 
-		rules.insert(pair<string, CSSRule>(rule.collation_key, rule));
+		rules.insert(rule);
 
 		sqlite3_reset(css_tags_select);
 
@@ -860,24 +894,35 @@ CSS & CSS::operator =(CSS && mv)
 
 CSS::~CSS() { }
 
-CSSRule CSS::get_rule(const ustring & selector) const
+CSSRule CSS::get_rule(const ustring & _selector) const
 {
-	string key = selector.collate_key();
 
-	if(rules.count(key) == 0) {
-		//It doesn't exist in the database. Return a CSSRule with all defaults.
-		return CSSRule();
+	for(auto & rule : rules) {
+		if(rule.selector.matches(_selector)) {
+			return rule;
+		}
 	}
-	else {
-		return rules.at(key);
-	}
+
+	//It doesn't exist in the database. Return a CSSRule with all defaults.
+	return CSSRule();
+
 }
 
-bool CSS::contains_rule(const ustring & selector) const
+bool CSS::contains_rule(const ustring & _selector) const
 {
-	string key = selector.collate_key();
 
-	return rules.count(key) != 0;
+	if(rules.size() == 0) {
+		return false;
+	}
+
+	for(auto & rule : rules) {
+		if(rule.selector.matches(_selector)) {
+			return true;
+		}
+	}
+
+	return false;
+
 }
 
 void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index)
@@ -931,13 +976,11 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 		throw - 1;
 	}
 
-	for(auto & csspair : rules) {
-
-		CSSRule rule = csspair.second;
+	for(auto & rule : rules) {
 
 		sqlite3_bind_int(css_insert, 1, epub_file_id);
 		sqlite3_bind_int(css_insert, 2, opf_index);
-		sqlite3_bind_text(css_insert, 3, rule.selector.c_str(), -1, SQLITE_STATIC);
+		sqlite3_bind_text(css_insert, 3, rule.selector.raw_text.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_text(css_insert, 4, rule.collation_key.c_str(), -1, SQLITE_STATIC);
 		sqlite3_bind_int(css_insert, 5, (int) rule.displaytype);
 		sqlite3_bind_int(css_insert, 6, (int) rule.fontsize);
