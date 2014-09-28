@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <limits>
 
 #include "SQLiteUtils.hpp"
+#include "RegexUtils.hpp"
 
 using std::string;
 using std::move;
@@ -454,45 +455,7 @@ CSS::CSS(vector<path> _files) :
 	catch (regex_error re) {
 		cout << "You dun goofed " << endl;
 
-		if (re.code() == std::regex_constants::error_collate) {
-			std::cerr << "The expression contained an invalid collating element name." << endl;
-		}
-		else if (re.code() == std::regex_constants::error_ctype) {
-			std::cerr << "The expression contained an invalid character class name." << endl;
-		}
-		else if (re.code() == std::regex_constants::error_escape) {
-			std::cerr << "The expression contained an invalid escaped character, or a trailing escape." << endl;
-		}
-		else if (re.code() == std::regex_constants::error_backref) {
-			std::cerr << "The expression contained an invalid back reference." << endl;
-		}
-		else if (re.code() == std::regex_constants::error_brack) {
-			std::cerr << "The expression contained mismatched brackets ([ and ])" << endl;
-		}
-		else if (re.code() == std::regex_constants::error_paren) {
-			std::cerr << "The expression contained mismatched parentheses (( and ))." << endl;
-		}
-		else if (re.code() == std::regex_constants::error_brace) {
-			std::cerr << "The expression contained mismatched braces ({ and })." << endl;
-		}
-		else if (re.code() == std::regex_constants::error_badbrace) {
-			std::cerr << "The expression contained an invalid range between braces ({ and })." << endl;
-		}
-		else if (re.code() == std::regex_constants::error_range) {
-			std::cerr << "The expression contained an invalid character range." << endl;
-		}
-		else if (re.code() == std::regex_constants::error_space) {
-			std::cerr << "There was insufficient memory to convert the expression into a finite state machine." << endl;
-		}
-		else if (re.code() == std::regex_constants::error_badrepeat) {
-			std::cerr << "The expression contained a repeat specifier (one of *?+{) that was not preceded by a valid regular expression." << endl;
-		}
-		else if (re.code() == std::regex_constants::error_complexity) {
-			std::cerr << "The complexity of an attempted match against a regular expression exceeded a pre-set level." << endl;
-		}
-		else if (re.code() == std::regex_constants::error_stack) {
-			std::cerr << "There was insufficient memory to determine whether the regular expression could match the specified character sequence." << endl;
-		}
+		print_regex_error(re); 
 	}
 
 	for (path file : files) {
