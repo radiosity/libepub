@@ -124,12 +124,26 @@ CSSSelector::CSSSelector(string _raw_text) :
 	unsigned int c  = 0;
 	unsigned int d  = 0;
 
-	regex regex_selector_split ("\\s*([a-zA-Z0-9.#\\s]+),*", regex::optimize);
-	regex regex_id_compound("^[a-zA-Z0-9]+#[a-zA-Z0-9-]+", regex::optimize);
-	regex regex_id_single("^#[a-zA-Z0-9-]+", regex::optimize);
-	regex regex_class_compound("^[a-zA-Z0-9]+\\.[a-zA-Z0-9-]+", regex::optimize);
-	regex regex_class_single("^\\.[a-zA-Z0-9-]+", regex::optimize);
-	regex regex_contextual("^[a-zA-Z0-9]+\\s[a-zA-Z0-9-]+", regex::optimize);
+	regex regex_selector_split;
+	regex regex_id_compound;
+	regex regex_id_single;
+	regex regex_class_compound;
+	regex regex_class_single;
+	regex regex_contextual;
+
+	try {
+		regex regex_selector_split = regex("\\s*([a-zA-Z0-9.#\\s]+),*", regex::optimize);
+		regex regex_id_compound = regex("^[a-zA-Z0-9]+#[a-zA-Z0-9-]+", regex::optimize);
+		regex regex_id_single = regex("^#[a-zA-Z0-9-]+", regex::optimize);
+		regex regex_class_compound = regex("^[a-zA-Z0-9]+\\.[a-zA-Z0-9-]+", regex::optimize);
+		regex regex_class_single = regex("^\\.[a-zA-Z0-9-]+", regex::optimize);
+		regex regex_contextual = regex("^[a-zA-Z0-9]+\\s[a-zA-Z0-9-]+", regex::optimize);
+	}
+	catch (regex_error re) {
+		cout << "You dun goofed " << endl;
+
+		print_regex_error(re);
+	}
 
 	smatch regex_matches;
 	auto line_begin = sregex_iterator(_raw_text.begin(), _raw_text.end(), regex_selector_split);
