@@ -117,7 +117,17 @@ CSSSelector::CSSSelector(string _raw_text) :
 	specificity()
 {
 
+	unsigned int a  = 0;
+	unsigned int b  = 0;
+	unsigned int c  = 0;
+	unsigned int d  = 0;
+
 	regex regex_selector_split ("\\s*([a-zA-Z0-9.#\\s]+),*", regex::optimize);
+	regex regex_id_compound("[a-zA-Z0-9]+#", regex::optimize);
+	regex regex_id_single("^#[a-zA-Z0-9-]+", regex::optimize);
+	regex regex_class_compound("^[a-zA-Z0-9]+\\.[a-zA-Z0-9-]+", regex::optimize);
+	regex regex_class_single("^\\.[a-zA-Z0-9-]+", regex::optimize);
+	regex regex_contextual("^[a-zA-Z0-9]+\\s[a-zA-Z0-9-]+", regex::optimize);
 
 	smatch regex_matches;
 	auto line_begin = sregex_iterator(_raw_text.begin(), _raw_text.end(), regex_selector_split);
@@ -128,6 +138,28 @@ CSSSelector::CSSSelector(string _raw_text) :
 	for (sregex_iterator i = line_begin; i != line_end; ++i) {
 		smatch match = *i;
 		string selector = match[1];
+
+		if(regex_match(selector, regex_id_compound)) {
+			b++;
+			d++;
+		}
+		else if(regex_match(selector, regex_id_single)) {
+			b++;
+		}
+		else if(regex_match(selector, regex_class_compound)) {
+			c++;
+			d++;
+		}
+		else if(regex_match(selector, regex_class_single)) {
+			c++;
+		}
+		else if(regex_match(selector, regex_contextual)) {
+			d += 2;
+		}
+		else {
+			d++;
+		}
+
 		ustring ustr_selector(selector);
 		selector_keys.insert(ustr_selector.collate_key());
 		selector_text.push_back(ustr_selector);
@@ -135,6 +167,8 @@ CSSSelector::CSSSelector(string _raw_text) :
 		cout << "\tCSS Selector: "  << selector << endl;
 		#endif
 	}
+
+	specificity  = CSSSpecificity(a, b, c, d);
 
 }
 

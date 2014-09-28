@@ -165,3 +165,41 @@ TEST(CSSTest, Selector_Matches)
 
 
 }
+
+TEST(CSSTest, Selector_Specificity)
+{
+
+	CSSSelector selector_a("p");
+	CSSSpecificity test_a(0, 0, 0, 1);
+
+	ASSERT_TRUE(selector_a.specificity == test_a);
+
+	CSSSelector selector_b("h1, h2, h3");
+	CSSSpecificity test_b(0, 0, 0, 3);
+
+	ASSERT_TRUE(selector_b.specificity == test_b);
+
+	/*
+	CSSSelector test_c("p span");
+
+	ASSERT_EQ(1, test_c.count());
+	*/
+
+	CSSSelector selector_d("p.section");
+	CSSSpecificity test_d(0, 0, 1, 1);
+
+	ASSERT_TRUE(selector_d.specificity == test_d);
+
+	CSSSelector selector_e(".bold");
+	CSSSpecificity test_e(0, 0, 1, 0);
+
+	ASSERT_TRUE(selector_e.specificity == test_e);
+
+	CSSSelector selector_f("#id");
+	CSSSpecificity test_f(0, 1, 0, 0);
+
+	ASSERT_TRUE(selector_f.specificity == test_f);
+
+
+}
+
