@@ -455,7 +455,7 @@ CSS::CSS(vector<path> _files) :
 	catch (regex_error re) {
 		cout << "You dun goofed " << endl;
 
-		print_regex_error(re); 
+		print_regex_error(re);
 	}
 
 	for (path file : files) {
