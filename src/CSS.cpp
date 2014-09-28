@@ -123,7 +123,7 @@ CSSSelector::CSSSelector(string _raw_text) :
 	unsigned int d  = 0;
 
 	regex regex_selector_split ("\\s*([a-zA-Z0-9.#\\s]+),*", regex::optimize);
-	regex regex_id_compound("[a-zA-Z0-9]+#", regex::optimize);
+	regex regex_id_compound("^[a-zA-Z0-9]+#[a-zA-Z0-9-]+", regex::optimize);
 	regex regex_id_single("^#[a-zA-Z0-9-]+", regex::optimize);
 	regex regex_class_compound("^[a-zA-Z0-9]+\\.[a-zA-Z0-9-]+", regex::optimize);
 	regex regex_class_single("^\\.[a-zA-Z0-9-]+", regex::optimize);

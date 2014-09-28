@@ -163,6 +163,10 @@ TEST(CSSTest, Selector_Matches)
 
 	ASSERT_TRUE(test_f.matches("#id"));
 
+	CSSSelector test_g("span#id");
+
+	ASSERT_TRUE(test_g.matches("span#id"));
+
 
 }
 
@@ -199,6 +203,11 @@ TEST(CSSTest, Selector_Specificity)
 	CSSSpecificity test_f(0, 1, 0, 0);
 
 	ASSERT_TRUE(selector_f.specificity == test_f);
+
+	CSSSelector selector_g("span#id");
+	CSSSpecificity test_g(0, 1, 0, 1);
+
+	ASSERT_TRUE(selector_g.specificity == test_g);
 
 
 }
