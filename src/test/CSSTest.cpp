@@ -209,6 +209,10 @@ TEST(CSSTest, Selector_Specificity)
 
 	ASSERT_TRUE(selector_g.specificity == test_g);
 
+	CSSSelector selector_h("span#id, p.hello, br");
+	CSSSpecificity test_h(0, 1, 1, 3);
+
+	ASSERT_TRUE(selector_h.specificity == test_h);
 
 }
 
