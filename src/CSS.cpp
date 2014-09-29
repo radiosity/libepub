@@ -112,7 +112,7 @@ CSSSpecificity::~CSSSpecificity()
 
 }
 
-CSSSelector::CSSSelector(string _raw_text) :
+CSSSelector::CSSSelector(const string _raw_text) :
 	selector_keys(),
 	selector_text(),
 	raw_text(_raw_text),
@@ -132,12 +132,12 @@ CSSSelector::CSSSelector(string _raw_text) :
 	regex regex_contextual;
 
 	try {
-		regex regex_selector_split = regex("\\s*([a-zA-Z0-9.#\\s]+),*", regex::optimize);
-		regex regex_id_compound = regex("^[a-zA-Z0-9]+#[a-zA-Z0-9-]+", regex::optimize);
-		regex regex_id_single = regex("^#[a-zA-Z0-9-]+", regex::optimize);
-		regex regex_class_compound = regex("^[a-zA-Z0-9]+\\.[a-zA-Z0-9-]+", regex::optimize);
-		regex regex_class_single = regex("^\\.[a-zA-Z0-9-]+", regex::optimize);
-		regex regex_contextual = regex("^[a-zA-Z0-9]+\\s[a-zA-Z0-9-]+", regex::optimize);
+		regex_selector_split = regex("\\s*([a-zA-Z0-9.#\\s]+),*", regex::optimize);
+		regex_id_compound = regex("^[a-zA-Z0-9]+#[a-zA-Z0-9-]+", regex::optimize);
+		regex_id_single = regex("^#[a-zA-Z0-9-]+", regex::optimize);
+		regex_class_compound = regex("^[a-zA-Z0-9]+\\.[a-zA-Z0-9-]+", regex::optimize);
+		regex_class_single = regex("^\\.[a-zA-Z0-9-]+", regex::optimize);
+		regex_contextual = regex("^[a-zA-Z0-9]+\\s[a-zA-Z0-9-]+", regex::optimize);
 	}
 	catch (regex_error re) {
 		cout << "You dun goofed " << endl;
@@ -146,7 +146,7 @@ CSSSelector::CSSSelector(string _raw_text) :
 	}
 
 	smatch regex_matches;
-	auto line_begin = sregex_iterator(_raw_text.begin(), _raw_text.end(), regex_selector_split);
+	auto line_begin = sregex_iterator(raw_text.begin(), raw_text.end(), regex_selector_split);
 	auto line_end = sregex_iterator();
 	selector_keys.reserve(distance(line_begin, line_end));
 	selector_text.reserve(distance(line_begin, line_end));
