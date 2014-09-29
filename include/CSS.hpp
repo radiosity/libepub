@@ -39,7 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using Glib::ustring;
 
-using std::set;
+using std::multiset;
 using std::map;
 using std::vector;
 using std::unordered_set;
@@ -388,7 +388,7 @@ class CSS {
 
 	public:
 		vector <path> files;
-		set <CSSRule> rules;
+		multiset <CSSRule> rules;
 
 		CSS();
 		CSS(vector<path> files);
