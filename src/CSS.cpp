@@ -119,6 +119,10 @@ CSSSelector::CSSSelector(const string _raw_text) :
 	specificity()
 {
 
+	if(raw_text.empty()) {
+		return;
+	}
+
 	unsigned int a  = 0;
 	unsigned int b  = 0;
 	unsigned int c  = 0;
