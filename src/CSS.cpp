@@ -56,6 +56,41 @@ using std::cout;
 using std::endl;
 //#endif
 
+namespace {
+
+	regex regex_selector_split;
+	regex regex_id_compound;
+	regex regex_id_single;
+	regex regex_class_compound;
+	regex regex_class_single;
+	regex regex_contextual;
+
+	bool regex_ready = false;
+
+	void _selector_regex_initialise()
+	{
+
+		//Prepare the regular expressions for the CSSSelector:
+		try {
+			regex_selector_split = regex("\\s*([a-zA-Z0-9.#\\s]+),*", regex::optimize);
+			regex_id_compound = regex("^[a-zA-Z0-9]+#[a-zA-Z0-9-]+", regex::optimize);
+			regex_id_single = regex("^#[a-zA-Z0-9-]+", regex::optimize);
+			regex_class_compound = regex("^[a-zA-Z0-9]+\\.[a-zA-Z0-9-]+", regex::optimize);
+			regex_class_single = regex("^\\.[a-zA-Z0-9-]+", regex::optimize);
+			regex_contextual = regex("^[a-zA-Z0-9]+\\s[a-zA-Z0-9-]+", regex::optimize);
+		}
+		catch (regex_error re) {
+			cout << "You dun goofed " << endl;
+
+			print_regex_error_fatal(re);
+		}
+
+		regex_ready = true;
+
+	}
+
+}
+
 CSSSpecificity::CSSSpecificity() :
 	CSSSpecificity(0, 0, 0, 0)
 {
@@ -123,31 +158,14 @@ CSSSelector::CSSSelector(const string _raw_text) :
 		return;
 	}
 
+	if(!regex_ready) {
+		_selector_regex_initialise();
+	}
+
 	unsigned int a  = 0;
 	unsigned int b  = 0;
 	unsigned int c  = 0;
 	unsigned int d  = 0;
-
-	regex regex_selector_split;
-	regex regex_id_compound;
-	regex regex_id_single;
-	regex regex_class_compound;
-	regex regex_class_single;
-	regex regex_contextual;
-
-	try {
-		regex_selector_split = regex("\\s*([a-zA-Z0-9.#\\s]+),*", regex::optimize);
-		regex_id_compound = regex("^[a-zA-Z0-9]+#[a-zA-Z0-9-]+", regex::optimize);
-		regex_id_single = regex("^#[a-zA-Z0-9-]+", regex::optimize);
-		regex_class_compound = regex("^[a-zA-Z0-9]+\\.[a-zA-Z0-9-]+", regex::optimize);
-		regex_class_single = regex("^\\.[a-zA-Z0-9-]+", regex::optimize);
-		regex_contextual = regex("^[a-zA-Z0-9]+\\s[a-zA-Z0-9-]+", regex::optimize);
-	}
-	catch (regex_error re) {
-		cout << "You dun goofed " << endl;
-
-		print_regex_error_fatal(re);
-	}
 
 	smatch regex_matches;
 	auto line_begin = sregex_iterator(raw_text.begin(), raw_text.end(), regex_selector_split);
@@ -446,7 +464,6 @@ CSS::CSS(vector<path> _files) :
 	files(_files),
 	rules()
 {
-
 
 	//prepare the regular expressions:
 	regex regex_selector;
