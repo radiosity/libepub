@@ -379,12 +379,12 @@ namespace {
 
 Content::Content(CSS & _css, vector<path> _files) :
 	css(_css),
-	files(_files), 
+	files(_files),
 	items()
 {
-	
+
 	items.reserve(2000);
-	
+
 	for(const auto file : files) {
 
 		__id = "";

@@ -475,6 +475,10 @@ CSS::CSS(vector<path> _files) :
 	regex regex_px;
 	regex regex_pt;
 	regex regex_cm;
+	regex regex_comment_single;
+	regex regex_comment_single2;
+	regex regex_comment_start;
+	regex regex_comment_end;
 
 	try {
 		regex_selector = regex("^(.+)\\{", regex::optimize);
@@ -486,6 +490,10 @@ CSS::CSS(vector<path> _files) :
 		regex_px = regex("([\\d]+)px", regex::optimize);
 		regex_pt = regex("([\\d]+)pt", regex::optimize);
 		regex_cm = regex("([\\d]+)cm", regex::optimize);
+		regex_comment_single = regex(R"(\/\/.*)", regex::optimize);
+		regex_comment_single2 = regex(R"(\/\*.*\*\/)", regex::optimize);
+		regex_comment_start = regex(R"(\/\/*.*)", regex::optimize);
+		regex_comment_end = regex(R"(.*\*\/)", regex::optimize);
 	}
 	catch (regex_error re) {
 		cout << "You dun goofed " << endl;
@@ -544,6 +552,16 @@ CSS::CSS(vector<path> _files) :
 
 				//skip at rule lines;
 				if(is_at_rule) {
+					continue;
+				}
+
+				if(regex_match(line, regex_comment_single)) {
+					//It's a single-line // comment
+					continue;
+				}
+
+				if(regex_match(line, regex_comment_single2)) {
+					//It's a single-line /* something */ comment
 					continue;
 				}
 
