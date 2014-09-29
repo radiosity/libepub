@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <regex>
 #include <iostream>
+#include <stdlib.h>
 
 using std::regex_error;
 using std::cerr;
@@ -78,6 +79,15 @@ void print_regex_error(const regex_error & re)
 	else if (re.code() == error_stack) {
 		std::cerr << "There was insufficient memory to determine whether the regular expression could match the specified character sequence." << endl;
 	}
+
+}
+
+void print_regex_error_fatal(const regex_error & re)
+{
+
+	print_regex_error(re);
+
+	exit(EXIT_FAILURE);
 
 }
 

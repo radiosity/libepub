@@ -142,7 +142,7 @@ CSSSelector::CSSSelector(string _raw_text) :
 	catch (regex_error re) {
 		cout << "You dun goofed " << endl;
 
-		print_regex_error(re);
+		print_regex_error_fatal(re);
 	}
 
 	smatch regex_matches;
@@ -469,7 +469,7 @@ CSS::CSS(vector<path> _files) :
 	catch (regex_error re) {
 		cout << "You dun goofed " << endl;
 
-		print_regex_error(re);
+		print_regex_error_fatal(re);
 	}
 
 	for (path file : files) {
