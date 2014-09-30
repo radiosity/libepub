@@ -147,6 +147,12 @@ CSSSpecificity::~CSSSpecificity()
 
 }
 
+CSSSelector::CSSSelector() :
+	CSSSelector("")
+{
+
+}
+
 CSSSelector::CSSSelector(const string _raw_text) :
 	selector_keys(),
 	selector_text(),
@@ -397,6 +403,13 @@ CSSRule::~CSSRule() { }
 
 void CSSRule::add ( const CSSRule & rhs )
 {
+	//Once we add one class to another, it becomes
+	//a derived class. There is no selector that would
+	//identify it. Therefore we should ensure that the selector is
+	//voided.
+
+	selector = CSSSelector();
+
 	//Do the basics:
 	if(rhs.displaytype != DISPLAY_INLINE) {
 		displaytype = rhs.displaytype;

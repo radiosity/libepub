@@ -274,6 +274,7 @@ class CSSSelector {
 		string raw_text;
 		CSSSpecificity specificity;
 
+		CSSSelector();
 		CSSSelector(string _raw_text);
 
 		CSSSelector(CSSSelector const & cpy);
