@@ -105,6 +105,7 @@ ContentItem::~ContentItem()
 
 ///////////////////////
 namespace {
+
 	inline ustring __create_text(const ustring & nodename, const ustring & nodecontents)
 	{
 		ustring tmp;
@@ -138,6 +139,88 @@ namespace {
 	string h2_key;
 	string id_key;
 	string _blank_key;
+
+	inline CSSRule __find_css(const Element * const childElement, const CSS & css)
+	{
+
+		CSSRule rule;
+
+		ustring id_name = "";
+		ustring class_name = "";
+		ustring element_name = childElement->get_name();
+
+		const auto attributes = childElement->get_attributes();
+
+		for(auto iter = attributes.begin(); iter != attributes.end(); ++iter) {
+
+			const Attribute * attribute = *iter;
+
+			if(attribute->get_name().collate_key() == class_key) {
+				//We've found a class here.
+				class_name = attribute->get_value();
+			}
+			else if (attribute->get_name().collate_key() == class_key) {
+				//We've found in id here.
+				id_name = attribute->get_value();
+			}
+
+		}
+
+		if(!id_name.empty()) {
+
+			//Look for rules of the type p#id;
+
+			ustring tmp = "";
+			tmp += element_name;
+			tmp += "#";
+			tmp += id_name;
+
+			if(css.contains_rule(tmp)) {
+				rule.add(css.get_rule(tmp));
+			}
+
+			tmp = "#";
+			tmp += id_name;
+
+			//Look for simple #id rules.
+
+			if(css.contains_rule(tmp)) {
+				rule.add(css.get_rule(tmp));
+			}
+
+		}
+
+		if(!class_name.empty()) {
+
+			//Look for rules of the type p.class;
+
+			ustring tmp = "";
+			tmp += element_name;
+			tmp += ".";
+			tmp += class_name;
+
+			if(css.contains_rule(tmp)) {
+				rule.add(css.get_rule(tmp));
+			}
+
+			tmp = ".";
+			tmp += class_name;
+
+			//Look for simple .class rules.
+
+			if(css.contains_rule(tmp)) {
+				rule.add(css.get_rule(tmp));
+			}
+
+		}
+
+		if(css.contains_rule(element_name)) {
+			rule.add(css.get_rule(element_name));
+		}
+
+		return rule;
+
+	}
 
 	//This whole method is fairly awful.
 	pair<ustring, ustring> __recursive_strip(vector<ContentItem> & items, const CSS & css, const path & file, const Node * const node)
