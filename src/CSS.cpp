@@ -403,52 +403,146 @@ CSSRule::~CSSRule() { }
 
 void CSSRule::add ( const CSSRule & rhs )
 {
-	//Once we add one class to another, it becomes
-	//a derived class. There is no selector that would
+	//Once we add one rule to another, it becomes
+	//a derived rule. There is no selector that would
 	//identify it. Therefore we should ensure that the selector is
 	//voided.
 
-	selector = CSSSelector();
+	//TODO: do this without killing specificity.
+	//selector = CSSSelector();
+
+	//So. How should rules be added together?
+	//
+	// Go through all their declarations.
+	//
+	// If the declaration is set on the RHS,
+	// but not set on this rule, then adopt it
+	// regardless of specificity.
+	//
+	// If the declaration is set on the RHS
+	// and also on this rule, then check
+	// specificity before adopting it.
 
 	//Do the basics:
 	if(rhs.displaytype != DISPLAY_INLINE) {
-		displaytype = rhs.displaytype;
+		if(displaytype != DISPLAY_INLINE) {
+			//Both are set, check specificity.
+			if(rhs.selector.specificity > selector.specificity) {
+				displaytype = rhs.displaytype;
+			}
+		}
+		else {
+			displaytype = rhs.displaytype;
+		}
+
 	}
 
 	if(rhs.fontsize != FONTSIZE_NORMAL) {
-		fontsize = rhs.fontsize;
+		if(fontsize != FONTSIZE_NORMAL) {
+			//Both are set, check specificity.
+			if(rhs.selector.specificity > selector.specificity) {
+				fontsize = rhs.fontsize;
+			}
+		}
+		else {
+			fontsize = rhs.fontsize;
+		}
 	}
 
 	if(rhs.fontweight != FONTWEIGHT_NORMAL) {
-		fontweight = rhs.fontweight;
+		if(fontweight != FONTWEIGHT_NORMAL) {
+			//Both are set, check specificity.
+			if(rhs.selector.specificity > selector.specificity) {
+				fontweight = rhs.fontweight;
+			}
+		}
+		else {
+			fontweight = rhs.fontweight;
+		}
 	}
 
 	if(rhs.fontstyle != FONTSTYLE_NORMAL) {
-		fontstyle = rhs.fontstyle;
+		if(fontstyle != FONTSTYLE_NORMAL) {
+			//Both are set, check specificity.
+			if(rhs.selector.specificity > selector.specificity) {
+				fontstyle = rhs.fontstyle;
+			}
+		}
+		else {
+			fontstyle = rhs.fontstyle;
+		}
 	}
 
 	if(rhs.margintop.type != CSS_VALUE_DEFAULT) {
-		margintop = rhs.margintop;
+		if(margintop.type != CSS_VALUE_DEFAULT) {
+			//Both are set, check specificity.
+			if(rhs.selector.specificity > selector.specificity) {
+				margintop = rhs.margintop;
+			}
+		}
+		else {
+			margintop = rhs.margintop;
+		}
 	}
 
 	if(rhs.marginbottom.type != CSS_VALUE_DEFAULT) {
-		marginbottom = rhs.marginbottom;
+		if(marginbottom.type != CSS_VALUE_DEFAULT) {
+			//Both are set, check specificity.
+			if(rhs.selector.specificity > selector.specificity) {
+				marginbottom = rhs.marginbottom;
+			}
+		}
+		else {
+			marginbottom = rhs.marginbottom;
+		}
 	}
 
 	if(rhs.pagebreakbefore != false) {
-		pagebreakbefore = true;
+		if(pagebreakbefore != false) {
+			//Both are set, check specificity.
+			if(rhs.selector.specificity > selector.specificity) {
+				pagebreakbefore = rhs.pagebreakbefore;
+			}
+		}
+		else {
+			pagebreakbefore = rhs.pagebreakbefore;
+		}
 	}
 
 	if(rhs.pagebreakafter != false) {
-		pagebreakafter = true;
+		if(pagebreakafter != false) {
+			//Both are set, check specificity.
+			if(rhs.selector.specificity > selector.specificity) {
+				pagebreakafter = rhs.pagebreakafter;
+			}
+		}
+		else {
+			pagebreakafter = rhs.pagebreakafter;
+		}
 	}
 
 	if(rhs.textalign != TEXTALIGN_LEFT) {
-		textalign = rhs.textalign;
+		if(textalign != TEXTALIGN_LEFT) {
+			//Both are set, check specificity.
+			if(rhs.selector.specificity > selector.specificity) {
+				textalign = rhs.textalign;
+			}
+		}
+		else {
+			textalign = rhs.textalign;
+		}
 	}
 
 	if(rhs.textindent.type != CSS_VALUE_DEFAULT) {
-		textindent = rhs.textindent;
+		if(textindent.type != CSS_VALUE_DEFAULT) {
+			//Both are set, check specificity.
+			if(rhs.selector.specificity > selector.specificity) {
+				textindent = rhs.textindent;
+			}
+		}
+		else {
+			textindent = rhs.textindent;
+		}
 	}
 
 	//Now lets do the map of raw
