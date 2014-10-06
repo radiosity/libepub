@@ -307,6 +307,53 @@ CSSValue::~CSSValue()
 {
 }
 
+
+CSSDeclaration::CSSDeclaration(CSSPropertyType _type, shared_ptr<CSSValueType> _value, CSSSpecificity _specificity) :
+	type(_type),
+	value(_value),
+	specificity(_specificity)
+{
+
+}
+
+CSSDeclaration::CSSDeclaration(CSSDeclaration const & cpy) :
+	type(cpy.type),
+	value(cpy.value),
+	specificity(cpy.specificity)
+{
+
+}
+
+CSSDeclaration::CSSDeclaration(CSSDeclaration && mv) :
+	type(move(mv.type)),
+	value(move(mv.value)),
+	specificity(move(mv.specificity))
+{
+
+}
+
+CSSDeclaration & CSSDeclaration::operator =(const CSSDeclaration & cpy)
+{
+	type = cpy.type;
+	value = cpy.value;
+	specificity = cpy.specificity;
+	return *this;
+}
+
+CSSDeclaration & CSSDeclaration::operator =(CSSDeclaration && mv)
+{
+	type = move(mv.type);
+	value = move(mv.value);
+	specificity = move(mv.specificity);
+	return *this;
+}
+
+CSSDeclaration::~CSSDeclaration()
+{
+}
+
+
+
 CSSRule::CSSRule() :
 	CSSRule("")
 {
