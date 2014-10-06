@@ -32,9 +32,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <string>
 
-using std::unordered_set; 
-using std::vector; 
-using std::string; 
+using std::unordered_set;
+using std::vector;
+using std::string;
 
 class CSSSelector {
 
