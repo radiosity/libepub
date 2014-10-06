@@ -49,6 +49,7 @@ using namespace boost::filesystem;
 
 #include "css/CSSSpecificity.hpp"
 #include "css/CSSSelector.hpp"
+#include "css/CSSDeclaration.hpp"
 
 
 /*
