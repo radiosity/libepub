@@ -50,6 +50,7 @@ using namespace boost::filesystem;
 #include "css/CSSSpecificity.hpp"
 #include "css/CSSSelector.hpp"
 #include "css/CSSDeclaration.hpp"
+#include "css/CSSRule.hpp"
 
 
 /*
@@ -84,86 +85,6 @@ SHOULD ALSO DO
 
 */
 
-enum DisplayType {
-	DISPLAY_INLINE, //DEFAULT
-	DISPLAY_BLOCK
-};
-
-enum FontSize {
-	FONTSIZE_NORMAL, //Default, but doesn't corespond directly.
-	FONTSIZE_LARGER,
-	FONTSIZE_SMALLER
-};
-
-enum FontWeight {
-	FONTWEIGHT_NORMAL, //DEFAULT
-	FONTWEIGHT_BOLD
-};
-
-enum FontStyle {
-	FONTSTYLE_NORMAL, //DEFAULT
-	FONTSTYLE_ITALIC
-};
-
-enum TextAlign {
-	TEXTALIGN_LEFT,  //DEFAULT
-	TEXTALIGN_RIGHT,
-	TEXTALIGN_CENTER
-};
-
-class CSSRule {
-
-	public:
-		CSSSelector selector;
-		string collation_key;
-		map<string, string> raw_pairs;
-		DisplayType displaytype;
-		FontSize fontsize;
-		FontWeight fontweight;
-		FontStyle fontstyle;
-		CSSValue margintop;
-		CSSValue marginbottom;
-		bool pagebreakbefore;
-		bool pagebreakafter;
-		TextAlign textalign;
-		CSSValue textindent;
-
-		CSSRule();
-		CSSRule(string selector);
-
-		CSSRule(CSSRule const & cpy);
-		CSSRule(CSSRule && mv) ;
-		CSSRule & operator =(const CSSRule & cpy);
-		CSSRule & operator =(CSSRule && mv) ;
-
-		~CSSRule();
-
-		friend inline bool operator< (const CSSRule & lhs, const CSSRule & rhs);
-		friend inline bool operator> (const CSSRule & lhs, const CSSRule & rhs);
-		friend inline bool operator<=(const CSSRule & lhs, const CSSRule & rhs);
-		friend inline bool operator>=(const CSSRule & lhs, const CSSRule & rhs);
-
-		void add(const CSSRule & rhs);
-
-};
-
-inline bool operator< (const CSSRule & lhs, const CSSRule & rhs)
-{
-	//Defer to specificity.
-	return(lhs.selector.specificity < rhs.selector.specificity);
-}
-inline bool operator> (const CSSRule & lhs, const CSSRule & rhs)
-{
-	return rhs < lhs;
-}
-inline bool operator<=(const CSSRule & lhs, const CSSRule & rhs)
-{
-	return !(lhs > rhs);
-}
-inline bool operator>=(const CSSRule & lhs, const CSSRule & rhs)
-{
-	return !(lhs < rhs);
-}
 
 class CSS {
 
