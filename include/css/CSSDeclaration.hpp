@@ -30,9 +30,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <memory>
 
+class CSSDeclaration; 
+
 #include "CSSSpecificity.hpp"
+#include "CSSRule.hpp"
 
 using std::shared_ptr;
+using std::weak_ptr; 
 
 enum CSSPropertyType {
 
@@ -251,7 +255,7 @@ class CSSValue {
 			}
 
 			return true;
-		}
+		} 
 
 };
 
@@ -261,7 +265,8 @@ class CSSDeclaration {
 		CSSPropertyType type;
 		shared_ptr<CSSValueType> value;
 		CSSSpecificity specificity;
-
+		weak_ptr<CSSRule> parent; 
+	
 		CSSDeclaration(CSSPropertyType _type, shared_ptr<CSSValueType> _value, CSSSpecificity _specificity);
 
 		CSSDeclaration(CSSDeclaration const & cpy);

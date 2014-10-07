@@ -28,6 +28,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CSS_RULE_HEADER
 #define CSS_RULE_HEADER
 
+class CSSRule; 
+
+#include "CSSDeclaration.hpp"
 
 enum DisplayType {
 	DISPLAY_INLINE, //DEFAULT
@@ -62,16 +65,6 @@ class CSSRule {
 		CSSSelector selector;
 		string collation_key;
 		map<string, string> raw_pairs;
-		DisplayType displaytype;
-		FontSize fontsize;
-		FontWeight fontweight;
-		FontStyle fontstyle;
-		CSSValue margintop;
-		CSSValue marginbottom;
-		bool pagebreakbefore;
-		bool pagebreakafter;
-		TextAlign textalign;
-		CSSValue textindent;
 
 		CSSRule();
 		CSSRule(string selector);
