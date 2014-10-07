@@ -267,7 +267,7 @@ class CSSDeclaration {
 		CSSSpecificity specificity;
 		weak_ptr<CSSRule> parent; 
 	
-		CSSDeclaration(CSSPropertyType _type, shared_ptr<CSSValueType> _value, CSSSpecificity _specificity);
+		CSSDeclaration(CSSPropertyType _type, shared_ptr<CSSValueType> _value, CSSSpecificity _specificity, weak_ptr<CSSRule> _parent);
 
 		CSSDeclaration(CSSDeclaration const & cpy);
 		CSSDeclaration(CSSDeclaration && mv) ;

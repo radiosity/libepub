@@ -308,48 +308,50 @@ CSSValue::~CSSValue()
 }
 
 
-CSSDeclaration::CSSDeclaration(CSSPropertyType _type, shared_ptr<CSSValueType> _value, CSSSpecificity _specificity) :
+CSSDeclaration::CSSDeclaration(CSSPropertyType _type, shared_ptr<CSSValueType> _value, CSSSpecificity _specificity, weak_ptr<CSSRule> _parent) :
 	type(_type),
 	value(_value),
-	specificity(_specificity)
+	specificity(_specificity),
+	parent(_parent)
 {
-
+	
 }
 
 CSSDeclaration::CSSDeclaration(CSSDeclaration const & cpy) :
 	type(cpy.type),
 	value(cpy.value),
-	specificity(cpy.specificity)
+	specificity(cpy.specificity),
+	parent(cpy.parent)
 {
-
+	
 }
 
 CSSDeclaration::CSSDeclaration(CSSDeclaration && mv) :
 	type(move(mv.type)),
-	value(move(mv.value)),
-	specificity(move(mv.specificity))
+	value(move(mv.value)), 
+	specificity(move(mv.specificity)),
+	parent(move(mv.parent))
 {
-
+	
 }
 
-CSSDeclaration & CSSDeclaration::operator =(const CSSDeclaration & cpy)
-{
-	type = cpy.type;
-	value = cpy.value;
+CSSDeclaration & CSSDeclaration::operator =(const CSSDeclaration & cpy) {
+	type = cpy.type; 
+	value = cpy.value; 
 	specificity = cpy.specificity;
-	return *this;
+	parent = cpy.parent;
+	return *this; 
 }
 
-CSSDeclaration & CSSDeclaration::operator =(CSSDeclaration && mv)
-{
+CSSDeclaration & CSSDeclaration::operator =(CSSDeclaration && mv)  {
 	type = move(mv.type);
-	value = move(mv.value);
+	value = move(mv.value); 
 	specificity = move(mv.specificity);
-	return *this;
+	parent = move(mv.parent);
+	return *this; 
 }
 
-CSSDeclaration::~CSSDeclaration()
-{
+CSSDeclaration::~CSSDeclaration() {
 }
 
 
