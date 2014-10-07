@@ -30,9 +30,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string>
 #include <map>
+#include <vector>
+#include <memory>
 
 using std::string; 
 using std::map; 
+using std::vector;
+using std::shared_ptr; 
 
 class CSSRule; 
 
@@ -44,7 +48,7 @@ class CSSRule {
 		CSSSelector selector;
 		string collation_key;
 		map<string, string> raw_pairs;
-		
+		vector<shared_ptr<CSSDeclaration>> declarations; 
 
 		CSSRule();
 		CSSRule(string selector);
