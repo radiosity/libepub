@@ -28,6 +28,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CSS_RULE_HEADER
 #define CSS_RULE_HEADER
 
+#include <string>
+#include <map>
+
+using std::string; 
+using std::map; 
+
 class CSSRule; 
 
 #include "CSSDeclaration.hpp"
