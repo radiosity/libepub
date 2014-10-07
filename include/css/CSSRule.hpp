@@ -32,39 +32,13 @@ class CSSRule;
 
 #include "CSSDeclaration.hpp"
 
-enum DisplayType {
-	DISPLAY_INLINE, //DEFAULT
-	DISPLAY_BLOCK
-};
-
-enum FontSize {
-	FONTSIZE_NORMAL, //Default, but doesn't corespond directly.
-	FONTSIZE_LARGER,
-	FONTSIZE_SMALLER
-};
-
-enum FontWeight {
-	FONTWEIGHT_NORMAL, //DEFAULT
-	FONTWEIGHT_BOLD
-};
-
-enum FontStyle {
-	FONTSTYLE_NORMAL, //DEFAULT
-	FONTSTYLE_ITALIC
-};
-
-enum TextAlign {
-	TEXTALIGN_LEFT,  //DEFAULT
-	TEXTALIGN_RIGHT,
-	TEXTALIGN_CENTER
-};
-
 class CSSRule {
 
 	public:
 		CSSSelector selector;
 		string collation_key;
 		map<string, string> raw_pairs;
+		
 
 		CSSRule();
 		CSSRule(string selector);
