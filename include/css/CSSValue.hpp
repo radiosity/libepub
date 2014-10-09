@@ -25,66 +25,45 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef CSS_RULE_HEADER
-#define CSS_RULE_HEADER
+#ifndef CSS_VALUE_HEADER
+#define CSS_VALUE_HEADER
 
-#include <string>
-#include <map>
-#include <vector>
-#include <memory>
-
-using std::string;
-using std::map;
-using std::vector;
-using std::shared_ptr;
-
-class CSSRule;
-
-#include "CSSDeclaration.hpp"
-
-class CSSRule {
-
-	public:
-		CSSSelector selector;
-		string collation_key;
-		map<string, string> raw_pairs;
-		vector<shared_ptr<CSSDeclaration>> declarations;
-
-		CSSRule();
-		CSSRule(string selector);
-
-		CSSRule(CSSRule const & cpy);
-		CSSRule(CSSRule && mv) ;
-		CSSRule & operator =(const CSSRule & cpy);
-		CSSRule & operator =(CSSRule && mv) ;
-
-		~CSSRule();
-
-		friend inline bool operator< (const CSSRule & lhs, const CSSRule & rhs);
-		friend inline bool operator> (const CSSRule & lhs, const CSSRule & rhs);
-		friend inline bool operator<=(const CSSRule & lhs, const CSSRule & rhs);
-		friend inline bool operator>=(const CSSRule & lhs, const CSSRule & rhs);
-
-		void add(const CSSRule & rhs);
-
+enum CSSLengthType {
+	CSS_LENGTH_DEFAULT,
+	CSS_LENGTH_PX,
+	CSS_LENGTH_PT,
+	CSS_LENGTH_CM,
+	CSS_LENGTH_EM,
+	CSS_LENGTH_PERCENT
 };
 
-inline bool operator< (const CSSRule & lhs, const CSSRule & rhs)
-{
-	//Defer to specificity.
-	return(lhs.selector.specificity < rhs.selector.specificity);
-}
-inline bool operator> (const CSSRule & lhs, const CSSRule & rhs)
-{
-	return rhs < lhs;
-}
-inline bool operator<=(const CSSRule & lhs, const CSSRule & rhs)
-{
-	return !(lhs > rhs);
-}
-inline bool operator>=(const CSSRule & lhs, const CSSRule & rhs)
-{
-	return !(lhs < rhs);
-}
+class CSSLength {
+
+	public:
+		double value;
+		CSSLengthType type;
+
+		CSSLength();
+
+		CSSLength(CSSLength const & cpy);
+		CSSLength(CSSLength && mv) ;
+		CSSLength & operator =(const CSSLength & cpy);
+		CSSLength & operator =(CSSLength && mv) ;
+
+		~CSSLength();
+
+		inline bool operator==(const CSSLength & rhs) {
+			if(value != rhs.value) {
+				return false;
+			}
+
+			if(type != rhs.type) {
+				return false;
+			}
+
+			return true;
+		}
+
+};
 
 #endif

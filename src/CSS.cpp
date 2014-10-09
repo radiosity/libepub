@@ -314,7 +314,7 @@ CSSDeclaration::CSSDeclaration(CSSPropertyType _type, shared_ptr<CSSValueType> _
 	specificity(_specificity),
 	parent(_parent)
 {
-	
+
 }
 
 CSSDeclaration::CSSDeclaration(CSSDeclaration const & cpy) :
@@ -323,35 +323,38 @@ CSSDeclaration::CSSDeclaration(CSSDeclaration const & cpy) :
 	specificity(cpy.specificity),
 	parent(cpy.parent)
 {
-	
+
 }
 
 CSSDeclaration::CSSDeclaration(CSSDeclaration && mv) :
 	type(move(mv.type)),
-	value(move(mv.value)), 
+	value(move(mv.value)),
 	specificity(move(mv.specificity)),
 	parent(move(mv.parent))
 {
-	
+
 }
 
-CSSDeclaration & CSSDeclaration::operator =(const CSSDeclaration & cpy) {
-	type = cpy.type; 
-	value = cpy.value; 
+CSSDeclaration & CSSDeclaration::operator =(const CSSDeclaration & cpy)
+{
+	type = cpy.type;
+	value = cpy.value;
 	specificity = cpy.specificity;
 	parent = cpy.parent;
-	return *this; 
+	return *this;
 }
 
-CSSDeclaration & CSSDeclaration::operator =(CSSDeclaration && mv)  {
+CSSDeclaration & CSSDeclaration::operator =(CSSDeclaration && mv)
+{
 	type = move(mv.type);
-	value = move(mv.value); 
+	value = move(mv.value);
 	specificity = move(mv.specificity);
 	parent = move(mv.parent);
-	return *this; 
+	return *this;
 }
 
-CSSDeclaration::~CSSDeclaration() {
+CSSDeclaration::~CSSDeclaration()
+{
 }
 
 
