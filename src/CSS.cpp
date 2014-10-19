@@ -368,16 +368,7 @@ CSSRule::CSSRule(string _selector) :
 	selector(_selector),
 	collation_key(ustring(_selector).collate_key()),
 	raw_pairs(),
-	displaytype(DISPLAY_INLINE),
-	fontsize(FONTSIZE_NORMAL),
-	fontweight(FONTWEIGHT_NORMAL),
-	fontstyle(FONTSTYLE_NORMAL),
-	margintop(),
-	marginbottom(),
-	pagebreakbefore(false),
-	pagebreakafter(false),
-	textalign(TEXTALIGN_LEFT),
-	textindent()
+	declarations()
 {
 }
 
@@ -385,16 +376,7 @@ CSSRule::CSSRule(CSSRule const & cpy) :
 	selector(cpy.selector),
 	collation_key(cpy.collation_key),
 	raw_pairs(cpy.raw_pairs),
-	displaytype(cpy.displaytype),
-	fontsize(cpy.fontsize),
-	fontweight(cpy.fontweight),
-	fontstyle(cpy.fontstyle),
-	margintop(cpy.margintop),
-	marginbottom(cpy.marginbottom),
-	pagebreakbefore(cpy.pagebreakbefore),
-	pagebreakafter(cpy.pagebreakafter),
-	textalign(cpy.textalign),
-	textindent(cpy.textindent)
+	declarations(cpy.declarations)
 {
 }
 
@@ -402,16 +384,7 @@ CSSRule::CSSRule(CSSRule && mv) :
 	selector(move(mv.selector)),
 	collation_key(move(mv.collation_key)),
 	raw_pairs(move(mv.raw_pairs)),
-	displaytype(move(mv.displaytype)),
-	fontsize(move(mv.fontsize)),
-	fontweight(move(mv.fontweight)),
-	fontstyle(move(mv.fontstyle)),
-	margintop(move(mv.margintop)),
-	marginbottom(move(mv.marginbottom)),
-	pagebreakbefore(move(mv.pagebreakbefore)),
-	pagebreakafter(move(mv.pagebreakafter)),
-	textalign(move(mv.textalign)),
-	textindent(move(mv.textindent))
+	declarations(move(mv.declarations))
 {
 }
 
@@ -420,16 +393,7 @@ CSSRule & CSSRule::operator =(const CSSRule & cpy)
 	selector = cpy.selector;
 	collation_key = cpy.collation_key;
 	raw_pairs = cpy.raw_pairs;
-	displaytype = cpy.displaytype;
-	fontsize = cpy.fontsize;
-	fontweight = cpy.fontweight;
-	fontstyle = cpy.fontstyle;
-	margintop = cpy.margintop;
-	marginbottom = cpy.marginbottom;
-	pagebreakbefore = cpy.pagebreakbefore;
-	pagebreakafter = cpy.pagebreakafter;
-	textalign = cpy.textalign;
-	textindent = cpy.textindent;
+	declarations = cpy.declarations; 
 	return *this;
 }
 
@@ -438,16 +402,7 @@ CSSRule & CSSRule::operator =(CSSRule && mv)
 	selector = move(mv.selector);
 	collation_key = move(mv.collation_key);
 	raw_pairs = move(mv.raw_pairs);
-	displaytype = move(mv.displaytype);
-	fontsize = move(mv.fontsize);
-	fontweight = move(mv.fontweight);
-	fontstyle = move(mv.fontstyle);
-	margintop = move(mv.margintop);
-	marginbottom = move(mv.marginbottom);
-	pagebreakbefore = move(mv.pagebreakbefore);
-	pagebreakafter = move(mv.pagebreakafter);
-	textalign = move(mv.textalign);
-	textindent = move(mv.textindent);
+	declarations = move(mv.declarations);
 	return *this;
 }
 
@@ -455,162 +410,7 @@ CSSRule::~CSSRule() { }
 
 void CSSRule::add ( const CSSRule & rhs )
 {
-	//Once we add one rule to another, it becomes
-	//a derived rule. There is no selector that would
-	//identify it. Therefore we should ensure that the selector is
-	//voided.
-
-	//TODO: do this without killing specificity.
-	//selector = CSSSelector();
-
-	//So. How should rules be added together?
-	//
-	// Go through all their declarations.
-	//
-	// If the declaration is set on the RHS,
-	// but not set on this rule, then adopt it
-	// regardless of specificity.
-	//
-	// If the declaration is set on the RHS
-	// and also on this rule, then check
-	// specificity before adopting it.
-
-	//Do the basics:
-	if(rhs.displaytype != DISPLAY_INLINE) {
-		if(displaytype != DISPLAY_INLINE) {
-			//Both are set, check specificity.
-			if(rhs.selector.specificity > selector.specificity) {
-				displaytype = rhs.displaytype;
-			}
-		}
-		else {
-			displaytype = rhs.displaytype;
-		}
-
-	}
-
-	if(rhs.fontsize != FONTSIZE_NORMAL) {
-		if(fontsize != FONTSIZE_NORMAL) {
-			//Both are set, check specificity.
-			if(rhs.selector.specificity > selector.specificity) {
-				fontsize = rhs.fontsize;
-			}
-		}
-		else {
-			fontsize = rhs.fontsize;
-		}
-	}
-
-	if(rhs.fontweight != FONTWEIGHT_NORMAL) {
-		if(fontweight != FONTWEIGHT_NORMAL) {
-			//Both are set, check specificity.
-			if(rhs.selector.specificity > selector.specificity) {
-				fontweight = rhs.fontweight;
-			}
-		}
-		else {
-			fontweight = rhs.fontweight;
-		}
-	}
-
-	if(rhs.fontstyle != FONTSTYLE_NORMAL) {
-		if(fontstyle != FONTSTYLE_NORMAL) {
-			//Both are set, check specificity.
-			if(rhs.selector.specificity > selector.specificity) {
-				fontstyle = rhs.fontstyle;
-			}
-		}
-		else {
-			fontstyle = rhs.fontstyle;
-		}
-	}
-
-	if(rhs.margintop.type != CSS_VALUE_DEFAULT) {
-		if(margintop.type != CSS_VALUE_DEFAULT) {
-			//Both are set, check specificity.
-			if(rhs.selector.specificity > selector.specificity) {
-				margintop = rhs.margintop;
-			}
-		}
-		else {
-			margintop = rhs.margintop;
-		}
-	}
-
-	if(rhs.marginbottom.type != CSS_VALUE_DEFAULT) {
-		if(marginbottom.type != CSS_VALUE_DEFAULT) {
-			//Both are set, check specificity.
-			if(rhs.selector.specificity > selector.specificity) {
-				marginbottom = rhs.marginbottom;
-			}
-		}
-		else {
-			marginbottom = rhs.marginbottom;
-		}
-	}
-
-	if(rhs.pagebreakbefore != false) {
-		if(pagebreakbefore != false) {
-			//Both are set, check specificity.
-			if(rhs.selector.specificity > selector.specificity) {
-				pagebreakbefore = rhs.pagebreakbefore;
-			}
-		}
-		else {
-			pagebreakbefore = rhs.pagebreakbefore;
-		}
-	}
-
-	if(rhs.pagebreakafter != false) {
-		if(pagebreakafter != false) {
-			//Both are set, check specificity.
-			if(rhs.selector.specificity > selector.specificity) {
-				pagebreakafter = rhs.pagebreakafter;
-			}
-		}
-		else {
-			pagebreakafter = rhs.pagebreakafter;
-		}
-	}
-
-	if(rhs.textalign != TEXTALIGN_LEFT) {
-		if(textalign != TEXTALIGN_LEFT) {
-			//Both are set, check specificity.
-			if(rhs.selector.specificity > selector.specificity) {
-				textalign = rhs.textalign;
-			}
-		}
-		else {
-			textalign = rhs.textalign;
-		}
-	}
-
-	if(rhs.textindent.type != CSS_VALUE_DEFAULT) {
-		if(textindent.type != CSS_VALUE_DEFAULT) {
-			//Both are set, check specificity.
-			if(rhs.selector.specificity > selector.specificity) {
-				textindent = rhs.textindent;
-			}
-		}
-		else {
-			textindent = rhs.textindent;
-		}
-	}
-
-	//Now lets do the map of raw
-	//tags
-
-	for(pair<ustring, ustring> p : rhs.raw_pairs) {
-		//check if it exists in this object.
-		if(raw_pairs.count(p.first) > 0) {
-			//It exists, so we update it.
-			raw_pairs[p.first] = p.second;
-		}
-		else {
-			//It doesn't exist, insert it.
-			raw_pairs.insert(p);
-		}
-	}
+	//TODO: Do we even still need this function?
 }
 
 CSS::CSS() :
@@ -763,7 +563,8 @@ CSS::CSS(vector<path> _files) :
 						cout << "\tCSS Attribute name: "  << attrname << endl;
 						cout << "\tCSS Attribute value "  << attrvalue << endl;
 						#endif
-
+						
+						/*
 						if(attrname == "display") {
 							if(attrvalue == "block") {
 								rule.displaytype = DISPLAY_BLOCK;
@@ -931,6 +732,7 @@ CSS::CSS(vector<path> _files) :
 								rule.textindent.type = CSS_VALUE_PERCENT;
 							}
 						}
+						*/
 					}
 				}
 			}
@@ -946,6 +748,10 @@ CSS::CSS(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int
 	rules()
 {
 
+	//Todo: fix this
+	
+	/*
+	
 	int rc;
 
 	const string css_select_sql = "SELECT * FROM css WHERE epub_file_id=? AND opf_id=?;";
@@ -1038,6 +844,8 @@ CSS::CSS(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int
 
 	sqlite3_finalize(css_select);
 	sqlite3_finalize(css_tags_select);
+	
+	*/
 
 }
 
@@ -1102,6 +910,10 @@ bool CSS::contains_rule(const ustring & _selector) const
 
 void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const unsigned int opf_index)
 {
+	//TODO: fix this. 
+	
+	/*
+	
 	int rc;
 	char * errmsg;
 
@@ -1209,5 +1021,7 @@ void CSS::save_to(sqlite3 * const db, const unsigned int epub_file_id, const uns
 
 	sqlite3_finalize(css_insert);
 	sqlite3_finalize(css_tags_insert);
+	
+	*/
 
 }
